@@ -1,3 +1,3 @@
 # PollForge
  PollForge is a web application for creating polls with different types of questions, managing access and collecting analytics.
-Проекти от Тимурки и Пашки :) Всем пингвина !!!
+Проект от Тимурки и Пашки :) Всем пингвина !!!
