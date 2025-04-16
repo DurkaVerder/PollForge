@@ -135,3 +135,5 @@ func (s *Service) StartWorker(countWorkers int, wg *sync.WaitGroup) {
 		go s.writeAnswerWorker(wg)
 	}
 }
+
+// TODO : добавить проверку на повторный ответ
