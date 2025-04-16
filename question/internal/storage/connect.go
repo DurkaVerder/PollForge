@@ -1,8 +1,7 @@
-package store
+package storage
 
 import (
 	"database/sql"
-	"os"
 	"time"
 )
 
@@ -12,8 +11,8 @@ const (
 	connMaxLifetime = 1 * time.Minute
 )
 
-func InitConnection() (*sql.DB, error) {
-	db, err := sql.Open("postgres", os.Getenv("DB_URL"))
+func InitConnection(driverName, connURL string) (*sql.DB, error) {
+	db, err := sql.Open(driverName, connURL)
 	if err != nil {
 		return nil, err
 	}
