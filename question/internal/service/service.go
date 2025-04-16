@@ -4,14 +4,13 @@ import (
 	"log"
 	"question/models"
 	"strconv"
-	"strings"
 	"sync"
 )
 
 type Store interface {
 	GetQuestions(formID int) ([]models.QuestionFromDB, error)
 	GetAnswers(formID int) ([]models.AnswerFromDB, error)
-	UpdateCountAnswer(ids string) error
+	UpdateCountAnswer(ids []int) error
 }
 
 type Service struct {
@@ -82,9 +81,9 @@ func (s *Service) createQuestions(question []models.QuestionFromDB, answers []mo
 }
 
 func (s *Service) writeAnswer(answers []models.SubmitAnswer) error {
-	ids := s.convertToStringIdsSelectedAnswers(answers)
+	ids := s.getSelectedIds(answers)
 
-	if ids == "" {
+	if len(ids) == 0 {
 		log.Println("WriteAnswer: Нет выбранных ответов")
 		return nil
 	}
@@ -98,18 +97,16 @@ func (s *Service) writeAnswer(answers []models.SubmitAnswer) error {
 	return nil
 }
 
-// Возвращает строку из id ответов, которые были выбраны
-func (s *Service) convertToStringIdsSelectedAnswers(answers []models.SubmitAnswer) string {
-	idsSelectedAnswer := make([]string, 0, len(answers)/2)
+func (s *Service) getSelectedIds(answers []models.SubmitAnswer) []int {
+	idsSelectedAnswer := make([]int, 0, len(answers)/2)
 
 	for _, answer := range answers {
 		if answer.Selected {
-			id := strconv.Itoa(answer.ID)
-			idsSelectedAnswer = append(idsSelectedAnswer, id)
+			idsSelectedAnswer = append(idsSelectedAnswer, answer.ID)
 		}
 	}
 
-	return strings.Join(idsSelectedAnswer, ",")
+	return idsSelectedAnswer
 }
 
 func (s *Service) writeAnswerWorker(wg *sync.WaitGroup) {
