@@ -8,7 +8,7 @@ NC='\033[0m'
 
 CONFIG_PATH=".golangci.yml"
 
-echo -e "${GREEN}Проверка кода...${NC}"
+echo -e "${NC}0_W_0 Проверка кода...${NC}"
 
 MODULE_DIRS=$(find . -mindepth 2 -name "go.mod" -exec dirname {} \;)
 
@@ -27,10 +27,10 @@ fi
 
 # Проходимся по каждому модулю
 for dir in $MODULE_DIRS; do
-  echo -e "${GREEN}▶Проверка модуля: $dir${NC}"
+  echo -e "${NC}Проверка модуля: $dir${NC}"
   pushd "$dir" > /dev/null
   if golangci-lint run --config="../$CONFIG_PATH" ./...; then
-    echo -e "${GREEN}✅ Проверка успешна: $dir${NC}"
+    echo -e "${GREEN}Проверка успешна: $dir${NC}"
     count=$((count + 1))
   else
     echo -e "${RED}Проблемы найдены в: $dir${NC}"
@@ -45,12 +45,7 @@ else
   echo -e "${RED}Проверка завершена с ошибками.${NC}"
 fi
 
-echo -e ""
 
-if [[ $count -eq $allModules ]]; then
-  echo -e "${GREEN}Успешно обработаны все модули.${NC}"
-  exit 1
+if [[ $count -ne $allModules ]]; then
+  echo -e "${RED}Обработано $count из $allModules с ошибками.${NC}"
 fi
-
-echo -e "${RED}Обработано $count из $allModules с ошибками.${NC}"
-
