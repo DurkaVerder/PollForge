@@ -2,11 +2,13 @@ package storage
 
 import (
 	"database/sql"
+	"fmt"
 	"log"
 	"question/models"
 )
 
 const (
+	maxRetries             = 3
 	QueryGetQuestions      = "SELECT id, title FROM questions WHERE form_id = $1 ORDER BY number_order"
 	QueryGetAnswers        = "SELECT a.id, a.title, a.question_id FROM answers a JOIN questions q ON a.question_id = q.id WHERE q.form_id = $1 ORDER BY q.number_order, a.number_order"
 	QueryUpdateCountAnswer = "UPDATE answers SET count = count + 1 WHERE id IN ($1)"
@@ -65,19 +67,41 @@ func (p *Postgres) GetAnswers(formID int) ([]models.AnswerFromDB, error) {
 }
 
 func (p *Postgres) UpdateCountAnswer(ids string) error {
-	tx, err := p.db.Begin()
-	if err != nil {
-		log.Printf("UpdateCountAnswer: Ошибка при начале транзакции: %v\n", err)
-		return err
+
+	for i := 0; i < maxRetries; i++ {
+		tx, err := p.db.Begin()
+		if err != nil {
+			log.Printf("UpdateCountAnswer: Ошибка при начале транзакции: %v\n", err)
+			return err
+		}
+
+		result, err := tx.Exec(QueryUpdateCountAnswer, ids)
+		if err != nil {
+			log.Printf("UpdateCountAnswer: Ошибка при выполнении запроса: %v\n", err)
+			tx.Rollback()
+			continue
+		}
+
+		rowsAffected, err := result.RowsAffected()
+		if err != nil {
+			log.Printf("UpdateCountAnswer: Ошибка при получении количества затронутых строк: %v\n", err)
+			tx.Rollback()
+			return err
+		}
+
+		if rowsAffected == 0 {
+			log.Printf("UpdateCountAnswer: Конфликт или некорректные данные, строки не обновлены")
+			tx.Rollback()
+			return fmt.Errorf("no rows updated")
+		}
+
+		if err := tx.Commit(); err != nil {
+			log.Printf("UpdateCountAnswer: Ошибка при коммите транзакции: %v\n", err)
+			continue
+		}
+
+		return nil
 	}
 
-	_, err = p.db.Exec(QueryUpdateCountAnswer, ids)
-	if err != nil {
-		log.Printf("UpdateCountAnswer: Ошибка при выполнении запроса: %v\n", err)
-		tx.Rollback()
-		return err
-	}
-
-	tx.Commit()
-	return nil
+	return fmt.Errorf("UpdateCountAnswer: failed after %d retries", maxRetries)
 }
