@@ -27,7 +27,7 @@ func UserLogging(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"message": "user entered",
+		"message": "Пользователь вошёл",
 		"token":   token,
 	})
 }
@@ -37,7 +37,7 @@ func UserRegistration(c *gin.Context) {
 	err := c.BindJSON(&request)
 	if err != nil {
 		log.Printf("invalid input")
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid input"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Неккоректный ввод"})
 		return
 	}
 	err = service.CheckUserRequest(request)
@@ -53,7 +53,7 @@ func UserRegistration(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusCreated, gin.H{
-		"message": "user created",
+		"message": "Пользователь создан",
 		"token":   token,
 	})
 }
