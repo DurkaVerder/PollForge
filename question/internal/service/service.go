@@ -115,6 +115,7 @@ func (s *Service) writeAnswerWorker(wg *sync.WaitGroup) {
 		err := s.writeAnswer(val)
 		if err != nil {
 			log.Printf("WriteAnswerWorker: Ошибка при записи ответа: %v\n", err)
+			continue
 		}
 		log.Printf("WriteAnswerWorker: Ответ записан: %+v\n", val)
 	}
