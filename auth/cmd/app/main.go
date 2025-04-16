@@ -10,17 +10,16 @@ import (
 	"github.com/joho/godotenv"
 )
 
-func main(){
+func main() {
 
 	err := godotenv.Load()
-	if err != nil{
+	if err != nil {
 		log.Fatal("Ошибка загрузки из env. файла")
 	}
 	err = storage.ConnectToDb()
-	if err != nil{
+	if err != nil {
 		log.Fatal("Ошибка подключения к дб")
 	}
-	r := gin.Default()	
+	r := gin.Default()
 	router.SetUpRouter(r)
-	
 }
