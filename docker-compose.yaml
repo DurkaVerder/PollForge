@@ -1,0 +1,136 @@
+version: '3.9'
+
+services:
+
+  postgres:
+    image: postgres:15
+    container_name: postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: durka
+      POSTGRES_DB: pollforge-database
+    ports:
+      - "5432:5432" 
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - pollforge-network
+
+
+
+
+
+  # admin-service:
+  #   build:
+  #     context: ./admin
+  #     dockerfile: Dockerfile
+  #   container_name: admin
+  #   environment:
+  #     - DB_URL=postgres://postgres:durka@postgres:5432/pollforge-database?sslmode=disable
+  #     - PORT=:8080
+  #   depends_on:
+  #     - postgres
+  #   networks:
+  #     - pollforge-network
+
+
+  auth-service:
+    build:
+      context: ./auth
+      dockerfile: Dockerfile
+    container_name: auth
+    environment:
+      # - KAFKA_BROKER=kafka:9092
+      # - KAFKA_TOPIC=notification
+      - DB_URL=postgres://postgres:durka@postgres:5432/pollforge-database?sslmode=disable
+      - JWT_SECRET=super-puper-ultra-top-secret_01234
+      - PORT=:8081
+    depends_on:
+      - postgres
+    networks:
+      - pollforge-network    
+    
+  change_polls-service:
+    build:
+      context: ./change_polls
+      dockerfile: Dockerfile
+    container_name: change_polls
+    environment:
+      - DB_URL=postgres://postgres:durka@postgres:5432/pollforge-database?sslmode=disable
+      - PORT=:8082
+    depends_on:
+      - postgres
+    networks:
+      - pollforge-network
+
+  polls-service:
+    build:
+      context: ./polls
+      dockerfile: Dockerfile
+    container_name: polls
+    environment:
+      - DB_URL=postgres://postgres:durka@postgres:5432/pollforge-database?sslmode=disable
+      - PORT=:8083
+    depends_on:
+      - postgres
+    networks:
+      - pollforge-network
+
+  profile-service:
+    build:
+      context: ./profile
+      dockerfile: Dockerfile
+    container_name: profile
+    environment:
+      - DB_URL=postgres://postgres:durka@postgres:5432/pollforge-database?sslmode=disable
+      - PORT=:8084
+    depends_on:
+      - postgres
+    networks:
+      - pollforge-network
+
+  question-service:
+    build:
+      context: ./question
+      dockerfile: Dockerfile
+    container_name: question
+    environment:
+      - DB_URL=postgres://postgres:durka@postgres:5432/pollforge-database?sslmode=disable
+      - PORT=:8085
+    depends_on:
+      - postgres
+    networks:
+      - pollforge-network
+
+  stats-service:
+    build:
+      context: ./stats
+      dockerfile: Dockerfile
+    container_name: stats
+    environment:
+      - DB_URL=postgres://postgres:durka@postgres:5432/pollforge-database?sslmode=disable
+      - PORT=:8086
+    depends_on:
+      - postgres
+    networks:
+      - pollforge-network
+ 
+
+  
+
+
+  # frontend:
+  #   build:
+  #     context: ./frontend
+  #     dockerfile: Dockerfile
+  #   container_name: frontend
+  #   networks:
+  #     - pollforge-network
+
+volumes:
+  postgres_data:
+
+networks:
+  pollforge-network:
+    driver: bridge
