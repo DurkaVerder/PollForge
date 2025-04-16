@@ -34,15 +34,15 @@ func ConnectToDb()error{
 
 
 func Registration(hashedPassword []byte, request models.UserRequest)(string,error){
-	var UserId string
+	var userId string
 	// Потому что мы пытаемся получить id после регистрации пользователя для создания jwt
 	err := Db.QueryRow(`INSERT INTO users (name,email,password)
 	                          VALUES($1,$2,$3) RETURNING id`,
-							  request.Username, request.Email, string(hashedPassword)).Scan(&UserId)
+							  request.Username, request.Email, string(hashedPassword)).Scan(&userId)
 	if err != nil{
 		return "",err
 	}
-	return UserId, err
+	return userId, err
 }
 
 func CheckingLoggingData(request models.UserRequest)(string, error){
