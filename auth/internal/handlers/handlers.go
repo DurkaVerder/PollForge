@@ -36,7 +36,7 @@ func UserRegistration(c *gin.Context) {
 	var request models.UserRequest
 	err := c.BindJSON(&request)
 	if err != nil {
-		log.Printf("invalid input")
+		log.Printf("Ошибка ввода данных")
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Неккоректный ввод"})
 		return
 	}
