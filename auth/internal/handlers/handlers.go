@@ -42,7 +42,7 @@ func UserRegistration(c *gin.Context) {
 	}
 	err = service.CheckUserRequest(request)
 	if err != nil {
-		log.Printf("Ошибка при проверке на наличие похожего аккаунта")
+		log.Printf("Ошибка при проверке на наличие похожего аккаунта.")
 		c.JSON(http.StatusBadRequest, err.Error())
 		return
 	}
