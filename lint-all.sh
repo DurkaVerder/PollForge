@@ -48,4 +48,5 @@ fi
 
 if [[ $count -ne $allModules ]]; then
   echo -e "${RED}Обработано $count из $allModules с ошибками.${NC}"
+  exit 1
 fi
