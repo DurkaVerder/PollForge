@@ -28,26 +28,26 @@ func main() {
 
 	answersChannel := make(chan []models.SubmitAnswer, 100)
 
-	service := service.NewService(postgres, answersChannel)
+	questionService := service.NewService(postgres, answersChannel)
 
 	wg := &sync.WaitGroup{}
-	service.StartWorker(countWorkers, wg)
+	questionService.StartWorker(countWorkers, wg)
 
-	handlers := handlers.NewHandler(service)
+	handlers := handlers.NewHandler(questionService)
 
 	engine := gin.Default()
 	engine.Use(gin.Logger())
 
 	ctx, cancel := context.WithCancel(context.Background())
 
-	server := server.NewServer(handlers, engine)
+	srv := server.NewServer(handlers, engine)
 	go func() {
-		server.Start(os.Getenv("PORT"))
+		srv.Start(os.Getenv("PORT"))
 		cancel()
 	}()
 
 	<-ctx.Done()
 
-	service.Close()
+	questionService.Close()
 	wg.Wait()
 }
