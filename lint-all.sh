@@ -24,7 +24,6 @@ for dir in $MODULE_DIRS; do
     allModules=$((allModules + 1))
     echo -e "${NC}Проверка модуля: $dir${NC}"
     pushd "$dir" > /dev/null
-    
     golangci-lint run --config="../$CONFIG_PATH" ./...
     echo -e "${GREEN}Проверка успешна: $dir${NC}"
     echo ""
