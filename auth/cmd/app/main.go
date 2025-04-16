@@ -1,7 +1,7 @@
 package main
 
 import (
-	"auth/internal/handlers"
+	"auth/internal/router"
 	"auth/internal/storage"
 
 	"log"
@@ -21,8 +21,6 @@ func main(){
 		log.Fatal("Ошибка подключения к дб")
 	}
 	r := gin.Default()	
+	router.SetUpRouter(r)
 	
-	r.POST("/register", handlers.UserRegistration)
-	r.POST("/logging", handlers.UserLogging)
-	r.Run(":8081")
 }

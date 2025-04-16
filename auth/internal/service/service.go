@@ -20,13 +20,15 @@ func GenerateJwt(UserId string) (string, error) {
 		"sub": UserId,
 		"exp": time.Now().Add(time.Hour * 6).Unix(),
 	}
-	token := jwt.NewWithClaims(jwt.SigningMethodES256, claims)
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	return token.SignedString(jwtKey)
 }
 
-func CheckUserRequest(request models.RegisterRequest) error {
+func CheckUserRequest(request models.UserRequest) error {
 	var exist bool
-	err := storage.Db.QueryRow("SELECT EXISTS(SELECT 1 FROM users WHERE email = $1)", request.Email).Scan(&exist) //Потому что только одного надо выбрать если есть похожий
+
+	//Потому что только одного надо выбрать если есть аккаунт c такой же почтой
+	err := storage.Db.QueryRow("SELECT EXISTS(SELECT 1 FROM users WHERE email = $1)", request.Email).Scan(&exist) 
 	if err != nil {
 		return err
 	}
@@ -36,14 +38,33 @@ func CheckUserRequest(request models.RegisterRequest) error {
 	return nil
 }
 
-func RegistrUser(request models.RegisterRequest)(string, error){
+func RegistrUser(request models.UserRequest)(string, error){
+	var UserId string
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(request.Password), bcrypt.DefaultCost)
 	if err != nil{
 		log.Printf("Ошибка при создании хеша пароля")
 		return "", err
 	}
-	err = storage.InsertData(hashedPassword, request)
+
+	//Потому что отправляем все данные для регистрации и возвращаем id для создания jwt
+	UserId, err = storage.Registration(hashedPassword, request) 
 	if err != nil{
-		log.Printf("Ошибка при вводе данных в базу данных")
-	}	
+		log.Printf("Ошибка при вводе данных в базу")
+		log.Printf("%s", err.Error())
+		return "",err
+	}
+	token, err := GenerateJwt(UserId)
+	return token, err
+}
+
+func LoggingUser(request models.UserRequest)(string, error){
+
+	UserId, err := storage.CheckingLoggingData(request)
+	if err != nil{
+		log.Printf("Ошибка при сопоставлении пароля и почты")
+		log.Printf("%s", err.Error())
+		return "",err
+	}
+	token, err := GenerateJwt(UserId)
+	return token, err
 }

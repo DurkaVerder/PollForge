@@ -5,6 +5,8 @@ import (
 	"database/sql"
 	"fmt"
 	"os"
+
+	"golang.org/x/crypto/bcrypt"
 )
 
 var Db *sql.DB
@@ -23,21 +25,39 @@ func ConnectToDb()error{
 	if err != nil{
 		return err
 	}
-	
+	err = Db.Ping()
+	if err != nil{
+		return err
+	}
 	return nil
 }
 
-func CompareData(user models.User)(){
-	
-	
-}
 
-func InsertData(hashedPassword string,request models.RegisterRequest)error{
-	var UserId int
+func Registration(hashedPassword []byte, request models.UserRequest)(string,error){
+	var UserId string
+	// Потому что мы пытаемся получить id после регистрации пользователя для создания jwt
 	err := Db.QueryRow(`INSERT INTO users (name,email,password)
-	                          VALUE($1,$2,$3) RETURNING id`,
+	                          VALUES($1,$2,$3) RETURNING id`,
 							  request.Username, request.Email, string(hashedPassword)).Scan(&UserId)
 	if err != nil{
-		
+		return "",err
 	}
+	return UserId, err
+}
+
+func CheckingLoggingData(request models.UserRequest)(string, error){
+	var UserId string
+	var hashedPassword []byte
+	
+	// Потому что если почта  совпадает, то мы получим id для генерации jwt и хешированный пароль для сравнения с обычным
+	err := Db.QueryRow(`SELECT id, password FROM users WHERE email = $1`, request.Email).Scan(&UserId, &hashedPassword)
+	if err != nil{
+		return "",err
+	}
+	err = bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(request.Password))
+	if err != nil{
+		return "",err
+	}
+	return UserId, err
+
 }

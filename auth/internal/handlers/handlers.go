@@ -11,7 +11,7 @@ import (
 
 func UserLogging(c *gin.Context) {
 
-	var request models.RegisterRequest
+	var request models.UserRequest
 	err := c.BindJSON(&request)
 	if err != nil {
 		log.Printf("Ошибка ввода данных")
@@ -19,17 +19,21 @@ func UserLogging(c *gin.Context) {
 		return
 	}
 
-	err = service.CheckUserRequest(request)
+	token, err := service.LoggingUser(request)
 	if err != nil {
-		log.Printf("$1", err)
-		c.JSON(http.StatusBadRequest, gin.H{"error": err})
+		log.Printf("Ошибка при входе пользователя в аккаунт")
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	token := service.GenerateJwt(request.id)
+
+	c.JSON(http.StatusCreated, gin.H{
+		"message": "user entered",
+		"token":   token,
+	})
 }
 func UserRegistration(c *gin.Context) {
 
-	var request models.RegisterRequest
+	var request models.UserRequest
 	err := c.BindJSON(&request)
 	if err != nil {
 		log.Printf("invalid input")
@@ -37,6 +41,19 @@ func UserRegistration(c *gin.Context) {
 		return
 	}
 	err = service.CheckUserRequest(request)
+	if err != nil {
+		log.Printf("Ошибка при проверке на наличие похожего аккаунта")
+		c.JSON(http.StatusBadRequest, err.Error())
+		return
+	}
 	token, err := service.RegistrUser(request)
-	
+	if err != nil {
+		log.Printf("Ошибка при регистрации аккаунта")
+		c.JSON(http.StatusBadRequest, err.Error())
+		return
+	}
+	c.JSON(http.StatusCreated, gin.H{
+		"message": "user created",
+		"token":   token,
+	})
 }
