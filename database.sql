@@ -36,9 +36,11 @@ CREATE TABLE answers(
 
 CREATE TABLE comments(
     id SERIAL PRIMARY KEY,
-    form_id INT,
+    user_id INT NOT NULL,
+    form_id INT NOT NULL,
     title VARCHAR(255) NOT NULL,
     count INT DEFAULT 0,
+    FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE,
     FOREIGN KEY (form_id) REFERENCES forms (id) ON DELETE CASCADE
 );
 
@@ -50,3 +52,17 @@ CREATE TABLE likes(
     FOREIGN KEY (form_id) REFERENCES forms (id) ON DELETE CASCADE,
     FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
 );
+
+CREATE INDEX idx_users_id_name ON users (id, name);
+
+CREATE INDEX idx_forms_id_creator_id_link ON forms (id, creator_id, link);
+
+CREATE INDEX idx_forms_link ON forms (link) WHERE link = FALSE;
+
+CREATE INDEX idx_questions_id_form_id ON questions (id, form_id);
+
+CREATE INDEX idx_answers_id_question_id ON answers (id, question_id);
+
+CREATE INDEX idx_comments_id_user_id_form_id ON comments (id, user_id, form_id);
+
+CREATE INDEX idx_likes_id_form_id_user_id ON likes (id, form_id, user_id);
