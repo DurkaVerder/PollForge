@@ -30,7 +30,7 @@ for dir in $MODULE_DIRS; do
   echo -e "${GREEN}▶Проверка модуля: $dir${NC}"
   pushd "$dir" > /dev/null
   if golangci-lint run --config="../$CONFIG_PATH" ./...; then
-    echo -e "${GREEN}✅ Проверка успешна: $dir${NC}"
+    echo -e "${GREEN}Проверка успешна: $dir${NC}"
     count=$((count + 1))
   else
     echo -e "${RED}Проблемы найдены в: $dir${NC}"
