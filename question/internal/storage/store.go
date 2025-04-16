@@ -78,20 +78,32 @@ func (p *Postgres) UpdateCountAnswer(ids string) error {
 		result, err := tx.Exec(QueryUpdateCountAnswer, ids)
 		if err != nil {
 			log.Printf("UpdateCountAnswer: Ошибка при выполнении запроса: %v\n", err)
-			tx.Rollback()
+
+			if err := tx.Rollback(); err != nil {
+				log.Printf("UpdateCountAnswer: Ошибка при откате транзакции: %v\n", err)
+			}
+
 			continue
 		}
 
 		rowsAffected, err := result.RowsAffected()
 		if err != nil {
 			log.Printf("UpdateCountAnswer: Ошибка при получении количества затронутых строк: %v\n", err)
-			tx.Rollback()
+
+			if err := tx.Rollback(); err != nil {
+				log.Printf("UpdateCountAnswer: Ошибка при откате транзакции: %v\n", err)
+			}
+
 			return err
 		}
 
 		if rowsAffected == 0 {
 			log.Printf("UpdateCountAnswer: Конфликт или некорректные данные, строки не обновлены")
-			tx.Rollback()
+
+			if err := tx.Rollback(); err != nil {
+				log.Printf("UpdateCountAnswer: Ошибка при откате транзакции: %v\n", err)
+			}
+
 			return fmt.Errorf("no rows updated")
 		}
 
