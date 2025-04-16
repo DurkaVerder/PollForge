@@ -32,3 +32,4 @@ for dir in $MODULE_DIRS; do
 done
 
 echo -e "${GREEN}Все $allModules модуля прошли проверку без ошибок!${NC}"
+
