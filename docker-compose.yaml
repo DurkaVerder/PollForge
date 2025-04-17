@@ -44,7 +44,6 @@ services:
       # - KAFKA_BROKER=kafka:9092
       # - KAFKA_TOPIC=notification
       - DB_URL=postgres://postgres:durka@postgres:5432/pollforge-database?sslmode=disable
-      - JWT_SECRET=super-puper-ultra-top-secret_01234
       - PORT=:8081
     depends_on:
       - postgres
