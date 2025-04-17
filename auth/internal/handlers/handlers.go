@@ -37,7 +37,7 @@ func UserRegistration(c *gin.Context) {
 	err := c.BindJSON(&request)
 	if err != nil {
 		log.Printf("invalid input")
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Неккоректный ввод"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Некорректный ввод"})
 		return
 	}
 	err = service.CheckUserRequest(request)
