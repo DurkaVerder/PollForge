@@ -143,8 +143,10 @@ func (p *Postgres) CreateAnsweredPolls(formId, userId int) error {
 	return nil
 }
 
-func (p *Postgres) Close() {
+func (p *Postgres) Close() error {
 	if err := p.db.Close(); err != nil {
-		panic(err)
+		return err
 	}
+
+	return nil
 }
