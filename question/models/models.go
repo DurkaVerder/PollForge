@@ -1,6 +1,5 @@
 package models
 
-
 type SubmitAnswer struct {
 	ID       int  `json:"id"`
 	Selected bool `json:"selected"`

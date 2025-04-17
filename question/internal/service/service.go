@@ -1,44 +1,73 @@
 package service
 
 import (
+	"errors"
+	"fmt"
 	"log"
+	"os"
 	"question/models"
 	"strconv"
+	"strings"
 	"sync"
+	"time"
+
+	"github.com/golang-jwt/jwt"
 )
 
-type Store interface {
+const (
+	ErrUserAlreadyAnswered = "пользователь уже ответил на вопрос"
+)
+
+type Storage interface {
 	GetQuestions(formID int) ([]models.QuestionFromDB, error)
+	ExistsUserAnswer(formID, userId int) (bool, error)
 	GetAnswers(formID int) ([]models.AnswerFromDB, error)
 	UpdateCountAnswer(ids []int) error
 }
 
 type Service struct {
-	store          Store
+	storage        Storage
 	answersChannel chan []models.SubmitAnswer
 }
 
-func NewService(store Store, answerChannel chan []models.SubmitAnswer) *Service {
+func NewService(storage Storage, answerChannel chan []models.SubmitAnswer) *Service {
 	return &Service{
-		store:          store,
+		storage:        storage,
 		answersChannel: answerChannel,
 	}
 }
 
-func (s *Service) GetQuestions(formID string) (models.QuestionResponse, error) {
+func (s *Service) GetQuestions(formID string, userID any) (models.QuestionResponse, error) {
 	id, err := strconv.Atoi(formID)
 	if err != nil {
 		log.Printf("GetQuestions: Ошибка при преобразовании formID: %v\n", err)
 		return models.QuestionResponse{}, err
 	}
 
-	questionsFromBD, err := s.store.GetQuestions(id)
+	userId, ok := userID.(string)
+	if !ok {
+		log.Println("GetQuestions: Ошибка при преобразовании userID в строку")
+		return models.QuestionResponse{}, errors.New("userID is not a string")
+	}
+
+	usId, err := strconv.Atoi(userId)
+	if err != nil {
+		log.Printf("GetQuestions: Ошибка при преобразовании userId: %v\n", err)
+		return models.QuestionResponse{}, err
+	}
+
+	if err := s.hasUserAnswered(id, usId); err != nil {
+		log.Printf("GetQuestions: Ошибка при проверке ответа пользователя: %v\n", err)
+		return models.QuestionResponse{}, err
+	}
+
+	questionsFromBD, err := s.storage.GetQuestions(id)
 	if err != nil {
 		log.Printf("GetQuestions: Ошибка при получении вопросов: %v\n", err)
 		return models.QuestionResponse{}, err
 	}
 
-	answersFromBD, err := s.store.GetAnswers(id)
+	answersFromBD, err := s.storage.GetAnswers(id)
 	if err != nil {
 		log.Printf("GetQuestions: Ошибка при получении ответов: %v\n", err)
 		return models.QuestionResponse{}, err
@@ -50,6 +79,22 @@ func (s *Service) GetQuestions(formID string) (models.QuestionResponse, error) {
 	}
 
 	return questionsResponse, nil
+}
+
+func (s *Service) hasUserAnswered(formID, userId int) error {
+
+	exists, err := s.storage.ExistsUserAnswer(formID, userId)
+	if err != nil {
+		log.Printf("HasUserAnswered: Ошибка при проверке ответа пользователя: %v\n", err)
+		return err
+	}
+
+	if exists {
+		log.Println("HasUserAnswered: Пользователь уже ответил на вопрос")
+		return errors.New(ErrUserAlreadyAnswered)
+	}
+
+	return nil
 }
 
 func (s *Service) AddAnswerRequestToChannel(answer models.SubmitAnswerRequest) {
@@ -88,7 +133,7 @@ func (s *Service) writeAnswer(answers []models.SubmitAnswer) error {
 		return nil
 	}
 
-	err := s.store.UpdateCountAnswer(ids)
+	err := s.storage.UpdateCountAnswer(ids)
 	if err != nil {
 		log.Printf("WriteAnswer: Ошибка при обновлении счетчика ответов: %v\n", err)
 		return err
@@ -134,4 +179,62 @@ func (s *Service) StartWorker(countWorkers int, wg *sync.WaitGroup) {
 		wg.Add(1)
 		go s.writeAnswerWorker(wg)
 	}
+}
+
+func parsedToken(tokenStr string) (*jwt.Token, error) {
+	parsedToken, err := jwt.Parse(tokenStr, func(token *jwt.Token) (interface{}, error) {
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
+		}
+		return []byte(os.Getenv("SECRET_KEY")), nil
+	})
+	if err != nil {
+		return nil, err
+	}
+	return parsedToken, nil
+}
+
+func validToken(token *jwt.Token) (bool, error) {
+	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
+		if !claims.VerifyExpiresAt(time.Now().Unix(), true) {
+			return false, errors.New("token is expired")
+		}
+		return true, nil
+	}
+	return false, errors.New("invalid token claims")
+}
+
+func getClaims(token *jwt.Token) (jwt.MapClaims, error) {
+	if claims, ok := token.Claims.(jwt.MapClaims); ok {
+		return claims, nil
+	}
+	return nil, errors.New("invalid token claims")
+}
+
+func GetParamFromJWT(tokenBearer, param string) (string, error) {
+	token := strings.TrimPrefix(tokenBearer, "Bearer ")
+
+	parsedToken, err := parsedToken(token)
+	if err != nil {
+		return "", err
+	}
+
+	valid, err := validToken(parsedToken)
+	if err != nil || !valid {
+		return "", err
+	}
+
+	claims, err := getClaims(parsedToken)
+	if err != nil {
+		return "", err
+	}
+
+	// Возможно будет ошибка с преобразованием
+
+	value, ok := claims[param].(string)
+	if !ok {
+		return "", fmt.Errorf("param %s not found in claims", param)
+	}
+
+	return value, nil
 }

@@ -3,13 +3,14 @@ package handlers
 import (
 	"log"
 	"net/http"
+	"question/internal/service"
 	"question/models"
 
 	"github.com/gin-gonic/gin"
 )
 
 type Service interface {
-	GetQuestions(formID string) (models.QuestionResponse, error)
+	GetQuestions(formID string, userID any) (models.QuestionResponse, error)
 	AddAnswerRequestToChannel(answer models.SubmitAnswerRequest)
 }
 
@@ -32,8 +33,21 @@ func (h *Handler) HandlerAllQuestions(c *gin.Context) {
 		return
 	}
 
-	questionsResponse, err := h.service.GetQuestions(formID)
+	userID, exists := c.Get("userID")
+	if !exists {
+		log.Println("HandlerAllQuestions: Ошибка при получении userID из контекста")
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Authorization header is required"})
+		return
+	}
+
+	questionsResponse, err := h.service.GetQuestions(formID, userID)
 	if err != nil {
+		if err.Error() == service.ErrUserAlreadyAnswered {
+			log.Println("HandlerAllQuestions: Пользователь уже ответил на вопрос")
+			c.JSON(http.StatusForbidden, gin.H{"error": "User already answered"})
+			return
+		}
+
 		log.Printf("HandlerAllQuestions: Ошибка при получении вопросов: %v\n", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal Server Error"})
 		return
