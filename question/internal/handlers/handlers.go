@@ -12,6 +12,7 @@ import (
 type Service interface {
 	GetQuestions(formID string, userID any) (models.QuestionResponse, error)
 	AddAnswerRequestToChannel(answer models.SubmitAnswerRequest)
+	CreateAnsweredPolls(formID string, userID any) error
 }
 
 type Handler struct {
@@ -69,6 +70,20 @@ func (h *Handler) HandlerSubmitAnswer(c *gin.Context) {
 
 	log.Printf("HandlerSubmitAnswer: Ответы для отправки: %+v\n", request.Answers)
 	h.service.AddAnswerRequestToChannel(request)
+
+	formID := c.Query("form_id")
+	userID, exists := c.Get("userID")
+	if !exists {
+		log.Println("HandlerSubmitAnswer: Ошибка при получении userID из контекста")
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Authorization header is required"})
+		return
+	}
+
+	if err := h.service.CreateAnsweredPolls(formID, userID); err != nil {
+		log.Printf("HandlerSubmitAnswer: Ошибка при создании записей о ответах: %v\n", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal Server Error"})
+		return
+	}
 
 	log.Println("HandlerSubmitAnswer: Ответ успешно отправлен")
 	c.JSON(http.StatusOK, gin.H{"status": "success"})

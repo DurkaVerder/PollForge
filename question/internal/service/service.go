@@ -17,6 +17,7 @@ type Storage interface {
 	ExistsUserAnswer(formID, userId int) (bool, error)
 	GetAnswers(formID int) ([]models.AnswerFromDB, error)
 	UpdateCountAnswer(ids []int) error
+	CreateAnsweredPolls(userId, formID int) error
 }
 
 type Service struct {
@@ -75,6 +76,36 @@ func (s *Service) GetQuestions(formID string, userID any) (models.QuestionRespon
 	return questionsResponse, nil
 }
 
+func (s *Service) CreateAnsweredPolls(formID string, userID any) error {
+	usID, ok := userID.(string)
+	if !ok {
+		log.Println("CreateAnsweredPolls: Ошибка при преобразовании userID в строку")
+		return errors.New("userID is not a string")
+	}
+
+	id, err := strconv.Atoi(formID)
+	if err != nil {
+		log.Printf("CreateAnsweredPolls: Ошибка при преобразовании formID: %v\n", err)
+		return err
+	}
+
+	userId, err := strconv.Atoi(usID)
+	if err != nil {
+		log.Printf("CreateAnsweredPolls: Ошибка при преобразовании userId: %v\n", err)
+		return err
+	}
+
+	if err := s.storage.CreateAnsweredPolls(userId, id); err != nil {
+		log.Printf("CreateAnsweredPolls: Ошибка при создании записей о ответах: %v\n", err)
+		return err
+	}
+	return nil
+}
+
+func (s *Service) AddAnswerRequestToChannel(answer models.SubmitAnswerRequest) {
+	s.answersChannel <- answer.Answers
+}
+
 func (s *Service) hasUserAnswered(formID, userId int) error {
 
 	exists, err := s.storage.ExistsUserAnswer(formID, userId)
@@ -89,10 +120,6 @@ func (s *Service) hasUserAnswered(formID, userId int) error {
 	}
 
 	return nil
-}
-
-func (s *Service) AddAnswerRequestToChannel(answer models.SubmitAnswerRequest) {
-	s.answersChannel <- answer.Answers
 }
 
 func (s *Service) createQuestions(question []models.QuestionFromDB, answers []models.AnswerFromDB) []models.Question {
