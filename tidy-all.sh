@@ -17,15 +17,11 @@ for dir in $MODULE_DIRS; do
   pushd "$dir" > /dev/null
 
 
-  OUTPUT=$(go mod tidy -v 2>&1)
-
-  # Если есть сообщения о скачивании зависимостей, то фейлим
-  if echo "$OUTPUT" | grep -qE "go: downloading|go: finding module for package";  then
-    echo -e "${RED}Ошибка: go mod tidy попытался скачать зависимости в $dir:${NC}"
-    echo "$OUTPUT"
-    any_failed=1
-  else
+  if go mod tidy; then
     echo -e "${GREEN}Успешно: $dir${NC}"
+  else
+    echo -e "${RED}Ошибка в: $dir${NC}"
+    any_failed=1
   fi
 
   popd > /dev/null
