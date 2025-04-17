@@ -1,44 +1,68 @@
 package service
 
 import (
+	"errors"
 	"log"
 	"question/models"
 	"strconv"
 	"sync"
 )
 
-type Store interface {
+const (
+	ErrUserAlreadyAnswered = "пользователь уже ответил на вопрос"
+)
+
+type Storage interface {
 	GetQuestions(formID int) ([]models.QuestionFromDB, error)
+	ExistsUserAnswer(formID, userId int) (bool, error)
 	GetAnswers(formID int) ([]models.AnswerFromDB, error)
 	UpdateCountAnswer(ids []int) error
+	CreateAnsweredPolls(userId, formID int) error
 }
 
 type Service struct {
-	store          Store
+	storage        Storage
 	answersChannel chan []models.SubmitAnswer
 }
 
-func NewService(store Store, answerChannel chan []models.SubmitAnswer) *Service {
+func NewService(storage Storage, answerChannel chan []models.SubmitAnswer) *Service {
 	return &Service{
-		store:          store,
+		storage:        storage,
 		answersChannel: answerChannel,
 	}
 }
 
-func (s *Service) GetQuestions(formID string) (models.QuestionResponse, error) {
+func (s *Service) GetQuestions(formID string, userID any) (models.QuestionResponse, error) {
 	id, err := strconv.Atoi(formID)
 	if err != nil {
 		log.Printf("GetQuestions: Ошибка при преобразовании formID: %v\n", err)
 		return models.QuestionResponse{}, err
 	}
 
-	questionsFromBD, err := s.store.GetQuestions(id)
+	userId, ok := userID.(string)
+	if !ok {
+		log.Println("GetQuestions: Ошибка при преобразовании userID в строку")
+		return models.QuestionResponse{}, errors.New("userID is not a string")
+	}
+
+	usId, err := strconv.Atoi(userId)
+	if err != nil {
+		log.Printf("GetQuestions: Ошибка при преобразовании userId: %v\n", err)
+		return models.QuestionResponse{}, err
+	}
+
+	if err := s.hasUserAnswered(id, usId); err != nil {
+		log.Printf("GetQuestions: Ошибка при проверке ответа пользователя: %v\n", err)
+		return models.QuestionResponse{}, err
+	}
+
+	questionsFromBD, err := s.storage.GetQuestions(id)
 	if err != nil {
 		log.Printf("GetQuestions: Ошибка при получении вопросов: %v\n", err)
 		return models.QuestionResponse{}, err
 	}
 
-	answersFromBD, err := s.store.GetAnswers(id)
+	answersFromBD, err := s.storage.GetAnswers(id)
 	if err != nil {
 		log.Printf("GetQuestions: Ошибка при получении ответов: %v\n", err)
 		return models.QuestionResponse{}, err
@@ -52,8 +76,50 @@ func (s *Service) GetQuestions(formID string) (models.QuestionResponse, error) {
 	return questionsResponse, nil
 }
 
+func (s *Service) CreateAnsweredPolls(formID string, userID any) error {
+	usID, ok := userID.(string)
+	if !ok {
+		log.Println("CreateAnsweredPolls: Ошибка при преобразовании userID в строку")
+		return errors.New("userID is not a string")
+	}
+
+	id, err := strconv.Atoi(formID)
+	if err != nil {
+		log.Printf("CreateAnsweredPolls: Ошибка при преобразовании formID: %v\n", err)
+		return err
+	}
+
+	userId, err := strconv.Atoi(usID)
+	if err != nil {
+		log.Printf("CreateAnsweredPolls: Ошибка при преобразовании userId: %v\n", err)
+		return err
+	}
+
+	if err := s.storage.CreateAnsweredPolls(userId, id); err != nil {
+		log.Printf("CreateAnsweredPolls: Ошибка при создании записей о ответах: %v\n", err)
+		return err
+	}
+	return nil
+}
+
 func (s *Service) AddAnswerRequestToChannel(answer models.SubmitAnswerRequest) {
 	s.answersChannel <- answer.Answers
+}
+
+func (s *Service) hasUserAnswered(formID, userId int) error {
+
+	exists, err := s.storage.ExistsUserAnswer(formID, userId)
+	if err != nil {
+		log.Printf("HasUserAnswered: Ошибка при проверке ответа пользователя: %v\n", err)
+		return err
+	}
+
+	if exists {
+		log.Println("HasUserAnswered: Пользователь уже ответил на вопрос")
+		return errors.New(ErrUserAlreadyAnswered)
+	}
+
+	return nil
 }
 
 func (s *Service) createQuestions(question []models.QuestionFromDB, answers []models.AnswerFromDB) []models.Question {
@@ -88,7 +154,7 @@ func (s *Service) writeAnswer(answers []models.SubmitAnswer) error {
 		return nil
 	}
 
-	err := s.store.UpdateCountAnswer(ids)
+	err := s.storage.UpdateCountAnswer(ids)
 	if err != nil {
 		log.Printf("WriteAnswer: Ошибка при обновлении счетчика ответов: %v\n", err)
 		return err

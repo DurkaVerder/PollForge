@@ -50,4 +50,8 @@ func main() {
 
 	questionService.Close()
 	wg.Wait()
+	
+	if err := postgres.Close(); err != nil {
+		panic(err)
+	}
 }
