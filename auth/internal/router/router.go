@@ -6,8 +6,10 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func SetUpRouter(r *gin.Engine){
+func SetUpRouter(r *gin.Engine) {
 	r.POST("/register", handlers.UserRegistration)
 	r.POST("/logging", handlers.UserLogging)
-	r.Run(":8081")
+	if err := r.Run(":8081"); err != nil {
+		panic(err)
+	}
 }

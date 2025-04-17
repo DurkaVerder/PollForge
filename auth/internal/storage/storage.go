@@ -54,7 +54,7 @@ func CheckingLoggingData(request models.UserRequest)(string, error){
 	if err != nil{
 		return "",err
 	}
-	err = bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(request.Password))
+	err = bcrypt.CompareHashAndPassword(hashedPassword, []byte(request.Password))
 	if err != nil{
 		return "",err
 	}

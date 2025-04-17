@@ -14,10 +14,10 @@ import (
 
 var jwtKey = []byte(os.Getenv("JWT_SECRET"))
 
-func GenerateJwt(UserId string) (string, error) {
+func GenerateJwt(userId string) (string, error) {
 
 	claims := jwt.MapClaims{
-		"sub": UserId,
+		"sub": userId,
 		"exp": time.Now().Add(time.Hour * 6).Unix(),
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
@@ -27,7 +27,7 @@ func GenerateJwt(UserId string) (string, error) {
 func CheckUserRequest(request models.UserRequest) error {
 	var exist bool
 
-	//Потому что только одного надо выбрать если есть аккаунт c такой же почтой
+	// Потому что только одного надо выбрать если есть аккаунт c такой же почтой
 	err := storage.Db.QueryRow("SELECT EXISTS(SELECT 1 FROM users WHERE email = $1)", request.Email).Scan(&exist)
 	if err != nil {
 		return err
@@ -46,7 +46,7 @@ func RegisterUser(request models.UserRequest) (string, error) {
 		return "", err
 	}
 
-	//Потому что отправляем все данные для регистрации и возвращаем id для создания jwt
+	// Потому что отправляем все данные для регистрации и возвращаем id для создания jwt
 	userId, err = storage.Registration(hashedPassword, request)
 	if err != nil {
 		log.Printf("Ошибка при вводе данных в базу")
