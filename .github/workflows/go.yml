@@ -24,12 +24,6 @@ jobs:
           golangci-lint --version
 
 
-      - name: Tidy all Go modules
-        run: |
-          chmod +x tidy-all.sh
-          ./tidy-all.sh
-
-
       - name: Lint all modules
         run: |
           chmod +x lint-all.sh
