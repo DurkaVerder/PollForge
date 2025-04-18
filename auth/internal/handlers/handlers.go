@@ -15,7 +15,7 @@ func UserLogging(c *gin.Context) {
 	err := c.BindJSON(&request)
 	if err != nil {
 		log.Printf("Ошибка ввода данных")
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Инвалидный ввод"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Неправильный ввод"})
 		return
 	}
 
@@ -56,4 +56,10 @@ func UserRegistration(c *gin.Context) {
 		"message": "Пользователь создан",
 		"token":   token,
 	})
+}
+func GetProfile(c *gin.Context) {
+
+}
+func GetForms(c *gin.Context) {
+
 }
