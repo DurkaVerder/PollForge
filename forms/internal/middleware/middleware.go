@@ -26,11 +26,13 @@ func JWTAuth() gin.HandlerFunc {
 		})
 		if err != nil{
 			c.AbortWithStatusJSON(401,gin.H{"error":"Токен не валиден"})
+			return
 		}
 		claims := token.Claims.(jwt.MapClaims)
 		rawId, ok := claims["id"]
 		if !ok{
 			c.AbortWithStatusJSON(401,gin.H{"error":"Нет id в токене"})
+			return
 		}
 		c.Set("id", rawId)
 		c.Next()
