@@ -23,3 +23,5 @@ func SetUpRouter(r *gin.Engine) {
 		panic(err)
 	}
 }
+
+
