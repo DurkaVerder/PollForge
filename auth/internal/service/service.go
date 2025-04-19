@@ -69,3 +69,4 @@ func LoggingUser(request models.UserRequest) (string, error) {
 	token, err := GenerateJwt(userId)
 	return token, err
 }
+
