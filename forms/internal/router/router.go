@@ -15,6 +15,7 @@ func SetUpRouter(r *gin.Engine) {
 	protected.Use(middleware.JWTAuth())
 	{
 		protected.POST("/forms",     handlers.CreateForm)
+		protected.GET("/forms",  handlers.GetForms)
 		protected.GET("/forms/:id",  handlers.GetForm)
 		protected.PUT("/forms/:id",  handlers.UpdateForm)
 		protected.DELETE("/forms/:id", handlers.DeleteForm)

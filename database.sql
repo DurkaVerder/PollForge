@@ -22,6 +22,7 @@ CREATE TABLE forms(
     description VARCHAR(255) NOT NULL,
     link VARCHAR(255) NOT NULL,
     private_key BOOLEAN DEFAULT FALSE,
+    expires_at TIMESTAMP NOT NULL,
     FOREIGN KEY (creator_id) REFERENCES users (id) ON DELETE CASCADE
 );
 
