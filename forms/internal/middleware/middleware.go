@@ -12,7 +12,7 @@ import (
 func JWTAuth() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		auth := c.GetHeader("Authorization")
-		if !strings.HasPrefix(auth, "Bearer ") {
+		if !strings.HasPrefix(auth, "Bearer") {
 			c.AbortWithStatusJSON(401, gin.H{"error": "Нет токена"})
 			return
 		}
