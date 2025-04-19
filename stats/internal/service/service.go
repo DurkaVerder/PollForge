@@ -41,12 +41,14 @@ func (s *Service) createQuestions(questionsFromBD []models.QuestionFromDB, answe
 
 	for i, question := range questionsFromBD {
 		questions[i].QuestionTitle = question.Title
-		questions[i].Answers = make([]models.Answer, len(answersFromBD))
+		questions[i].Answers = make([]models.Answer, 0, len(answersFromBD))
 
-		for j, answer := range answersFromBD {
-			questions[i].Answers[j] = models.Answer{
-				Title: answer.Title,
-				Count: answer.Count,
+		for _, answer := range answersFromBD {
+			if answer.QuestionID != question.ID {
+				questions[i].Answers = append(questions[i].Answers, models.Answer{
+					Title: answer.Title,
+					Count: answer.Count,
+				})
 			}
 		}
 	}
