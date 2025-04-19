@@ -20,7 +20,7 @@ func JWTAuth() gin.HandlerFunc {
 		tokenStr := strings.TrimPrefix(auth, "Bearer")
 		token, err := jwt.Parse(tokenStr,func(t *jwt.Token) (interface{}, error) {
 			if t.Method != jwt.SigningMethodHS256{
-				return fmt.Errorf("Неподходящий метод подписи"), nil
+				return nil, fmt.Errorf("Неподходящий метод подписи")
 			}
 			return []byte(os.Getenv("JWT_SECRET")), nil
 		})
