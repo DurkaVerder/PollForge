@@ -2,18 +2,18 @@ package handlers
 
 import "github.com/gin-gonic/gin"
 
-func CreatePoll(c *gin.Context){
+func CreateForm(c *gin.Context){
+
+}
+
+func GetForm(c *gin.Context){
 	
 }
 
-func GetPoll(c *gin.Context){
+func UpdateForm(c *gin.Context){
 	
 }
 
-func UpdatePoll(c *gin.Context){
-	
-}
-
-func DeletePoll(c *gin.Context){
+func DeleteForm(c *gin.Context){
 	
 }
