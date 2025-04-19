@@ -3,12 +3,14 @@ package router
 import (
 	"forms/internal/handlers"
 	"forms/internal/middleware"
+	"os"
 
 	"github.com/gin-gonic/gin"
 )
 
 func SetUpRouter(r *gin.Engine) {
 
+	forms_port := os.Getenv("PORT")
 	protected := r.Group("/api")
 	protected.Use(middleware.JWTAuth())
 	{
@@ -17,7 +19,7 @@ func SetUpRouter(r *gin.Engine) {
 		protected.PUT("/forms/:id",  handlers.UpdateForm)
 		protected.DELETE("/forms/:id", handlers.DeleteForm)
 	}
-	if err := r.Run(":8083"); err != nil {
+	if err := r.Run(forms_port); err != nil {
 		panic(err)
 	}
 }

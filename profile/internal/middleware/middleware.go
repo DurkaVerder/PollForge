@@ -1,8 +1,8 @@
 package middleware
 
 import (
-	"fmt"
-	"os"
+	"net/http"
+	"profile/internal/service"
 	"strings"
 
 	"github.com/gin-gonic/gin"
@@ -13,25 +13,19 @@ func JWTAuth() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		auth := c.GetHeader("Authorization")
 		if !strings.HasPrefix(auth, "Bearer") {
-			c.AbortWithStatusJSON(401, gin.H{"error": "Нет токена"})
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Нет токена"})
 			return
 		}
 
-		tokenStr := strings.TrimPrefix(auth, "Bearer")
-		token, err := jwt.Parse(tokenStr, func(t *jwt.Token) (interface{}, error) {
-			if t.Method != jwt.SigningMethodHS256 {
-				return fmt.Errorf("Неподходящий метод подписи"), nil
-			}
-			return []byte(os.Getenv("JWT_SECRET")), nil
-		})
+		token, err := service.GetToken(auth)
 		if err != nil {
-			c.AbortWithStatusJSON(401, gin.H{"error": "Токен не валиден"})
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Токен не валиден"})
 			return
 		}
 		claims := token.Claims.(jwt.MapClaims)
 		rawId, ok := claims["id"]
 		if !ok {
-			c.AbortWithStatusJSON(401, gin.H{"error": "Нет id в токене"})
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Нет id в токене"})
 			return
 		}
 		c.Set("id", rawId)

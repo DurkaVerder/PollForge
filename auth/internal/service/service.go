@@ -8,8 +8,6 @@ import (
 	"os"
 	"time"
 
-
-
 	"github.com/golang-jwt/jwt"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -69,4 +67,6 @@ func LoggingUser(request models.UserRequest) (string, error) {
 	token, err := GenerateJwt(userId)
 	return token, err
 }
+
+
 
