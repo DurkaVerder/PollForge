@@ -24,7 +24,7 @@ func main() {
 
 	postgres := storage.NewPostgres(db)
 
-	service := service.NewService(postgres)
+	svc := service.NewService(postgres)
 
 	upgrader := websocket.Upgrader{
 		CheckOrigin: func(r *http.Request) bool {
@@ -32,7 +32,7 @@ func main() {
 		},
 	}
 
-	websocket := wb.NewWebSocket(&upgrader, service)
+	websocket := wb.NewWebSocket(&upgrader, svc)
 
 	engine := gin.Default()
 
