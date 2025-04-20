@@ -15,14 +15,14 @@ func UserLogging(c *gin.Context) {
 	err := c.BindJSON(&request)
 	if err != nil {
 		log.Printf("Ошибка ввода данных")
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Неправильный ввод"})
+		c.JSON(http.StatusBadRequest, gin.H{"Ошибка": "Неправильный ввод"})
 		return
 	}
 
 	token, err := service.LoggingUser(request)
 	if err != nil {
 		log.Printf("Ошибка при входе пользователя в аккаунт")
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"Ошибка": err.Error()})
 		return
 	}
 
@@ -37,7 +37,7 @@ func UserRegistration(c *gin.Context) {
 	err := c.BindJSON(&request)
 	if err != nil {
 		log.Printf("invalid input")
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Некорректный ввод"})
+		c.JSON(http.StatusBadRequest, gin.H{"Ошибка": "Некорректный ввод"})
 		return
 	}
 	err = service.CheckUserRequest(request)

@@ -1,12 +1,14 @@
 package handlers
 
 import (
+	"database/sql"
 	"forms/internal/models"
+	"forms/internal/service"
 	"forms/internal/storage"
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 )
 
 func CreateForm(c *gin.Context) {
@@ -14,23 +16,27 @@ func CreateForm(c *gin.Context) {
 
 	err := c.ShouldBindJSON(&form)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Неправильный формат данных"})
+		c.JSON(http.StatusBadRequest, gin.H{"Ошибка": "Неправильный формат данных"})
 		return
 	}
 
-	creatorId, ok := c.Get("id")
+	creatorIdfl, ok := c.Get("id")
 	if !ok {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "id пользователя не найден"})
+		c.JSON(http.StatusBadRequest, gin.H{"Ошибка": "id пользователя не найден"})
 		return
 	}
+	creatorID, ok := creatorIdfl.(float64)
+	if !ok {
+		c.JSON(http.StatusBadRequest, gin.H{"Ошибка": "неверный тип id"})
+		return
+	}
+	creatorId := int(creatorID)
 
-	link := uuid.New().String()
-	query := `INSERT INTO forms (creator_id, title, description, link, private_key, expires_at) 
-			  VALUES($1, $2, $3, $4, $5, $6) RETURNING id`
 	var formId int
-	err = storage.Db.QueryRow(query, creatorId, form.Title, form.Description, link, form.PrivateKey, form.ExpiresAt).Scan(&formId)
+	formId, link, err := service.FormCreate(form, creatorId)
+
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Не удалось создать форму"})
+		c.JSON(http.StatusInternalServerError, gin.H{"Ошибка": "Не удалось создать форму"})
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"form_id": formId, "link": link})
@@ -38,37 +44,64 @@ func CreateForm(c *gin.Context) {
 
 func GetForm(c *gin.Context) {
 
-	creatorId, ok := c.Get("id")
+	creatorIdfl, ok := c.Get("id")
 	if !ok {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "id пользователя не найден"})
+		c.JSON(http.StatusBadRequest, gin.H{"Ошибка": "id пользователя не найден"})
 		return
 	}
-	query := `SELECT id, title, description, link, private_key, expires_at FROM forms WHERE creator_id = $1`
-	var form models.Form
-	err := storage.Db.QueryRow(query, creatorId).Scan(&form.Id,
-		&form.Title,
-		&form.Description,
-		&form.Link,
-		&form.PrivateKey,
-		&form.ExpiresAt)
+
+	formIdstr := c.Param("id")
+
+	formId, err := strconv.Atoi(formIdstr)
+
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Не удалось найти форму"})
+		c.JSON(http.StatusBadRequest, gin.H{"Ошибка": "Неверный id формы"})
 		return
 	}
+	var form models.Form
+
+	creatorID, ok := creatorIdfl.(float64)
+    if !ok {
+        c.JSON(http.StatusBadRequest, gin.H{"Ошибка": "Неверный тип id пользователя"})
+        return
+    }
+
+	creatorId := int(creatorID)
+	form, err = service.FormGet(creatorId, formId)
+	if err == sql.ErrNoRows {
+		c.JSON(http.StatusNotFound, gin.H{"Ошибка": "Форма не найдена"})
+		return
+	} else if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"Ошибка": "Ошибка при получении формы"})
+		return
+	}
+
+	c.JSON(http.StatusOK, form)
 }
 
 func GetForms(c *gin.Context) {
-	creatorId, ok := c.Get("id")
+	creatorIdfl, ok := c.Get("id")
+
 	if !ok {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "id пользователя не найден"})
+		c.JSON(http.StatusBadRequest, gin.H{"Ошибка": "id пользователя не найден"})
 		return
 	}
+
+	creatorID, ok := creatorIdfl.(float64)
+
+    if !ok {
+        c.JSON(http.StatusBadRequest, gin.H{"Ошибка": "Неверный тип id пользователя"})
+        return
+    }
+
+	creatorId := int(creatorID)
+
 	query := `SELECT id, title, description, link, private_key, expires_at FROM forms WHERE creator_id = $1`
 
 	rows, err := storage.Db.Query(query, creatorId)
 
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Не удалось найти формы"})
+		c.JSON(http.StatusNotFound, gin.H{"Ошибка": "Не удалось найти формы"})
 		return
 	}
 	var forms []models.Form
@@ -81,7 +114,7 @@ func GetForms(c *gin.Context) {
 			&form.PrivateKey,
 			&form.ExpiresAt)
 		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Не удалось считать данные формы"})
+			c.JSON(http.StatusInternalServerError, gin.H{"Ошибка": "Не удалось считать данные формы"})
 			return
 		}
 		forms = append(forms, form)
@@ -91,9 +124,85 @@ func GetForms(c *gin.Context) {
 }
 
 func UpdateForm(c *gin.Context) {
+	formIdstr := c.Param("id")
 
+	formId, err := strconv.Atoi(formIdstr)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"Ошибка": "Неверный id формы"})
+		return
+	}
+
+	creatorIdfl, ok := c.Get("id")
+	if !ok {
+		c.JSON(http.StatusNotFound, gin.H{"Ошибка": "id пользователя не найден"})
+		return
+	}
+	creatorID, ok := creatorIdfl.(float64)
+
+	var updateForm models.FormRequest
+
+	err = c.ShouldBindJSON(&updateForm)
+
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"Ошибка": "Неправильный формат данных"})
+		return
+	}
+
+	creatorId := int(creatorID)
+
+	if !ok {
+		c.JSON(http.StatusBadRequest, gin.H{"Ошибка": "неверный тип id"})
+		return
+	}
+
+	err = service.FormChek(creatorId, formId)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"Ошибка": "Форма не найдена"})
+		return
+	}
+
+	err = service.FormUpdate(updateForm, creatorId, formId)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"Ошибка": "Ошибка обновления данных"})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"Сообщение": "Форма успешно обновлена"})
 }
 
 func DeleteForm(c *gin.Context) {
+	formIdstr := c.Param("id")
 
+	formId, err := strconv.Atoi(formIdstr)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"Ошибка": "Неверный id формы"})
+		return
+	}
+
+	creatorIdfl, ok := c.Get("id")
+
+	if !ok {
+		c.JSON(http.StatusNotFound, gin.H{"Ошибка": "id пользователя не найден"})
+		return
+	}
+
+	creatorID, ok := creatorIdfl.(float64)
+	if !ok {
+		c.JSON(http.StatusBadRequest, gin.H{"Ошибка": "неверный тип id"})
+		return
+	}
+	creatorId := int(creatorID)
+
+	err = service.FormChek(creatorId, formId)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"Ошибка": "Форма не найдена"})
+		return
+	}
+
+
+	_, err = service.FormDelete(formId, creatorId)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"Ошибка": "Не удалось удалить форму"})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"Сообщение": "Форма успешно удалена"})
 }
