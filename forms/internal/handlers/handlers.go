@@ -69,7 +69,7 @@ func GetForm(c *gin.Context) {
 	creatorId := int(creatorID)
 
 	form, err = service.FormGet(creatorId, formId)
-	//Проверка на наличие возвращаемого значения, если форм нет - сработает условие цикла
+	// Проверка на наличие возвращаемого значения, если форм нет - сработает условие цикла
 	if err == sql.ErrNoRows {
 		c.JSON(http.StatusNotFound, gin.H{"Ошибка": "Форма не найдена"})
 		return
