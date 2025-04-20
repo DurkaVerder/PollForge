@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"forms/internal/models"
 	"forms/internal/service"
-	"forms/internal/storage"
 	"net/http"
 	"strconv"
 
@@ -52,6 +51,7 @@ func GetForm(c *gin.Context) {
 
 	formIdstr := c.Param("id")
 
+	// Конвертируем в численный тип данных строку с id для проверки
 	formId, err := strconv.Atoi(formIdstr)
 
 	if err != nil {
@@ -61,13 +61,15 @@ func GetForm(c *gin.Context) {
 	var form models.Form
 
 	creatorID, ok := creatorIdfl.(float64)
-    if !ok {
-        c.JSON(http.StatusBadRequest, gin.H{"Ошибка": "Неверный тип id пользователя"})
-        return
-    }
+	if !ok {
+		c.JSON(http.StatusBadRequest, gin.H{"Ошибка": "Неверный тип id пользователя"})
+		return
+	}
 
 	creatorId := int(creatorID)
+
 	form, err = service.FormGet(creatorId, formId)
+	//Проверка на наличие возвращаемого значения, если форм нет - сработает условие цикла
 	if err == sql.ErrNoRows {
 		c.JSON(http.StatusNotFound, gin.H{"Ошибка": "Форма не найдена"})
 		return
@@ -89,43 +91,25 @@ func GetForms(c *gin.Context) {
 
 	creatorID, ok := creatorIdfl.(float64)
 
-    if !ok {
-        c.JSON(http.StatusBadRequest, gin.H{"Ошибка": "Неверный тип id пользователя"})
-        return
-    }
+	if !ok {
+		c.JSON(http.StatusBadRequest, gin.H{"Ошибка": "Неверный тип id пользователя"})
+		return
+	}
 
 	creatorId := int(creatorID)
 
-	query := `SELECT id, title, description, link, private_key, expires_at FROM forms WHERE creator_id = $1`
-
-	rows, err := storage.Db.Query(query, creatorId)
-
+	forms, err := service.FormsGet(creatorId)
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"Ошибка": "Не удалось найти формы"})
+		c.JSON(http.StatusInternalServerError, gin.H{"Ошибка": "Не удалось найти анкеты"})
 		return
 	}
-	var forms []models.Form
-	for rows.Next() {
-		var form models.Form
-		err := rows.Scan(&form.Id,
-			&form.Title,
-			&form.Description,
-			&form.Link,
-			&form.PrivateKey,
-			&form.ExpiresAt)
-		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"Ошибка": "Не удалось считать данные формы"})
-			return
-		}
-		forms = append(forms, form)
-	}
-	defer rows.Close()
 	c.JSON(http.StatusOK, forms)
 }
 
 func UpdateForm(c *gin.Context) {
 	formIdstr := c.Param("id")
 
+	// Конвертируем в численный тип данных строку с id для проверки
 	formId, err := strconv.Atoi(formIdstr)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"Ошибка": "Неверный id формы"})
@@ -171,7 +155,7 @@ func UpdateForm(c *gin.Context) {
 
 func DeleteForm(c *gin.Context) {
 	formIdstr := c.Param("id")
-
+	// Конвертируем в численный тип данных строку с id для проверки
 	formId, err := strconv.Atoi(formIdstr)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"Ошибка": "Неверный id формы"})
@@ -192,13 +176,14 @@ func DeleteForm(c *gin.Context) {
 	}
 	creatorId := int(creatorID)
 
+	// Проверка на существование формы для удаления, нужен id пользователя и id формы
 	err = service.FormChek(creatorId, formId)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"Ошибка": "Форма не найдена"})
 		return
 	}
 
-
+	// Удаление формы, для этого требуется id формы и пользователя из-за нужды нахождения формы для удаления с помощью sql-запроса
 	_, err = service.FormDelete(formId, creatorId)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"Ошибка": "Не удалось удалить форму"})

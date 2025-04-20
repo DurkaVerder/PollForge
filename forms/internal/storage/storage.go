@@ -31,7 +31,7 @@ func FormChekingRequest(existId int, creatorId int, formId int) error {
 	queryChek := "SELECT id FROM forms WHERE id  = $1 and creator_id = $2"
 	err := Db.QueryRow(queryChek, creatorId, formId).Scan(&existId)
 	if err != nil {
-		log.Printf("Ошибка при запросе на проверку наличия формы")
+		log.Printf("Ошибка при запросе на проверку наличия формы: %v", err)
 		return err
 	}
 	return err
@@ -46,7 +46,7 @@ func FormCreateRequest(form models.FormRequest, creatorId int) (int, string, err
 	var formId int
 	err := Db.QueryRow(query, creatorId, form.Title, form.Description, link, form.PrivateKey, form.ExpiresAt).Scan(&formId)
 	if err != nil{
-		log.Printf("Ошибка при запросе создания формы")
+		log.Printf("Ошибка при запросе создания формы: %v", err)
 		return formId, link, err
 	}
 	return formId, link, err
@@ -56,7 +56,7 @@ func FormDeleteRequest(formId int, creatorId int) error {
 	query := "DELETE FROM forms WHERE id = $1 AND creator_id = $2"
 	_, err := Db.Exec(query, formId, creatorId)
 	if err != nil {
-		log.Printf("Ошибка при запросе удаления формы")
+		log.Printf("Ошибка при запросе удаления формы: %v", err)
 		return err
 	}
 	return err
@@ -75,7 +75,7 @@ func FormGetRequest(creatorId int, formId int) (models.Form, error) {
 		&form.PrivateKey,
 		&form.ExpiresAt)
 	if err != nil {
-		log.Printf("Ошибка при запросе получения формы")
+		log.Printf("Ошибка при запросе получения формы: %v", err)
 		return form, err
 	}
 	return form, err
@@ -86,8 +86,21 @@ func FormUpdateRequest(updateForm models.FormRequest, creatorId int, formId int)
 	query := "UPDATE forms SET title = $1, description = $2, private_key = $3, expires_at = $4 WHERE id = $5 AND creator_id = $6"
 	_, err := Db.Exec(query, updateForm.Title, updateForm.Description, updateForm.PrivateKey, updateForm.ExpiresAt, formId, creatorId)
 	if err != nil {
-		log.Printf("Ошибка при запросе обновления формы")
+		log.Printf("Ошибка при запросе обновления формы: %v", err)
 		return err
 	}
 	return err
+}
+
+func GetFormsRequest(creatorId int)(*sql.Rows, error){
+	query := `SELECT id, title, description, link, private_key, expires_at FROM forms WHERE creator_id = $1`
+
+	rows, err := Db.Query(query, creatorId)
+
+	if err != nil {
+		log.Printf("Не удалось найти формы через запрос: %v", err)
+		return nil, err
+	}
+	
+	return rows, err
 }

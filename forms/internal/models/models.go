@@ -15,6 +15,6 @@ type Form struct {
 	Title       string    `json:"title"`
 	Description string    `json:"description"`
 	Link        string    `json:"link"`
-	PrivateKey  string    `json:"private_key"`
+	PrivateKey  bool      `json:"private_key"`
 	ExpiresAt   time.Time `json:"expires_at"`
 }
