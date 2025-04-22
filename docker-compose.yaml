@@ -14,6 +14,11 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+        test: ["CMD", "pg_isready", "-U", "postgres"]
+        interval: 10s
+        timeout: 5s
+        retries: 5
     networks:
       - pollforge-network
 
@@ -46,7 +51,8 @@ services:
       - DB_URL=postgres://postgres:durka@postgres:5432/pollforge-database?sslmode=disable
       - PORT=:8081
     depends_on:
-      - postgres
+      postgres: 
+          condition: service_healthy
     networks:
       - pollforge-network    
     
@@ -59,7 +65,8 @@ services:
       - DB_URL=postgres://postgres:durka@postgres:5432/pollforge-database?sslmode=disable
       - PORT=:8082
     depends_on:
-      - postgres
+      postgres: 
+          condition: service_healthy
     networks:
       - pollforge-network
 
@@ -72,7 +79,8 @@ services:
       - DB_URL=postgres://postgres:durka@postgres:5432/pollforge-database?sslmode=disable
       - PORT=:8083
     depends_on:
-      - postgres
+      postgres: 
+          condition: service_healthy
     networks:
       - pollforge-network
 
@@ -85,7 +93,8 @@ services:
       - DB_URL=postgres://postgres:durka@postgres:5432/pollforge-database?sslmode=disable
       - PORT=:8084
     depends_on:
-      - postgres
+      postgres: 
+          condition: service_healthy
     networks:
       - pollforge-network
 
@@ -98,7 +107,8 @@ services:
       - DB_URL=postgres://postgres:durka@postgres:5432/pollforge-database?sslmode=disable
       - PORT=:8085
     depends_on:
-      - postgres
+      postgres: 
+          condition: service_healthy
     networks:
       - pollforge-network
 
@@ -111,7 +121,8 @@ services:
       - DB_URL=postgres://postgres:durka@postgres:5432/pollforge-database?sslmode=disable
       - PORT=:8086
     depends_on:
-      - postgres
+      postgres: 
+          condition: service_healthy
     networks:
       - pollforge-network
  
