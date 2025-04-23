@@ -125,7 +125,25 @@ services:
           condition: service_healthy
     networks:
       - pollforge-network
- 
+  
+
+
+  email-service:
+    build:
+      context: ./email
+      dockerfile: Dockerfile
+    container_name: email
+    environment:
+      - DB_URL=postgres://postgres:durka@postgres:5432/pollforge-database?sslmode=disable
+      - SMTP_EMAIL=hotelbooking02@mail.ru
+      - SMTP_PASSWORD=hPWFLzDD5mqWMPy1G1ty
+      - SMTP_HOST=smtp.mail.ru
+      - SMTP_PORT=465
+    depends_on:
+      postgres: 
+          condition: service_healthy
+    networks:
+      - pollforge-network
 
   
 
