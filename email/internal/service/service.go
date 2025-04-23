@@ -88,7 +88,11 @@ func (s *Service) selectEmailTemplate(eventType string) (string, string) {
 	case userLoginTemplate:
 		subject = "Login Notification"
 		body = "You have successfully logged in to your account."
+	default:
+		subject = "Notification"
+		body = "Hi there! This is a notification."
 	}
+
 	return subject, body
 }
 
