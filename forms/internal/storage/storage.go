@@ -141,7 +141,7 @@ func QuestionDeleteRequest(creator_id int, formId int, questionId int) (sql.Resu
 func QuestionsGetRequest(creator_id int, formId int) (*sql.Rows, error) {
 	query := `SELECT id, form_id, title, number_order, required 
 			  FROM questions 
-			  WHERE form_id = $1 AND creator_id = $2`
+			  WHERE form_id = $1 AND creator_id = $2 ORDER BY number_order`
 
 	rows, err := Db.Query(query, formId, creator_id)
 
