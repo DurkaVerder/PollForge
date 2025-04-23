@@ -61,11 +61,7 @@ func (s *Service) worker(msg <-chan models.MessageKafka) {
 			continue
 		}
 
-		emailMsg, err := s.createEmail(email, m.EventType)
-		if err != nil {
-			s.logger.Println("Error creating email:", err)
-			continue
-		}
+		emailMsg := s.createEmail(email, m.EventType)
 
 		err = s.emailNotifier.SendEmail(emailMsg.To, emailMsg.Subject, emailMsg.Body)
 		if err != nil {
@@ -96,7 +92,7 @@ func (s *Service) selectEmailTemplate(eventType string) (string, string) {
 	return subject, body
 }
 
-func (s *Service) createEmail(email, eventType string) (Email, error) {
+func (s *Service) createEmail(email, eventType string) Email {
 
 	subject, body := s.selectEmailTemplate(eventType)
 
@@ -104,5 +100,5 @@ func (s *Service) createEmail(email, eventType string) (Email, error) {
 		To:      email,
 		Subject: subject,
 		Body:    body,
-	}, nil
+	}
 }

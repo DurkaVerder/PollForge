@@ -24,7 +24,10 @@ const (
 func main() {
 	logger := log.New(os.Stdout, "kafka-email-notifier: ", log.LstdFlags|log.Lshortfile)
 
-	db := storage.ConnectDB(driver, os.Getenv("DB_URL"))
+	db, err := storage.ConnectDB(driver, os.Getenv("DB_URL"))
+	if err != nil {
+		panic(err)
+	}
 	defer db.Close()
 
 	storage := storage.NewPostgres(db)
