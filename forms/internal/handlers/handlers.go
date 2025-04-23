@@ -10,6 +10,30 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+func extractUserID(c *gin.Context) (int, error) {
+	creatorIdfl, ok := c.Get("id")
+	if !ok {
+		c.JSON(http.StatusBadRequest, gin.H{"Ошибка": "id пользователя не найден"})
+		return 0, nil
+	}
+	creatorId, ok := creatorIdfl.(int)
+	if !ok {
+		c.JSON(http.StatusBadRequest, gin.H{"Ошибка": "Неправильный тип id"})
+		return 0, nil
+	}
+	return creatorId, nil
+}
+
+func extractFormID(c *gin.Context) (int, error) {
+	formIdstr := c.Param("id")
+	formId, err := strconv.Atoi(formIdstr)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"Ошибка": "Неверный id формы"})
+		return 0, nil
+	}
+	return formId, nil
+}
+
 func CreateForm(c *gin.Context) {
 	var form models.FormRequest
 
@@ -19,14 +43,9 @@ func CreateForm(c *gin.Context) {
 		return
 	}
 
-	creatorIdfl, ok := c.Get("id")
-	if !ok {
+	creatorId, err := extractUserID(c)
+	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"Ошибка": "id пользователя не найден"})
-		return
-	}
-	creatorId, ok := creatorIdfl.(int)
-	if !ok {
-		c.JSON(http.StatusBadRequest, gin.H{"Ошибка": "неверный тип id"})
 		return
 	}
 
@@ -42,16 +61,8 @@ func CreateForm(c *gin.Context) {
 
 func GetForm(c *gin.Context) {
 
-	creatorIdfl, ok := c.Get("id")
-	if !ok {
-		c.JSON(http.StatusBadRequest, gin.H{"Ошибка": "id пользователя не найден"})
-		return
-	}
-
-	formIdstr := c.Param("id")
-
 	// Конвертируем в численный тип данных строку с id для проверки
-	formId, err := strconv.Atoi(formIdstr)
+	formId, err := extractFormID(c)
 
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"Ошибка": "Неверный id формы"})
@@ -59,9 +70,9 @@ func GetForm(c *gin.Context) {
 	}
 	var form models.Form
 
-	creatorId, ok := creatorIdfl.(int)
-	if !ok {
-		c.JSON(http.StatusBadRequest, gin.H{"Ошибка": "Неверный тип id пользователя"})
+	creatorId, err := extractUserID(c)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"Ошибка": "id пользователя не найден"})
 		return
 	}
 
@@ -79,17 +90,10 @@ func GetForm(c *gin.Context) {
 }
 
 func GetForms(c *gin.Context) {
-	creatorIdfl, ok := c.Get("id")
 
-	if !ok {
+	creatorId, err := extractUserID(c)
+	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"Ошибка": "id пользователя не найден"})
-		return
-	}
-
-	creatorId, ok := creatorIdfl.(int)
-
-	if !ok {
-		c.JSON(http.StatusBadRequest, gin.H{"Ошибка": "Неверный тип id пользователя"})
 		return
 	}
 
@@ -102,21 +106,19 @@ func GetForms(c *gin.Context) {
 }
 
 func UpdateForm(c *gin.Context) {
-	formIdstr := c.Param("id")
 
 	// Конвертируем в численный тип данных строку с id для проверки
-	formId, err := strconv.Atoi(formIdstr)
+	formId, err := extractFormID(c)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"Ошибка": "Неверный id формы"})
 		return
 	}
 
-	creatorIdfl, ok := c.Get("id")
-	if !ok {
-		c.JSON(http.StatusNotFound, gin.H{"Ошибка": "id пользователя не найден"})
+	creatorId, err := extractUserID(c)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"Ошибка": "id пользователя не найден"})
 		return
 	}
-	creatorId, ok := creatorIdfl.(int)
 
 	var updateForm models.FormRequest
 
@@ -124,11 +126,6 @@ func UpdateForm(c *gin.Context) {
 
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"Ошибка": "Неправильный формат данных"})
-		return
-	}
-
-	if !ok {
-		c.JSON(http.StatusBadRequest, gin.H{"Ошибка": "неверный тип id"})
 		return
 	}
 
@@ -147,24 +144,15 @@ func UpdateForm(c *gin.Context) {
 }
 
 func DeleteForm(c *gin.Context) {
-	formIdstr := c.Param("id")
-	// Конвертируем в численный тип данных строку с id для проверки
-	formId, err := strconv.Atoi(formIdstr)
+	formId, err := extractFormID(c)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"Ошибка": "Неверный id формы"})
 		return
 	}
 
-	creatorIdfl, ok := c.Get("id")
-
-	if !ok {
-		c.JSON(http.StatusNotFound, gin.H{"Ошибка": "id пользователя не найден"})
-		return
-	}
-
-	creatorId, ok := creatorIdfl.(int)
-	if !ok {
-		c.JSON(http.StatusBadRequest, gin.H{"Ошибка": "неверный тип id"})
+	creatorId, err := extractUserID(c)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"Ошибка": "id пользователя не найден"})
 		return
 	}
 
@@ -185,9 +173,9 @@ func DeleteForm(c *gin.Context) {
 }
 
 func CreateQuestion(c *gin.Context) {
-	formIdstr := c.Param("id")
+
 	// Конвертируем в численный тип данных строку с id для проверки
-	formId, err := strconv.Atoi(formIdstr)
+	formId, err := extractFormID(c)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"Ошибка": "Неверный id формы"})
 		return
@@ -231,23 +219,16 @@ func CreateQuestion(c *gin.Context) {
 }
 
 func GetQuestions(c *gin.Context) {
-	formIdstr := c.Param("id")
-	// Конвертируем в численный тип данных строку с id для проверки
-	formId, err := strconv.Atoi(formIdstr)
+
+	formId, err := extractFormID(c)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"Ошибка": "Неверный id формы"})
 		return
 	}
 
-	creatorIdfl, ok := c.Get("id")
-	if !ok {
-		c.JSON(http.StatusNotFound, gin.H{"Ошибка": "id пользователя не найден"})
-		return
-	}
-	creatorId, ok := creatorIdfl.(int)
-
-	if !ok {
-		c.JSON(http.StatusBadRequest, gin.H{"Ошибка": "неверный тип id"})
+	creatorId, err := extractUserID(c)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"Ошибка": "id пользователя не найден"})
 		return
 	}
 
@@ -267,9 +248,7 @@ func GetQuestions(c *gin.Context) {
 }
 
 func GetQuestion(c *gin.Context) {
-	formIdstr := c.Param("id")
-	// Конвертируем в численный тип данных строку с id для проверки
-	formId, err := strconv.Atoi(formIdstr)
+	formId, err := extractFormID(c)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"Ошибка": "Неверный id формы"})
 		return
@@ -283,15 +262,9 @@ func GetQuestion(c *gin.Context) {
 		return
 	}
 
-	creatorIdfl, ok := c.Get("id")
-	if !ok {
-		c.JSON(http.StatusNotFound, gin.H{"Ошибка": "id пользователя не найден"})
-		return
-	}
-	creatorId, ok := creatorIdfl.(int)
-
-	if !ok {
-		c.JSON(http.StatusBadRequest, gin.H{"Ошибка": "неверный тип id"})
+	creatorId, err := extractUserID(c)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"Ошибка": "id пользователя не найден"})
 		return
 	}
 
@@ -313,9 +286,7 @@ func GetQuestion(c *gin.Context) {
 }
 
 func UpdateQuestion(c *gin.Context) {
-	formIdstr := c.Param("id")
-	// Конвертируем в численный тип данных строку с id для проверки
-	formId, err := strconv.Atoi(formIdstr)
+	formId, err := extractFormID(c)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"Ошибка": "Неверный id формы"})
 		return
@@ -329,15 +300,9 @@ func UpdateQuestion(c *gin.Context) {
 		return
 	}
 
-	creatorIdfl, ok := c.Get("id")
-	if !ok {
-		c.JSON(http.StatusNotFound, gin.H{"Ошибка": "id пользователя не найден"})
-		return
-	}
-	creatorId, ok := creatorIdfl.(int)
-
-	if !ok {
-		c.JSON(http.StatusBadRequest, gin.H{"Ошибка": "неверный тип id"})
+	creatorId, err := extractUserID(c)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"Ошибка": "id пользователя не найден"})
 		return
 	}
 
@@ -366,9 +331,7 @@ func UpdateQuestion(c *gin.Context) {
 }
 
 func DeleteQuestion(c *gin.Context) {
-	formIdstr := c.Param("id")
-	// Конвертируем в численный тип данных строку с id для проверки
-	formId, err := strconv.Atoi(formIdstr)
+	formId, err := extractFormID(c)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"Ошибка": "Неверный id формы"})
 		return
@@ -382,15 +345,9 @@ func DeleteQuestion(c *gin.Context) {
 		return
 	}
 
-	creatorIdfl, ok := c.Get("id")
-	if !ok {
-		c.JSON(http.StatusNotFound, gin.H{"Ошибка": "id пользователя не найден"})
-		return
-	}
-	creatorId, ok := creatorIdfl.(int)
-
-	if !ok {
-		c.JSON(http.StatusBadRequest, gin.H{"Ошибка": "неверный тип id"})
+	creatorId, err := extractUserID(c)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"Ошибка": "id пользователя не найден"})
 		return
 	}
 
@@ -410,9 +367,7 @@ func DeleteQuestion(c *gin.Context) {
 }
 
 func CreateAnswer(c *gin.Context) {
-	formIdstr := c.Param("id")
-	// Конвертируем в численный тип данных строку с id для проверки
-	formId, err := strconv.Atoi(formIdstr)
+	formId, err := extractFormID(c)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"Ошибка": "Неверный id формы"})
 		return
@@ -426,15 +381,9 @@ func CreateAnswer(c *gin.Context) {
 		return
 	}
 
-	creatorIdfl, ok := c.Get("id")
-	if !ok {
-		c.JSON(http.StatusNotFound, gin.H{"Ошибка": "id пользователя не найден"})
-		return
-	}
-	creatorId, ok := creatorIdfl.(int)
-
-	if !ok {
-		c.JSON(http.StatusBadRequest, gin.H{"Ошибка": "неверный тип id"})
+	creatorId, err := extractUserID(c)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"Ошибка": "id пользователя не найден"})
 		return
 	}
 
@@ -464,9 +413,8 @@ func CreateAnswer(c *gin.Context) {
 }
 
 func GetAnswer(c *gin.Context) {
-	formIdstr := c.Param("id")
-	// Конвертируем в численный тип данных строку с id для проверки
-	formId, err := strconv.Atoi(formIdstr)
+
+	formId, err := extractFormID(c)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"Ошибка": "Неверный id формы"})
 		return
@@ -488,15 +436,9 @@ func GetAnswer(c *gin.Context) {
 		return
 	}
 
-	creatorIdfl, ok := c.Get("id")
-	if !ok {
-		c.JSON(http.StatusNotFound, gin.H{"Ошибка": "id пользователя не найден"})
-		return
-	}
-	creatorId, ok := creatorIdfl.(int)
-
-	if !ok {
-		c.JSON(http.StatusBadRequest, gin.H{"Ошибка": "неверный тип id"})
+	creatorId, err := extractUserID(c)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"Ошибка": "id пользователя не найден"})
 		return
 	}
 
@@ -518,9 +460,7 @@ func GetAnswer(c *gin.Context) {
 }
 
 func GetAnswers(c *gin.Context) {
-	formIdstr := c.Param("id")
-	// Конвертируем в численный тип данных строку с id для проверки
-	formId, err := strconv.Atoi(formIdstr)
+	formId, err := extractFormID(c)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"Ошибка": "Неверный id формы"})
 		return
@@ -534,15 +474,9 @@ func GetAnswers(c *gin.Context) {
 		return
 	}
 
-	creatorIdfl, ok := c.Get("id")
-	if !ok {
-		c.JSON(http.StatusNotFound, gin.H{"Ошибка": "id пользователя не найден"})
-		return
-	}
-	creatorId, ok := creatorIdfl.(int)
-
-	if !ok {
-		c.JSON(http.StatusBadRequest, gin.H{"Ошибка": "неверный тип id"})
+	creatorId, err := extractUserID(c)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"Ошибка": "id пользователя не найден"})
 		return
 	}
 
@@ -570,9 +504,7 @@ func GetAnswers(c *gin.Context) {
 
 }
 func UpdateAnswer(c *gin.Context) {
-	formIdstr := c.Param("id")
-	// Конвертируем в численный тип данных строку с id для проверки
-	formId, err := strconv.Atoi(formIdstr)
+	formId, err := extractFormID(c)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"Ошибка": "Неверный id формы"})
 		return
@@ -594,15 +526,9 @@ func UpdateAnswer(c *gin.Context) {
 		return
 	}
 
-	creatorIdfl, ok := c.Get("id")
-	if !ok {
-		c.JSON(http.StatusNotFound, gin.H{"Ошибка": "id пользователя не найден"})
-		return
-	}
-	creatorId, ok := creatorIdfl.(int)
-
-	if !ok {
-		c.JSON(http.StatusBadRequest, gin.H{"Ошибка": "неверный тип id"})
+	creatorId, err := extractUserID(c)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"Ошибка": "id пользователя не найден"})
 		return
 	}
 
@@ -630,9 +556,7 @@ func UpdateAnswer(c *gin.Context) {
 
 }
 func DeleteAnswer(c *gin.Context) {
-	formIdstr := c.Param("id")
-	// Конвертируем в численный тип данных строку с id для проверки
-	formId, err := strconv.Atoi(formIdstr)
+	formId, err := extractFormID(c)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"Ошибка": "Неверный id формы"})
 		return
@@ -654,15 +578,9 @@ func DeleteAnswer(c *gin.Context) {
 		return
 	}
 
-	creatorIdfl, ok := c.Get("id")
-	if !ok {
-		c.JSON(http.StatusNotFound, gin.H{"Ошибка": "id пользователя не найден"})
-		return
-	}
-	creatorId, ok := creatorIdfl.(int)
-
-	if !ok {
-		c.JSON(http.StatusBadRequest, gin.H{"Ошибка": "неверный тип id"})
+	creatorId, err := extractUserID(c)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"Ошибка": "id пользователя не найден"})
 		return
 	}
 

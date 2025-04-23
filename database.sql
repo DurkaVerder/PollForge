@@ -43,9 +43,7 @@ CREATE TABLE answers(
     form_id INT NOT NULL,
     title VARCHAR(255) NOT NULL,
     number_order INT,
-    count INT DEFAULT 0,
-    answer_id INT DEFAULT 0,
-    FOREIGN KEY (answer_id) REFERENCES answers (id) ON DELETE CASCADE,
+    count BIGINT DEFAULT 0,
     FOREIGN KEY (question_id) REFERENCES questions (id) ON DELETE CASCADE
 );
 
