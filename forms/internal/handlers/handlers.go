@@ -2,8 +2,10 @@ package handlers
 
 import (
 	"database/sql"
+	"fmt"
 	"forms/internal/models"
 	"forms/internal/service"
+	"log"
 	"net/http"
 	"strconv"
 
@@ -14,12 +16,12 @@ func extractUserID(c *gin.Context) (int, error) {
 	creatorIdfl, ok := c.Get("id")
 	if !ok {
 		c.JSON(http.StatusBadRequest, gin.H{"Ошибка": "id пользователя не найден"})
-		return 0, nil
+		return 0, fmt.Errorf("id пользователя не найден")
 	}
 	creatorId, ok := creatorIdfl.(int)
 	if !ok {
 		c.JSON(http.StatusBadRequest, gin.H{"Ошибка": "Неправильный тип id"})
-		return 0, nil
+		return 0, fmt.Errorf("неправильный тип id: %v", creatorIdfl)
 	}
 	return creatorId, nil
 }
@@ -29,9 +31,29 @@ func extractFormID(c *gin.Context) (int, error) {
 	formId, err := strconv.Atoi(formIdstr)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"Ошибка": "Неверный id формы"})
-		return 0, nil
+		return 0, fmt.Errorf("неправильный тип id: %v", formIdstr)
 	}
 	return formId, nil
+}
+
+func extractQuestionID(c *gin.Context) (int, error) {
+	questionIdstr := c.Param("question_id")
+	questionId, err := strconv.Atoi(questionIdstr)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"Ошибка": "Неверный id вопроса"})
+		return 0, fmt.Errorf("неправильный тип id: %v", questionIdstr)
+	}
+	return questionId, nil
+}
+
+func extractAnswerID(c *gin.Context) (int, error) {
+	answerIdstr := c.Param("answer_id")
+	answerId, err := strconv.Atoi(answerIdstr)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"Ошибка": "Неверный id ответа"})
+		return 0, fmt.Errorf("неправильный тип id: %v", answerIdstr)
+	}
+	return answerId, nil
 }
 
 func CreateForm(c *gin.Context) {
@@ -39,12 +61,14 @@ func CreateForm(c *gin.Context) {
 
 	err := c.ShouldBindJSON(&form)
 	if err != nil {
+		log.Printf("Ошибка при извлечении данных формы и переводе их в json: %v", err)
 		c.JSON(http.StatusBadRequest, gin.H{"Ошибка": "Неправильный формат данных"})
 		return
 	}
 
 	creatorId, err := extractUserID(c)
 	if err != nil {
+		log.Printf("Не удалось извлечь id пользователя: %v", err)
 		c.JSON(http.StatusBadRequest, gin.H{"Ошибка": "id пользователя не найден"})
 		return
 	}
@@ -53,6 +77,7 @@ func CreateForm(c *gin.Context) {
 	formId, link, err := service.FormCreate(form, creatorId)
 
 	if err != nil {
+		log.Printf("Не удалось создать форму: %v", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"Ошибка": "Не удалось создать форму"})
 		return
 	}
@@ -65,6 +90,7 @@ func GetForm(c *gin.Context) {
 	formId, err := extractFormID(c)
 
 	if err != nil {
+		log.Printf("Ошибка при извлечении id формы %v", err)
 		c.JSON(http.StatusBadRequest, gin.H{"Ошибка": "Неверный id формы"})
 		return
 	}
@@ -72,6 +98,7 @@ func GetForm(c *gin.Context) {
 
 	creatorId, err := extractUserID(c)
 	if err != nil {
+		log.Printf("Не удалось извлечь id пользователя: %v", err)
 		c.JSON(http.StatusBadRequest, gin.H{"Ошибка": "id пользователя не найден"})
 		return
 	}
@@ -79,9 +106,11 @@ func GetForm(c *gin.Context) {
 	form, err = service.FormGet(creatorId, formId)
 	// Проверка на наличие возвращаемого значения, если форм нет - сработает условие цикла
 	if err == sql.ErrNoRows {
+		log.Printf("Не удалось получить формы из-за их отсутствия: %v", err)
 		c.JSON(http.StatusNotFound, gin.H{"Ошибка": "Форма не найдена"})
 		return
 	} else if err != nil {
+		log.Printf("Не удалось получить формы из-за ошибки: %v", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"Ошибка": "Ошибка при получении формы"})
 		return
 	}
@@ -93,13 +122,15 @@ func GetForms(c *gin.Context) {
 
 	creatorId, err := extractUserID(c)
 	if err != nil {
+		log.Printf("Не удалось извлечь id пользователя: %v", err)
 		c.JSON(http.StatusBadRequest, gin.H{"Ошибка": "id пользователя не найден"})
 		return
 	}
 
 	forms, err := service.FormsGet(creatorId)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"Ошибка": "Не удалось найти анкеты"})
+		log.Printf("Не удалось получить формы: %v", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"Ошибка": "Не удалось найти формы"})
 		return
 	}
 	c.JSON(http.StatusOK, forms)
@@ -110,12 +141,14 @@ func UpdateForm(c *gin.Context) {
 	// Конвертируем в численный тип данных строку с id для проверки
 	formId, err := extractFormID(c)
 	if err != nil {
+		log.Printf("Ошибка при извлечении id формы %v", err)
 		c.JSON(http.StatusBadRequest, gin.H{"Ошибка": "Неверный id формы"})
 		return
 	}
 
 	creatorId, err := extractUserID(c)
 	if err != nil {
+		log.Printf("Не удалось извлечь id пользователя: %v", err)
 		c.JSON(http.StatusBadRequest, gin.H{"Ошибка": "id пользователя не найден"})
 		return
 	}
@@ -131,12 +164,14 @@ func UpdateForm(c *gin.Context) {
 
 	err = service.FormChek(creatorId, formId)
 	if err != nil {
+		log.Printf("Ошибка при проверке на существование формы: %v", err)
 		c.JSON(http.StatusNotFound, gin.H{"Ошибка": "Форма не найдена"})
 		return
 	}
 
 	err = service.FormUpdate(updateForm, creatorId, formId)
 	if err != nil {
+		log.Printf("Ошибка при обновлении данных формы: %v", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"Ошибка": "Ошибка обновления данных"})
 		return
 	}
@@ -146,12 +181,14 @@ func UpdateForm(c *gin.Context) {
 func DeleteForm(c *gin.Context) {
 	formId, err := extractFormID(c)
 	if err != nil {
+		log.Printf("Ошибка при извлечении id формы %v", err)
 		c.JSON(http.StatusBadRequest, gin.H{"Ошибка": "Неверный id формы"})
 		return
 	}
 
 	creatorId, err := extractUserID(c)
 	if err != nil {
+		log.Printf("Не удалось извлечь id пользователя: %v", err)
 		c.JSON(http.StatusBadRequest, gin.H{"Ошибка": "id пользователя не найден"})
 		return
 	}
@@ -159,6 +196,7 @@ func DeleteForm(c *gin.Context) {
 	// Проверка на существование формы для удаления, нужен id пользователя и id формы
 	err = service.FormChek(creatorId, formId)
 	if err != nil {
+		log.Printf("Ошибка при проверке на существование формы: %v", err)
 		c.JSON(http.StatusNotFound, gin.H{"Ошибка": "Форма не найдена"})
 		return
 	}
@@ -166,6 +204,7 @@ func DeleteForm(c *gin.Context) {
 	// Удаление формы, для этого требуется id формы и пользователя из-за нужды нахождения формы для удаления с помощью sql-запроса
 	_, err = service.FormDelete(formId, creatorId)
 	if err != nil {
+		log.Printf("Ошибка при удалении формы: %v", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"Ошибка": "Не удалось удалить форму"})
 		return
 	}
@@ -177,19 +216,15 @@ func CreateQuestion(c *gin.Context) {
 	// Конвертируем в численный тип данных строку с id для проверки
 	formId, err := extractFormID(c)
 	if err != nil {
+		log.Printf("Ошибка при извлечении id формы %v", err)
 		c.JSON(http.StatusBadRequest, gin.H{"Ошибка": "Неверный id формы"})
 		return
 	}
 
-	creatorIdfl, ok := c.Get("id")
-	if !ok {
-		c.JSON(http.StatusNotFound, gin.H{"Ошибка": "id пользователя не найден"})
-		return
-	}
-	creatorId, ok := creatorIdfl.(int)
-
-	if !ok {
-		c.JSON(http.StatusBadRequest, gin.H{"Ошибка": "неверный тип id"})
+	creatorId, err := extractUserID(c)
+	if err != nil {
+		log.Printf("Не удалось извлечь id пользователя: %v", err)
+		c.JSON(http.StatusBadRequest, gin.H{"Ошибка": "id пользователя не найден"})
 		return
 	}
 
@@ -198,18 +233,21 @@ func CreateQuestion(c *gin.Context) {
 	err = c.ShouldBindJSON(&question)
 
 	if err != nil {
+		log.Printf("Ошибка при извлечении данных вопроса и переводе их в json: %v", err)
 		c.JSON(http.StatusBadRequest, gin.H{"Ошибка": "Неправильный формат данных"})
 		return
 	}
 
 	err = service.FormChek(creatorId, formId)
 	if err != nil {
+		log.Printf("Ошибка при проверке на существование формы: %v", err)
 		c.JSON(http.StatusNotFound, gin.H{"Ошибка": "Форма не найдена"})
 		return
 	}
 
 	questionId, err := service.QuestionCreate(question, formId)
 	if err != nil {
+		log.Printf("Ошибка при создании вопросы: %v", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"Ошибка": "Не удалось создать вопрос"})
 		return
 	}
@@ -222,24 +260,28 @@ func GetQuestions(c *gin.Context) {
 
 	formId, err := extractFormID(c)
 	if err != nil {
+		log.Printf("Ошибка при извлечении id формы %v", err)
 		c.JSON(http.StatusBadRequest, gin.H{"Ошибка": "Неверный id формы"})
 		return
 	}
 
 	creatorId, err := extractUserID(c)
 	if err != nil {
+		log.Printf("Не удалось извлечь id пользователя: %v", err)
 		c.JSON(http.StatusBadRequest, gin.H{"Ошибка": "id пользователя не найден"})
 		return
 	}
 
 	err = service.FormChek(creatorId, formId)
 	if err != nil {
+		log.Printf("Ошибка при проверке на существование формы: %v", err)
 		c.JSON(http.StatusNotFound, gin.H{"Ошибка": "Форма не найдена"})
 		return
 	}
 
 	questions, err := service.QuestionsGet(creatorId, formId)
 	if err != nil {
+		log.Printf("Ошибка при получении вопроса: %v", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"Ошибка": "Не удалось получить вопросы"})
 		return
 	}
@@ -250,26 +292,28 @@ func GetQuestions(c *gin.Context) {
 func GetQuestion(c *gin.Context) {
 	formId, err := extractFormID(c)
 	if err != nil {
+		log.Printf("Ошибка при извлечении id формы %v", err)
 		c.JSON(http.StatusBadRequest, gin.H{"Ошибка": "Неверный id формы"})
 		return
 	}
 
-	questionIdstr := c.Param("question_id")
-	// Конвертируем в численный тип данных строку с id для проверки
-	questionId, err := strconv.Atoi(questionIdstr)
+	questionId, err := extractQuestionID(c)
 	if err != nil {
+		log.Printf("Ошибка при извлечении id вопроса %v", err)
 		c.JSON(http.StatusBadRequest, gin.H{"Ошибка": "Неверный id вопроса"})
 		return
 	}
 
 	creatorId, err := extractUserID(c)
 	if err != nil {
+		log.Printf("Не удалось извлечь id пользователя: %v", err)
 		c.JSON(http.StatusBadRequest, gin.H{"Ошибка": "id пользователя не найден"})
 		return
 	}
 
 	err = service.QuestionChek(creatorId, formId, questionId)
 	if err != nil {
+		log.Printf("Ошибка при проверки вопроса на существование: %v", err)
 		c.JSON(http.StatusNotFound, gin.H{"Ошибка": "Вопрос не найден"})
 		return
 	}
@@ -278,6 +322,7 @@ func GetQuestion(c *gin.Context) {
 
 	question, err = service.QuestionGet(creatorId, formId, questionId)
 	if err != nil {
+		log.Printf("Ошибка при получении вопроса: %v", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"Ошибка": "Не удалось получить вопрос"})
 		return
 	}
@@ -288,20 +333,21 @@ func GetQuestion(c *gin.Context) {
 func UpdateQuestion(c *gin.Context) {
 	formId, err := extractFormID(c)
 	if err != nil {
+		log.Printf("Ошибка при извлечении id формы %v", err)
 		c.JSON(http.StatusBadRequest, gin.H{"Ошибка": "Неверный id формы"})
 		return
 	}
 
-	questionIdstr := c.Param("question_id")
-	// Конвертируем в численный тип данных строку с id для проверки
-	questionId, err := strconv.Atoi(questionIdstr)
+	questionId, err := extractQuestionID(c)
 	if err != nil {
+		log.Printf("Ошибка при извлечении id вопроса %v", err)
 		c.JSON(http.StatusBadRequest, gin.H{"Ошибка": "Неверный id вопроса"})
 		return
 	}
 
 	creatorId, err := extractUserID(c)
 	if err != nil {
+		log.Printf("Не удалось извлечь id пользователя: %v", err)
 		c.JSON(http.StatusBadRequest, gin.H{"Ошибка": "id пользователя не найден"})
 		return
 	}
@@ -317,12 +363,14 @@ func UpdateQuestion(c *gin.Context) {
 	err = c.ShouldBindJSON(&updateQuestion)
 
 	if err != nil {
+		log.Printf("Ошибка при извлечении данных вопроса для его обновления и переводе их в json: %v", err)
 		c.JSON(http.StatusBadRequest, gin.H{"Ошибка": "Неправильный формат данных"})
 		return
 	}
 
 	err = service.QuestionUpdate(updateQuestion, creatorId, formId, questionId)
 	if err != nil {
+		log.Printf("Ошибка при обновлении данных вопроса: %v", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"Ошибка": "Не удалось обновить вопрос"})
 		return
 	}
@@ -333,32 +381,35 @@ func UpdateQuestion(c *gin.Context) {
 func DeleteQuestion(c *gin.Context) {
 	formId, err := extractFormID(c)
 	if err != nil {
+		log.Printf("Ошибка при извлечении id формы %v", err)
 		c.JSON(http.StatusBadRequest, gin.H{"Ошибка": "Неверный id формы"})
 		return
 	}
 
-	questionIdstr := c.Param("question_id")
-	// Конвертируем в численный тип данных строку с id для проверки
-	questionId, err := strconv.Atoi(questionIdstr)
+	questionId, err := extractQuestionID(c)
 	if err != nil {
+		log.Printf("Ошибка при извлечении id вопроса %v", err)
 		c.JSON(http.StatusBadRequest, gin.H{"Ошибка": "Неверный id вопроса"})
 		return
 	}
 
 	creatorId, err := extractUserID(c)
 	if err != nil {
+		log.Printf("Не удалось извлечь id пользователя: %v", err)
 		c.JSON(http.StatusBadRequest, gin.H{"Ошибка": "id пользователя не найден"})
 		return
 	}
 
 	err = service.QuestionChek(creatorId, formId, questionId)
 	if err != nil {
+		log.Printf("Ошибка при проверке вопросы на существование: %v", err)
 		c.JSON(http.StatusNotFound, gin.H{"Ошибка": "Вопрос не найден"})
 		return
 	}
 
 	_, err = service.QuestionDelete(creatorId, formId, questionId)
 	if err != nil {
+		log.Printf("Ошибка при удалении вопроса: %v", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"Ошибка": "Не удалось удалить вопрос"})
 		return
 	}
@@ -369,20 +420,21 @@ func DeleteQuestion(c *gin.Context) {
 func CreateAnswer(c *gin.Context) {
 	formId, err := extractFormID(c)
 	if err != nil {
+		log.Printf("Ошибка при извлечении id формы %v", err)
 		c.JSON(http.StatusBadRequest, gin.H{"Ошибка": "Неверный id формы"})
 		return
 	}
 
-	questionIdstr := c.Param("question_id")
-	// Конвертируем в численный тип данных строку с id для проверки
-	questionId, err := strconv.Atoi(questionIdstr)
+	questionId, err := extractQuestionID(c)
 	if err != nil {
+		log.Printf("Ошибка при извлечении id вопроса %v", err)
 		c.JSON(http.StatusBadRequest, gin.H{"Ошибка": "Неверный id вопроса"})
 		return
 	}
 
 	creatorId, err := extractUserID(c)
 	if err != nil {
+		log.Printf("Не удалось извлечь id пользователя: %v", err)
 		c.JSON(http.StatusBadRequest, gin.H{"Ошибка": "id пользователя не найден"})
 		return
 	}
@@ -398,12 +450,14 @@ func CreateAnswer(c *gin.Context) {
 	err = c.ShouldBindJSON(&answer)
 
 	if err != nil {
+		log.Printf("Ошибка при извлечении данных ответа и переводе их в json: %v", err)
 		c.JSON(http.StatusBadRequest, gin.H{"Ошибка": "Неправильный формат данных"})
 		return
 	}
 
 	answerId, err := service.AnswerCreate(answer, formId, questionId)
 	if err != nil {
+		log.Printf("Ошибка при создании ответа: %v", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"Ошибка": "Не удалось создать ответ"})
 		return
 	}
@@ -416,34 +470,35 @@ func GetAnswer(c *gin.Context) {
 
 	formId, err := extractFormID(c)
 	if err != nil {
+		log.Printf("Ошибка при извлечении id формы %v", err)
 		c.JSON(http.StatusBadRequest, gin.H{"Ошибка": "Неверный id формы"})
 		return
 	}
 
-	questionIdstr := c.Param("question_id")
-	// Конвертируем в численный тип данных строку с id для проверки
-	questionId, err := strconv.Atoi(questionIdstr)
+	questionId, err := extractQuestionID(c)
 	if err != nil {
+		log.Printf("Ошибка при извлечении id вопроса %v", err)
 		c.JSON(http.StatusBadRequest, gin.H{"Ошибка": "Неверный id вопроса"})
 		return
 	}
 
-	answerIdstr := c.Param("answer_id")
-	// Конвертируем в численный тип данных строку с id для проверки
-	answerId, err := strconv.Atoi(answerIdstr)
+	answerId, err := extractAnswerID(c)
 	if err != nil {
+		log.Printf("Ошибка при извлечении id вопроса %v", err)
 		c.JSON(http.StatusBadRequest, gin.H{"Ошибка": "Неверный id ответа"})
 		return
 	}
 
 	creatorId, err := extractUserID(c)
 	if err != nil {
+		log.Printf("Не удалось извлечь id пользователя: %v", err)
 		c.JSON(http.StatusBadRequest, gin.H{"Ошибка": "id пользователя не найден"})
 		return
 	}
 
 	err = service.AnswerChek(creatorId, formId, questionId, answerId)
 	if err != nil {
+		log.Printf("Ошибка при проверке ответа на существование: %v", err)
 		c.JSON(http.StatusNotFound, gin.H{"Ошибка": "Ответ не найден"})
 		return
 	}
@@ -452,6 +507,7 @@ func GetAnswer(c *gin.Context) {
 
 	answer, err = service.AnswerGet(creatorId, formId, questionId, answerId)
 	if err != nil {
+		log.Printf("Ошибка при получении ответа: %v", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"Ошибка": "Не удалось получить ответ"})
 		return
 	}
@@ -462,33 +518,35 @@ func GetAnswer(c *gin.Context) {
 func GetAnswers(c *gin.Context) {
 	formId, err := extractFormID(c)
 	if err != nil {
+		log.Printf("Ошибка при извлечении id формы %v", err)
 		c.JSON(http.StatusBadRequest, gin.H{"Ошибка": "Неверный id формы"})
 		return
 	}
 
-	questionIdstr := c.Param("question_id")
-	// Конвертируем в численный тип данных строку с id для проверки
-	questionId, err := strconv.Atoi(questionIdstr)
+	questionId, err := extractQuestionID(c)
 	if err != nil {
+		log.Printf("Ошибка при извлечении id вопроса %v", err)
 		c.JSON(http.StatusBadRequest, gin.H{"Ошибка": "Неверный id вопроса"})
 		return
 	}
 
 	creatorId, err := extractUserID(c)
 	if err != nil {
+		log.Printf("Не удалось извлечь id пользователя: %v", err)
 		c.JSON(http.StatusBadRequest, gin.H{"Ошибка": "id пользователя не найден"})
 		return
 	}
 
-	answerIdstr := c.Param("answer_id")
-	answerId, err := strconv.Atoi(answerIdstr)
+	answerId, err := extractAnswerID(c)
 	if err != nil {
+		log.Printf("Ошибка при извлечении id вопроса %v", err)
 		c.JSON(http.StatusBadRequest, gin.H{"Ошибка": "Неверный id ответа"})
 		return
 	}
 
 	err = service.AnswerChek(creatorId, formId, questionId, answerId)
 	if err != nil {
+		log.Printf("Ошибка при проверке ответа на существование: %v", err)
 		c.JSON(http.StatusNotFound, gin.H{"Ошибка": "Вопрос не найден"})
 		return
 	}
@@ -497,6 +555,7 @@ func GetAnswers(c *gin.Context) {
 
 	answers, err = service.AnswersGet(creatorId, formId, questionId)
 	if err != nil {
+		log.Printf("Ошибка при получении ответа: %v", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"Ошибка": "Не удалось получить ответы"})
 		return
 	}
@@ -506,34 +565,35 @@ func GetAnswers(c *gin.Context) {
 func UpdateAnswer(c *gin.Context) {
 	formId, err := extractFormID(c)
 	if err != nil {
+		log.Printf("Ошибка при извлечении id формы %v", err)
 		c.JSON(http.StatusBadRequest, gin.H{"Ошибка": "Неверный id формы"})
 		return
 	}
 
-	questionIdstr := c.Param("question_id")
-	// Конвертируем в численный тип данных строку с id для проверки
-	questionId, err := strconv.Atoi(questionIdstr)
+	questionId, err := extractQuestionID(c)
 	if err != nil {
+		log.Printf("Ошибка при извлечении id вопроса %v", err)
 		c.JSON(http.StatusBadRequest, gin.H{"Ошибка": "Неверный id вопроса"})
 		return
 	}
 
-	answerIdstr := c.Param("answer_id")
-	// Конвертируем в численный тип данных строку с id для проверки
-	answerId, err := strconv.Atoi(answerIdstr)
+	answerId, err := extractAnswerID(c)
 	if err != nil {
+		log.Printf("Ошибка при извлечении id вопроса %v", err)
 		c.JSON(http.StatusBadRequest, gin.H{"Ошибка": "Неверный id ответа"})
 		return
 	}
 
 	creatorId, err := extractUserID(c)
 	if err != nil {
+		log.Printf("Не удалось извлечь id пользователя: %v", err)
 		c.JSON(http.StatusBadRequest, gin.H{"Ошибка": "id пользователя не найден"})
 		return
 	}
 
 	err = service.AnswerChek(creatorId, formId, questionId, answerId)
 	if err != nil {
+		log.Printf("Ошибка при проверке ответа на существование: %v", err)
 		c.JSON(http.StatusNotFound, gin.H{"Ошибка": "Ответ не найден"})
 		return
 	}
@@ -543,12 +603,14 @@ func UpdateAnswer(c *gin.Context) {
 	err = c.ShouldBindJSON(&updateAnswer)
 
 	if err != nil {
+		log.Printf("Ошибка при извлечении данных ответа и переводе их в json: %v", err)
 		c.JSON(http.StatusBadRequest, gin.H{"Ошибка": "Неправильный формат данных"})
 		return
 	}
 
 	err = service.AnswerUpdate(updateAnswer, creatorId, formId, questionId, answerId)
 	if err != nil {
+		log.Printf("Ошибка при обновлении данных ответа: %v", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"Ошибка": "Не удалось обновить ответ"})
 		return
 	}
@@ -558,40 +620,42 @@ func UpdateAnswer(c *gin.Context) {
 func DeleteAnswer(c *gin.Context) {
 	formId, err := extractFormID(c)
 	if err != nil {
+		log.Printf("Ошибка при извлечении id формы %v", err)
 		c.JSON(http.StatusBadRequest, gin.H{"Ошибка": "Неверный id формы"})
 		return
 	}
 
-	questionIdstr := c.Param("question_id")
-	// Конвертируем в численный тип данных строку с id для проверки
-	questionId, err := strconv.Atoi(questionIdstr)
+	questionId, err := extractQuestionID(c)
 	if err != nil {
+		log.Printf("Ошибка при извлечении id вопроса %v", err)
 		c.JSON(http.StatusBadRequest, gin.H{"Ошибка": "Неверный id вопроса"})
 		return
 	}
 
-	answerIdstr := c.Param("answer_id")
-	// Конвертируем в численный тип данных строку с id для проверки
-	answerId, err := strconv.Atoi(answerIdstr)
+	answerId, err := extractAnswerID(c)
 	if err != nil {
+		log.Printf("Ошибка при извлечении id вопроса %v", err)
 		c.JSON(http.StatusBadRequest, gin.H{"Ошибка": "Неверный id ответа"})
 		return
 	}
 
 	creatorId, err := extractUserID(c)
 	if err != nil {
+		log.Printf("Не удалось извлечь id пользователя: %v", err)
 		c.JSON(http.StatusBadRequest, gin.H{"Ошибка": "id пользователя не найден"})
 		return
 	}
 
 	err = service.AnswerChek(creatorId, formId, questionId, answerId)
 	if err != nil {
+		log.Printf("Ошибка при проверке вопроса %v", err)
 		c.JSON(http.StatusNotFound, gin.H{"Ошибка": "Ответ не найден"})
 		return
 	}
 
 	_, err = service.AnswerDelete(creatorId, formId, questionId, answerId)
 	if err != nil {
+		log.Printf("Ошибка при удалении вопроса %v", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"Ошибка": "Не удалось удалить ответ"})
 		return
 	}
