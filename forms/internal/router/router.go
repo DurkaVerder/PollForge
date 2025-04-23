@@ -19,6 +19,18 @@ func SetUpRouter(r *gin.Engine) {
 		protected.GET("/forms/:id",  handlers.GetForm)
 		protected.PUT("/forms/:id",  handlers.UpdateForm)
 		protected.DELETE("/forms/:id", handlers.DeleteForm)
+
+		protected.POST("/forms/:id/questions", handlers.CreateQuestion)
+		protected.GET("/forms/:id/questions", handlers.GetQuestions)
+		protected.GET("/forms/:id/questions/:question_id", handlers.GetQuestion)
+		protected.PUT("/forms/:id/questions/:question_id", handlers.UpdateQuestion)
+		protected.DELETE("/forms/:id/questions/:question_id", handlers.DeleteQuestion)
+
+		protected.POST("/forms/:id/questions/:question_id/answers", handlers.CreateAnswer)
+		protected.GET("/forms/:id/questions/:question_id/answers/:answer_id", handlers.GetAnswer)
+		protected.GET("/forms/:id/questions/:question_id/answers", handlers.GetAnswers)
+		protected.PUT("/forms/:id/questions/:question_id/answers/:answer_id", handlers.UpdateAnswer)
+		protected.DELETE("/forms/:id/questions/:question_id/answers/:answer_id", handlers.DeleteAnswer)	
 	}
 	if err := r.Run(forms_port); err != nil {
 		panic(err)

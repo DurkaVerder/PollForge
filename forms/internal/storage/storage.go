@@ -37,7 +37,7 @@ func FormChekingRequest(existId int, creatorId int, formId int) error {
 	return err
 }
 
-func FormCreateRequest(form models.FormRequest, creatorId int) (int, string, error){
+func FormCreateRequest(form models.FormRequest, creatorId int) (int, string, error) {
 
 	link := uuid.New().String()
 	query := `INSERT INTO forms (creator_id, title, description, link, private_key, expires_at) 
@@ -45,7 +45,7 @@ func FormCreateRequest(form models.FormRequest, creatorId int) (int, string, err
 
 	var formId int
 	err := Db.QueryRow(query, creatorId, form.Title, form.Description, link, form.PrivateKey, form.ExpiresAt).Scan(&formId)
-	if err != nil{
+	if err != nil {
 		log.Printf("Ошибка при запросе создания формы: %v", err)
 		return formId, link, err
 	}
@@ -92,7 +92,7 @@ func FormUpdateRequest(updateForm models.FormRequest, creatorId int, formId int)
 	return err
 }
 
-func GetFormsRequest(creatorId int)(*sql.Rows, error){
+func GetFormsRequest(creatorId int) (*sql.Rows, error) {
 	query := `SELECT id, title, description, link, private_key, expires_at FROM forms WHERE creator_id = $1`
 
 	rows, err := Db.Query(query, creatorId)
@@ -101,6 +101,157 @@ func GetFormsRequest(creatorId int)(*sql.Rows, error){
 		log.Printf("Не удалось найти формы через запрос: %v", err)
 		return nil, err
 	}
-	
+
 	return rows, err
 }
+
+func QuestionChekingRequest(existId int, creatorId int, formId int, questionId int) error {
+
+	queryChek := "SELECT id FROM questions WHERE id = $1 AND form_id = $2 AND creator_id = $3"
+	err := Db.QueryRow(queryChek, questionId, formId, creatorId).Scan(&existId)
+	if err != nil {
+		log.Printf("Ошибка при запросе на проверку наличия вопроса: %v", err)
+		return err
+	}
+	return err
+}
+func QuestionCreateRequest(question models.QuestionRequest, formId int) (int, error) {
+	query := `INSERT INTO questions (form_id, title, number_order, required) 
+			  VALUES($1, $2, $3, $4) RETURNING id`
+
+	var questionId int
+	err := Db.QueryRow(query, formId, question.Title, question.NumberOrder, question.Required).Scan(&questionId)
+	if err != nil {
+		log.Printf("Ошибка при запросе создания вопроса: %v", err)
+		return questionId, err
+	}
+	return questionId, err
+}
+func QuestionDeleteRequest(creator_id int, formId int, questionId int) (sql.Result, error) {
+
+	query := "DELETE FROM questions WHERE id = $1 AND form_id = $2 and creator_id = $3"
+	_, err := Db.Exec(query, questionId, formId)
+	if err != nil {
+		log.Printf("Ошибка при запросе удаления вопроса: %v", err)
+		return nil, err
+	}
+	return nil, err
+}
+
+func QuestionsGetRequest(creator_id int, formId int) (*sql.Rows, error) {
+	query := `SELECT id, form_id, title, number_order, required 
+			  FROM questions 
+			  WHERE form_id = $1 AND creator_id = $2`
+
+	rows, err := Db.Query(query, formId, creator_id)
+
+	if err != nil {
+		log.Printf("Ошибка при запросе получения вопросов: %v", err)
+		return nil, err
+	}
+	return rows, err
+}
+
+func QuestionGetRequest(creator_id int, formId int, questionId int) (models.Question, error) {
+	query := `SELECT id, form_id, title, number_order, required 
+			  FROM questions 
+			  WHERE id = $1 AND form_id = $2 AND creator_id = $3`
+
+	var question models.Question
+	err := Db.QueryRow(query, questionId, formId, creator_id).Scan(&question.Id,
+		&question.FormId,
+		&question.Title,
+		&question.NumberOrder,
+		&question.Required)
+	if err != nil {
+		log.Printf("Ошибка при запросе получения вопроса: %v", err)
+		return question, err
+	}
+	return question, err
+}
+
+func QuestionUpdateRequest(updateQuestion models.QuestionRequest, creator_id int, formId int, questionId int) error {
+
+	query := "UPDATE questions SET title = $1, number_order = $2, required = $3 WHERE id = $4 AND form_id = $5 and creator_id = $6"
+	_, err := Db.Exec(query, updateQuestion.Title, updateQuestion.NumberOrder, updateQuestion.Required, questionId, formId, creator_id)
+	if err != nil {
+		log.Printf("Ошибка при запросе обновления вопроса: %v", err)
+		return err
+	}
+	return err
+}
+
+func AnswerChekingRequest(existId int, creatorId int, formId int, questionId int, answerId int) error {
+	queryChek := "SELECT id FROM answers WHERE id = $1 AND question_id = $2 AND form_id = $3 AND creator_id = $4"
+	err := Db.QueryRow(queryChek, answerId, questionId, formId, creatorId).Scan(&existId)
+	if err != nil {
+		log.Printf("Ошибка при запросе на проверку наличия ответа: %v", err)
+		return err
+	}
+	return err
+}
+
+func AnswerCreateRequest(answer models.AnswerRequest, questionId int) (int, error) {
+	query := `INSERT INTO answers (question_id, title, number_order, count) 
+			  VALUES($1, $2, $3, $4) RETURNING id`
+
+	var answerId int
+	err := Db.QueryRow(query, questionId, answer.Title, answer.NumberOrder, answer.Count).Scan(&answerId)
+	if err != nil {
+		log.Printf("Ошибка при запросе создания ответа: %v", err)
+		return answerId, err
+	}
+	return answerId, err
+}
+func AnswerDeleteRequest(creator_id int, formId int, questionId int, answerId int) (sql.Result, error) {
+	query := "DELETE FROM answers WHERE id = $1 AND question_id = $2 AND form_id = $3 and creator_id = $4"
+	_, err := Db.Exec(query, answerId, questionId, formId, creator_id)
+	if err != nil {
+		log.Printf("Ошибка при запросе удаления ответа: %v", err)
+		return nil, err
+	}
+	return nil, err
+}
+
+func AnswerGetRequest(creator_id int, formId int, questionId int, answerId int) (models.Answer, error) {
+	query := `SELECT id, question_id, title, number_order, count 
+			  FROM answers 
+			  WHERE id = $1 AND question_id = $2 AND form_id = $3 AND creator_id = $4`
+
+	var answer models.Answer
+	err := Db.QueryRow(query, answerId, questionId, formId, creator_id).Scan(&answer.Id,
+		&answer.QuestionId,
+		&answer.Title,
+		&answer.NumberOrder,
+		&answer.Count)
+	if err != nil {
+		log.Printf("Ошибка при запросе получения ответа: %v", err)
+		return answer, err
+	}
+	return answer, err
+}
+
+func AnswerUpdateRequest(updateAnswer models.AnswerRequest, creator_id int, formId int, questionId int, answerId int) error {
+	query := "UPDATE answers SET title = $1, number_order = $2, count = $3 WHERE id = $4 AND question_id = $5 AND form_id = $6 and creator_id = $7"
+	_, err := Db.Exec(query, updateAnswer.Title, updateAnswer.NumberOrder, updateAnswer.Count, answerId, questionId, formId, creator_id)
+	if err != nil {
+		log.Printf("Ошибка при запросе обновления ответа: %v", err)
+		return err
+	}
+	return err
+}
+
+func GetAnswersRequest(creator_id int, formId int, questionId int) (*sql.Rows, error) {
+	query := `SELECT id, question_id, title, number_order, count 
+			  FROM answers 
+			  WHERE question_id = $1 AND form_id = $2 AND creator_id = $3`
+
+	rows, err := Db.Query(query, questionId, formId, creator_id)
+
+	if err != nil {
+		log.Printf("Ошибка при запросе получения ответов: %v", err)
+		return nil, err
+	}
+	return rows, err
+}
+

@@ -18,3 +18,34 @@ type Form struct {
 	PrivateKey  bool      `json:"private_key"`
 	ExpiresAt   time.Time `json:"expires_at"`
 }
+
+type Question struct {
+	Id          int       `json:"id"`
+	FormId      int       `json:"form_id"`
+	NumberOrder int       `json:"number_order"`
+	Title 	 string    `json:"title"`
+	Required   bool      `json:"required"`
+}
+
+type QuestionRequest struct {
+	Title       string    `json:"title" binding:"required"`
+	NumberOrder int       `json:"number_order" binding:"required"`
+	Required    bool      `json:"required" binding:"required"`
+}
+
+
+type Answer struct {
+	Id        int       `json:"id"`
+	QuestionId int       `json:"question_id"`
+	Title    string    `json:"title"`
+	NumberOrder int       `json:"number_order"`
+	Count	 int       `json:"count"`
+	AnswerId int       `json:"answer_id"`
+}
+
+type AnswerRequest struct {
+	Title       string    `json:"title" binding:"required"`
+	NumberOrder int       `json:"number_order" binding:"required"`
+	Count       int       `json:"count"`
+	AnswerId    int       `json:"answer_id"`
+}

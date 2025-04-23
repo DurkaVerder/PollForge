@@ -29,7 +29,9 @@ CREATE TABLE forms(
 CREATE TABLE questions(
     id SERIAL PRIMARY KEY,
     form_id INT,
+    creator_id INT NOT NULL
     number_order INT,
+    required BOOLEAN DEFAULT FALSE,
     title VARCHAR(255) NOT NULL,
     FOREIGN KEY (form_id) REFERENCES forms (id) ON DELETE CASCADE
 );
@@ -37,9 +39,13 @@ CREATE TABLE questions(
 CREATE TABLE answers(
     id SERIAL PRIMARY KEY,
     question_id INT,
+    creator_id INT NOT NULL,
+    form_id INT NOT NULL,
     title VARCHAR(255) NOT NULL,
     number_order INT,
     count INT DEFAULT 0,
+    answer_id INT DEFAULT 0,
+    FOREIGN KEY (answer_id) REFERENCES answers (id) ON DELETE CASCADE,
     FOREIGN KEY (question_id) REFERENCES questions (id) ON DELETE CASCADE
 );
 
