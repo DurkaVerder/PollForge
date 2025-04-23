@@ -40,7 +40,7 @@ func (h *KafkaEmailHandler) ConsumeClaim(sess sarama.ConsumerGroupSession, claim
 		}
 
 		h.msgChan <- message
-		h.logger.Printf("Message sent to channel: %s", message)
+		h.logger.Printf("Message sent to channel: %v", message)
 
 		sess.MarkMessage(msg, "")
 	}
