@@ -29,7 +29,7 @@ func ConnectToDb() error {
 func GetUserProfileRequest(userId int) (*models.UserProfile, error) {
 	row := Db.QueryRow("SELECT id, name, email FROM users WHERE id = $1", userId)
 	var profile models.UserProfile
-	err := row.Scan(&profile.ID, profile.Username, profile.Email)
+	err := row.Scan(&profile.ID, &profile.Username, &profile.Email)
 	if err != nil {
 		log.Printf("Ошибка при получении профиля пользователя: %v", err)
 		return nil, err
