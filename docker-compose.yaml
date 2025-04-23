@@ -70,11 +70,11 @@ services:
     networks:
       - pollforge-network
 
-  polls-service:
+  forms-service:
     build:
-      context: ./polls
+      context: ./forms
       dockerfile: Dockerfile
-    container_name: polls
+    container_name: forms
     environment:
       - DB_URL=postgres://postgres:durka@postgres:5432/pollforge-database?sslmode=disable
       - PORT=:8083

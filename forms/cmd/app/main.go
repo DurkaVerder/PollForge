@@ -1,8 +1,8 @@
 package main
 
 import (
-	"profile/internal/router"
-	"profile/internal/storage"
+	"forms/internal/router"
+	"forms/internal/storage"
 
 	"log"
 
@@ -11,11 +11,14 @@ import (
 )
 
 func init() {
+
 	err := godotenv.Load()
 	if err != nil {
 		log.Fatal("Ошибка загрузки из env. файла")
 	}
+
 }
+
 func main() {
 
 	err := storage.ConnectToDb()

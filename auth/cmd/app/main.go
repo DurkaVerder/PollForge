@@ -10,13 +10,18 @@ import (
 	"github.com/joho/godotenv"
 )
 
-func main() {
+func init() {
 
 	err := godotenv.Load()
 	if err != nil {
 		log.Fatal("Ошибка загрузки из env. файла")
 	}
-	err = storage.ConnectToDb()
+
+}
+
+func main() {
+
+	err := storage.ConnectToDb()
 	if err != nil {
 		log.Fatal("Ошибка подключения к дб")
 	}

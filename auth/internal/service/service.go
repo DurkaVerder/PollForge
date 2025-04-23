@@ -17,8 +17,8 @@ var jwtKey = []byte(os.Getenv("JWT_SECRET"))
 func GenerateJwt(userId string) (string, error) {
 
 	claims := jwt.MapClaims{
-		"userID": userId,
-		"exp":    time.Now().Add(time.Hour * 6).Unix(),
+		"id":  userId,
+		"exp": time.Now().Add(time.Hour * 6).Unix(),
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	return token.SignedString(jwtKey)
@@ -58,7 +58,6 @@ func RegisterUser(request models.UserRequest) (string, error) {
 }
 
 func LoggingUser(request models.UserRequest) (string, error) {
-
 	userId, err := storage.CheckingLoggingData(request)
 	if err != nil {
 		log.Printf("Ошибка при сопоставлении пароля и почты")
@@ -68,3 +67,6 @@ func LoggingUser(request models.UserRequest) (string, error) {
 	token, err := GenerateJwt(userId)
 	return token, err
 }
+
+
+

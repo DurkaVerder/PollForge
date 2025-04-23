@@ -7,6 +7,14 @@ CREATE TABLE users(
     password VARCHAR(255) NOT NULL
 );
 
+CREATE TABLE password_resets (
+	id SERIAL PRIMARY KEY,
+	user_id INT NOT NULL,
+	token VARCHAR(255) NOT NULL UNIQUE,
+	expires_at TIMESTAMP NOT NULL,
+	FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
 CREATE TABLE forms(
     id SERIAL PRIMARY KEY,
     creator_id INT NOT NULL,
@@ -14,13 +22,16 @@ CREATE TABLE forms(
     description VARCHAR(255) NOT NULL,
     link VARCHAR(255) NOT NULL,
     private_key BOOLEAN DEFAULT FALSE,
+    expires_at TIMESTAMP NOT NULL,
     FOREIGN KEY (creator_id) REFERENCES users (id) ON DELETE CASCADE
 );
 
 CREATE TABLE questions(
     id SERIAL PRIMARY KEY,
     form_id INT,
+    creator_id INT NOT NULL
     number_order INT,
+    required BOOLEAN DEFAULT FALSE,
     title VARCHAR(255) NOT NULL,
     FOREIGN KEY (form_id) REFERENCES forms (id) ON DELETE CASCADE
 );
@@ -28,6 +39,8 @@ CREATE TABLE questions(
 CREATE TABLE answers(
     id SERIAL PRIMARY KEY,
     question_id INT,
+    creator_id INT NOT NULL,
+    form_id INT NOT NULL,
     title VARCHAR(255) NOT NULL,
     number_order INT,
     count BIGINT DEFAULT 0,
