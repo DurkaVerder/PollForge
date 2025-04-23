@@ -1,5 +1,7 @@
 package models
 
+import "time"
+
 type User struct {
 	ID       int    `json:"id"`
 	Username string `json:"name"`
@@ -20,8 +22,11 @@ type UserProfile struct {
 }
 
 type Form struct {
-	ID          int    `json:"id"`
-	Title       string `json:"title"`
-	Description string `json:"description"`
-	Link        string `json:"link"`
+	Id          int       `json:"id"`
+	CreatorId   int       `json:"creator_id"`
+	Title       string    `json:"title"`
+	Description string    `json:"description"`
+	Link        string    `json:"link"`
+	PrivateKey  bool      `json:"private_key"`
+	ExpiresAt   time.Time `json:"expires_at"`
 }

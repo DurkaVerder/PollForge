@@ -16,13 +16,13 @@ func GetUserProfile(userId int) (*models.UserProfile, error) {
 	var profile models.UserProfile
 	err := row.Scan(&profile.ID, profile.Username, profile.Email)
 	if err != nil {
-		return nil, fmt.Errorf("Пользователь не найден")
+		return nil, fmt.Errorf("пользователь не найден")
 	}
 	return &profile, nil
 }
 
 func GetUserForms(userId int) ([]models.Form, error) {
-	rows, err := storage.Db.Query("SELECT id, title, description, link FROM forms WHERE creator_id = $1", userId)
+	rows, err := storage.Db.Query("SELECT id, title, description, link, private_key, expires_at FROM forms WHERE creator_id = $1", userId)
 	if err != nil {
 		log.Print("Данных нет")
 		return nil, err
@@ -32,13 +32,18 @@ func GetUserForms(userId int) ([]models.Form, error) {
 	defer rows.Close()
 
 	for rows.Next() {
-		var f models.Form
-		err := rows.Scan(&f.ID, &f.Title, &f.Description, &f.Link)
+		var form models.Form
+		err := rows.Scan(&form.Id,
+			&form.Title,
+			&form.Description,
+			&form.Link,
+			&form.PrivateKey,
+			&form.ExpiresAt)
 		if err != nil {
 			log.Print("Данных нет")
 			return nil, err
 		}
-		forms = append(forms, f)
+		forms = append(forms, form)
 	}
 
 	return forms, nil
@@ -48,7 +53,7 @@ func GetToken(auth string) (*jwt.Token, error) {
 	tokenStr := strings.TrimPrefix(auth, "Bearer")
 	token, err := jwt.Parse(tokenStr, func(t *jwt.Token) (interface{}, error) {
 		if t.Method != jwt.SigningMethodHS256 {
-			return nil, fmt.Errorf("Неподходящий метод подписи")
+			return nil, fmt.Errorf("неподходящий метод подписи")
 		}
 		return []byte(os.Getenv("JWT_SECRET")), nil
 	})
