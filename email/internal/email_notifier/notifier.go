@@ -1,5 +1,11 @@
 package emailnotifier
 
+import (
+	"net/smtp"
+
+	"github.com/jordan-wright/email"
+)
+
 type EmailNotifier struct {
 	from     string
 	password string
@@ -17,6 +23,10 @@ func NewEmailNotifier(from, password, smtpHost, smtpPort string) *EmailNotifier 
 }
 
 func (emailNotifier *EmailNotifier) SendEmail(to, subject, body string) error {
-	
-	return nil
+	e := email.NewEmail()
+	e.From = emailNotifier.from
+	e.To = []string{to}
+	e.Subject = subject
+	e.Text = []byte(body)
+	return e.Send(emailNotifier.smtpHost+":"+emailNotifier.smtpPort, smtp.PlainAuth("", emailNotifier.from, emailNotifier.password, emailNotifier.smtpHost))
 }

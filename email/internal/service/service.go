@@ -3,6 +3,7 @@ package service
 import (
 	en "email/internal/email_notifier"
 	"email/internal/models"
+	"log"
 	"sync"
 )
 
@@ -24,15 +25,17 @@ type Email struct {
 }
 
 type Service struct {
-	wg *sync.WaitGroup
-	db DB
+	wg     *sync.WaitGroup
+	logger *log.Logger
+	db     DB
 
-	emailNotifier en.EmailNotifier
+	emailNotifier *en.EmailNotifier
 }
 
-func NewService(db DB, emailNotifier en.EmailNotifier) *Service {
+func NewService(db DB, emailNotifier *en.EmailNotifier, logger *log.Logger) *Service {
 	return &Service{
 		wg:            &sync.WaitGroup{},
+		logger:        logger,
 		db:            db,
 		emailNotifier: emailNotifier,
 	}
@@ -52,13 +55,21 @@ func (s *Service) StopWorker() {
 func (s *Service) worker(msg <-chan models.MessageKafka) {
 	defer s.wg.Done()
 	for m := range msg {
-		email, err := s.createEmail(m)
+		email, err := s.getEmailByUserID(m.UserID)
 		if err != nil {
+			s.logger.Println("Error getting email by user ID:", err)
 			continue
 		}
 
-		err = s.emailNotifier.SendEmail(email.To, email.Subject, email.Body)
+		emailMsg, err := s.createEmail(email, m.EventType)
 		if err != nil {
+			s.logger.Println("Error creating email:", err)
+			continue
+		}
+
+		err = s.emailNotifier.SendEmail(emailMsg.To, emailMsg.Subject, emailMsg.Body)
+		if err != nil {
+			s.logger.Println("Error sending email:", err)
 			continue
 		}
 	}
@@ -85,13 +96,9 @@ func (s *Service) selectEmailTemplate(eventType string) (string, string) {
 	return subject, body
 }
 
-func (s *Service) createEmail(msg models.MessageKafka) (Email, error) {
-	email, err := s.getEmailByUserID(msg.UserID)
-	if err != nil {
-		return Email{}, err
-	}
+func (s *Service) createEmail(email, eventType string) (Email, error) {
 
-	subject, body := s.selectEmailTemplate(msg.EventType)
+	subject, body := s.selectEmailTemplate(eventType)
 
 	return Email{
 		To:      email,
