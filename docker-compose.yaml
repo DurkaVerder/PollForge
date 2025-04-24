@@ -91,6 +91,22 @@ services:
       - pollforge-network    
     
 
+  stream-line-service:
+    build:
+      context: ./stream_line
+      dockerfile: Dockerfile
+    container_name: stream-line
+    environment:
+      # - KAFKA_BROKER=kafka:9092
+      # - KAFKA_TOPIC=notification
+      - DB_URL=postgres://postgres:durka@postgres:5432/pollforge-database?sslmode=disable
+      - PORT=:8082
+    depends_on:
+      postgres: 
+          condition: service_healthy
+    networks:
+      - pollforge-network
+
   forms-service:
     build:
       context: ./forms
