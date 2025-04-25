@@ -2,11 +2,15 @@ package models
 
 import "time"
 
-type FormResponse struct {
+type Form struct {
 	ID          string `json:"id"`
 	Title       string `json:"title"`
 	Description string `json:"description"`
 	CreatedAt   string `json:"created_at"`
+}
+
+type FormResponse struct {
+	Forms []Form `json:"forms"`
 }
 
 type FormFromDB struct {
