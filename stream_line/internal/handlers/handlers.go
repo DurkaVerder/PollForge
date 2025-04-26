@@ -22,7 +22,7 @@ func NewStreamLineHandler(s Service) *StreamLineHandler {
 }
 
 func (h *StreamLineHandler) GetStreamLine(ctx *gin.Context) {
-	id, exist := ctx.Get("user_id")
+	id, exist := ctx.Get("userID")
 	if !exist {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": "user_id not found in context"})
 		return
