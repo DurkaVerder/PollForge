@@ -24,6 +24,7 @@ func (s *Server) initRoutes() {
 
 	streamLine := s.engine.Group("/streamline")
 	streamLine.Use(middleware.AuthMiddleware())
+	streamLine.Use(middleware.LoggerMiddleware())
 	{
 		streamLine.GET("/streamline", s.handlers.GetStreamLine)
 	}
