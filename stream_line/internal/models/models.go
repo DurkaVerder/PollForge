@@ -7,6 +7,7 @@ type Form struct {
 	Title       string `json:"title"`
 	Description string `json:"description"`
 	CreatedAt   string `json:"created_at"`
+	ExpiresAt   string `json:"expires_at"`
 }
 
 type FormResponse struct {

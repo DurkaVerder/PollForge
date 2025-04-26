@@ -28,8 +28,6 @@ func GetParamFromJWT(tokenBearer, param string) (string, error) {
 		return "", err
 	}
 
-	// Возможно будет ошибка с преобразованием
-
 	value, ok := claims[param].(string)
 	if !ok {
 		return "", fmt.Errorf("param %s not found in claims", param)
