@@ -26,7 +26,7 @@ func (s *Server) initRoutes() {
 	streamLine.Use(middleware.AuthMiddleware())
 	streamLine.Use(middleware.LoggerMiddleware())
 	{
-		streamLine.GET("/streamline", s.handlers.GetStreamLine)
+		streamLine.GET("/news", s.handlers.GetStreamLine)
 	}
 
 }
