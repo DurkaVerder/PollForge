@@ -2,6 +2,38 @@ version: '3.9'
 
 services:
 
+
+  kafka:
+    image: bitnami/kafka:latest
+    container_name: kafka
+    environment:
+      - KAFKA_CFG_ZOOKEEPER_CONNECT=zookeeper:2181
+      - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://kafka:9092
+      - KAFKA_CFG_LISTENERS=PLAINTEXT://:9092
+    ports:
+      - "9092:9092"
+    depends_on:
+      - zookeeper
+    healthcheck:
+      test: ["CMD", "kafka-topics.sh", "--zookeeper", "zookeeper:2181", "--list"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - pollforge-network
+
+  zookeeper:
+    image: bitnami/zookeeper:latest
+    container_name: zookeeper
+    environment:
+      - ALLOW_ANONYMOUS_LOGIN=yes
+    ports:
+      - "2181:2181"
+    networks:
+      - pollforge-network
+  
+    
+
   postgres:
     image: postgres:15
     container_name: postgres
@@ -14,6 +46,11 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+        test: ["CMD", "pg_isready", "-U", "postgres"]
+        interval: 10s
+        timeout: 5s
+        retries: 5
     networks:
       - pollforge-network
 
@@ -46,33 +83,41 @@ services:
       - DB_URL=postgres://postgres:durka@postgres:5432/pollforge-database?sslmode=disable
       - PORT=:8081
     depends_on:
-      - postgres
+      postgres: 
+          condition: service_healthy
+      kafka: 
+          condition: service_healthy
     networks:
       - pollforge-network    
     
-  change_polls-service:
+
+  stream-line-service:
     build:
-      context: ./change_polls
+      context: ./stream_line
       dockerfile: Dockerfile
-    container_name: change_polls
+    container_name: stream-line
     environment:
+      # - KAFKA_BROKER=kafka:9092
+      # - KAFKA_TOPIC=notification
       - DB_URL=postgres://postgres:durka@postgres:5432/pollforge-database?sslmode=disable
       - PORT=:8082
     depends_on:
-      - postgres
+      postgres: 
+          condition: service_healthy
     networks:
       - pollforge-network
 
-  polls-service:
+  forms-service:
     build:
-      context: ./polls
+      context: ./forms
       dockerfile: Dockerfile
-    container_name: polls
+    container_name: forms
     environment:
       - DB_URL=postgres://postgres:durka@postgres:5432/pollforge-database?sslmode=disable
       - PORT=:8083
     depends_on:
-      - postgres
+      postgres: 
+          condition: service_healthy
     networks:
       - pollforge-network
 
@@ -85,7 +130,8 @@ services:
       - DB_URL=postgres://postgres:durka@postgres:5432/pollforge-database?sslmode=disable
       - PORT=:8084
     depends_on:
-      - postgres
+      postgres: 
+          condition: service_healthy
     networks:
       - pollforge-network
 
@@ -98,7 +144,8 @@ services:
       - DB_URL=postgres://postgres:durka@postgres:5432/pollforge-database?sslmode=disable
       - PORT=:8085
     depends_on:
-      - postgres
+      postgres: 
+          condition: service_healthy
     networks:
       - pollforge-network
 
@@ -111,10 +158,30 @@ services:
       - DB_URL=postgres://postgres:durka@postgres:5432/pollforge-database?sslmode=disable
       - PORT=:8086
     depends_on:
-      - postgres
+      postgres: 
+          condition: service_healthy
     networks:
       - pollforge-network
- 
+  
+
+
+  email-service:
+    build:
+      context: ./email
+      dockerfile: Dockerfile
+    container_name: email
+    environment:
+      - KAFKA_BROKER="kafka:9092"
+      - DB_URL=postgres://postgres:durka@postgres:5432/pollforge-database?sslmode=disable
+      - SMTP_EMAIL=hotelbooking02@mail.ru
+      - SMTP_PASSWORD=hPWFLzDD5mqWMPy1G1ty
+      - SMTP_HOST=smtp.mail.ru
+      - SMTP_PORT=465
+    depends_on:
+      postgres: 
+          condition: service_healthy
+    networks:
+      - pollforge-network
 
   
 
