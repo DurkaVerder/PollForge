@@ -12,6 +12,8 @@ import (
 	"os/signal"
 
 	"github.com/IBM/sarama"
+	"github.com/gin-gonic/gin"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
 const (
@@ -67,6 +69,16 @@ func main() {
 	go func() {
 		for err := range consumerGroup.Errors() {
 			logger.Println("Error from consumer group:", err)
+		}
+	}()
+
+	go func() {
+		r := gin.Default()
+
+		r.GET("/metrics", gin.WrapH(promhttp.Handler()))
+
+		if err := r.Run(os.Getenv("PORT")); err != nil {
+			panic(err)
 		}
 	}()
 
