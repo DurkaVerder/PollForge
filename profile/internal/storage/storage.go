@@ -49,7 +49,7 @@ func GetUserFormsRequest(userId int) (*sql.Rows, error) {
 func FormChekingRequest(existId int, creatorId int, formId int) error {
 
 	queryChek := "SELECT id FROM forms WHERE id  = $1 and creator_id = $2"
-	err := Db.QueryRow(queryChek, creatorId, formId).Scan(&existId)
+	err := Db.QueryRow(queryChek, formId, creatorId).Scan(&existId)
 	if err != nil {
 		log.Printf("Ошибка при запросе на проверку наличия формы: %v", err)
 		return err
@@ -67,3 +67,4 @@ func FormDeleteRequest(formId int, creatorId int) error {
 	}
 	return err
 }
+
