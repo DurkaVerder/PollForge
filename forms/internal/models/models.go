@@ -25,6 +25,9 @@ type Question struct {
 	NumberOrder int       `json:"number_order"`
 	Title 	 string    `json:"title"`
 	Required   bool      `json:"required"`
+	AnswerTitle string    `json:"answer_title"`
+	AnswerNumberOrder int       `json:"answer_order"`
+	AnswerCount int       `json:"answer_count"`
 }
 
 type QuestionRequest struct {

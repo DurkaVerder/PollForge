@@ -31,7 +31,7 @@ CREATE TABLE forms(
 CREATE TABLE questions(
     id SERIAL PRIMARY KEY,
     form_id INT,
-    creator_id INT NOT NULL
+    creator_id INT NOT NULL,
     number_order INT,
     required BOOLEAN DEFAULT FALSE,
     title VARCHAR(255) NOT NULL,
@@ -82,7 +82,7 @@ CREATE INDEX idx_users_id_name ON users (id, name);
 
 CREATE INDEX idx_forms_id_creator_id_link ON forms (id, creator_id, link);
 
-CREATE INDEX idx_forms_link ON forms (link) WHERE link = FALSE;
+CREATE INDEX idx_forms_link ON forms (link);
 
 CREATE INDEX idx_questions_id_form_id ON questions (id, form_id);
 

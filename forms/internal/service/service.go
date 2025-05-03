@@ -16,19 +16,18 @@ func GetToken(auth string) (*jwt.Token, error) {
 	tokenStr := strings.TrimPrefix(auth, "Bearer")
 	token, err := jwt.Parse(tokenStr, func(t *jwt.Token) (interface{}, error) {
 		if t.Method != jwt.SigningMethodHS256 {
-			return nil, fmt.Errorf("Неподходящий метод подписи")
+			return nil, fmt.Errorf("неподходящий метод подписи")
 		}
 		return []byte(os.Getenv("JWT_SECRET")), nil
 	})
 	return token, err
 }
 
-func FormChek(creatorId int, formId int) error {
+func FormCheck(creatorId int, formId int) error {
 	var existId int
-	err := storage.FormChekingRequest(existId, creatorId, formId)
+	err := storage.FormCheckingRequest(existId, creatorId, formId)
 	if err != nil {
 		log.Printf("Ошибка при проверке на наличие формы: %v", err)
-		log.Printf("%s", err.Error())
 		return err
 	}
 	return err
@@ -100,7 +99,6 @@ func QuestionChek(creator_id int, formId int, questionId int) error {
 	err := storage.QuestionChekingRequest(existId, creator_id, formId, questionId)
 	if err != nil {
 		log.Printf("Ошибка при проверке на наличие вопроса: %v", err)
-		log.Printf("%s", err.Error())
 		return err
 	}
 	return err
@@ -113,15 +111,6 @@ func QuestionDelete(creator_id int, formId int, questionId int) (sql.Result, err
 		return nil, err
 	}
 	return nil, err
-}
-
-func QuestionGet(creator_id int, formId int, questionId int) (models.Question, error) {
-	question, err := storage.QuestionGetRequest(creator_id, formId, questionId)
-	if err != nil {
-		log.Printf("Ошибка при получении данных вопроса: %v", err)
-		return question, err
-	}
-	return question, err
 }
 
 func QuestionUpdate(updateQuestion models.QuestionRequest, creator_Id int, formId int, questionId int) error {
@@ -151,10 +140,13 @@ func QuestionsGet(creator_Id, formId int) ([]models.Question, error) {
 	for rows.Next() {
 		var question models.Question
 		err := rows.Scan(&question.Id,
-			&question.FormId,
-			&question.NumberOrder,
 			&question.Title,
-			&question.Required)
+			&question.NumberOrder,
+			&question.Required,
+			&question.AnswerTitle,
+			&question.AnswerNumberOrder,
+			&question.AnswerCount,
+			)
 		if err != nil {
 			log.Printf("Не удалось считать данные вопроса через запрос: %v", err)
 			return questions, err
@@ -170,7 +162,6 @@ func AnswerChek(creator_id int, formId int, questionId int, answerId int) error 
 	err := storage.AnswerChekingRequest(existId, creator_id, formId, questionId, answerId)
 	if err != nil {
 		log.Printf("Ошибка при проверке на наличие ответа: %v", err)
-		log.Printf("%s", err.Error())
 		return err
 	}
 	return err
@@ -183,15 +174,6 @@ func AnswerDelete(creator_Id int, formId int, questionId int, answerId int) (sql
 		return nil, err
 	}
 	return nil, err
-}
-
-func AnswerGet(creator_Id int, formId int, questionId int, answerId int) (models.Answer, error) {
-	answer, err := storage.AnswerGetRequest(creator_Id, formId, questionId, answerId)
-	if err != nil {
-		log.Printf("Ошибка при получении данных ответа: %v", err)
-		return answer, err
-	}
-	return answer, err
 }
 
 func AnswerUpdate(updateAnswer models.AnswerRequest, creator_Id int, formId int, questionId int, answerId int) error {
