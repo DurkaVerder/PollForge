@@ -19,6 +19,8 @@ func SetUpRouter(r *gin.Engine) {
 	{
 		protected.GET("/profile", handlers.GetProfile)
 		protected.GET("/forms", handlers.GetForms)
+		protected.DELETE("/forms/:id", handlers.DeleteForm)
+
 	}
 
 	if err := r.Run(profile_port); err != nil {

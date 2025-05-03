@@ -26,10 +26,10 @@ func ConnectToDb() error {
 	return nil
 }
 
-func FormChekingRequest(existId int, creatorId int, formId int) error {
+func FormCheckingRequest(existId int, creatorId int, formId int) error {
 
 	queryChek := "SELECT id FROM forms WHERE id  = $1 and creator_id = $2"
-	err := Db.QueryRow(queryChek, creatorId, formId).Scan(&existId)
+	err := Db.QueryRow(queryChek, formId, creatorId).Scan(&existId)
 	if err != nil {
 		log.Printf("Ошибка при запросе на проверку наличия формы: %v", err)
 		return err
@@ -93,7 +93,7 @@ func FormUpdateRequest(updateForm models.FormRequest, creatorId int, formId int)
 }
 
 func GetFormsRequest(creatorId int) (*sql.Rows, error) {
-	query := `SELECT id, title, description, link, private_key, expires_at FROM forms WHERE creator_id = $1`
+	query := `SELECT id, title, description, link, private_key, expires_at FROM forms WHERE creator_id = $1 ORDER BY number_order`
 
 	rows, err := Db.Query(query, creatorId)
 
@@ -139,9 +139,10 @@ func QuestionDeleteRequest(creator_id int, formId int, questionId int) (sql.Resu
 }
 
 func QuestionsGetRequest(creator_id int, formId int) (*sql.Rows, error) {
-	query := `SELECT id, form_id, title, number_order, required 
-			  FROM questions 
-			  WHERE form_id = $1 AND creator_id = $2 ORDER BY number_order`
+	query := `SELECT questions.id, questions.title, questions.number_order, questions.required, answers.title, answers.number_order, answers.count 
+			  FROM questions
+			  JOIN answers ON questions.id = answers.question_id 
+			  WHERE form_id = $1 AND creator_id = $2 ORDER BY questions.number_order, answers.number_order`
 
 	rows, err := Db.Query(query, formId, creator_id)
 
@@ -150,24 +151,6 @@ func QuestionsGetRequest(creator_id int, formId int) (*sql.Rows, error) {
 		return nil, err
 	}
 	return rows, err
-}
-
-func QuestionGetRequest(creator_id int, formId int, questionId int) (models.Question, error) {
-	query := `SELECT id, form_id, title, number_order, required 
-			  FROM questions 
-			  WHERE id = $1 AND form_id = $2 AND creator_id = $3`
-
-	var question models.Question
-	err := Db.QueryRow(query, questionId, formId, creator_id).Scan(&question.Id,
-		&question.FormId,
-		&question.Title,
-		&question.NumberOrder,
-		&question.Required)
-	if err != nil {
-		log.Printf("Ошибка при запросе получения вопроса: %v", err)
-		return question, err
-	}
-	return question, err
 }
 
 func QuestionUpdateRequest(updateQuestion models.QuestionRequest, creator_id int, formId int, questionId int) error {
@@ -213,24 +196,6 @@ func AnswerDeleteRequest(creator_id int, formId int, questionId int, answerId in
 	return nil, err
 }
 
-func AnswerGetRequest(creator_id int, formId int, questionId int, answerId int) (models.Answer, error) {
-	query := `SELECT id, question_id, title, number_order, count 
-			  FROM answers 
-			  WHERE id = $1 AND question_id = $2 AND form_id = $3 AND creator_id = $4`
-
-	var answer models.Answer
-	err := Db.QueryRow(query, answerId, questionId, formId, creator_id).Scan(&answer.Id,
-		&answer.QuestionId,
-		&answer.Title,
-		&answer.NumberOrder,
-		&answer.Count)
-	if err != nil {
-		log.Printf("Ошибка при запросе получения ответа: %v", err)
-		return answer, err
-	}
-	return answer, err
-}
-
 func AnswerUpdateRequest(updateAnswer models.AnswerRequest, creator_id int, formId int, questionId int, answerId int) error {
 	query := "UPDATE answers SET title = $1, number_order = $2, count = $3 WHERE id = $4 AND question_id = $5 AND form_id = $6 and creator_id = $7"
 	_, err := Db.Exec(query, updateAnswer.Title, updateAnswer.NumberOrder, updateAnswer.Count, answerId, questionId, formId, creator_id)
@@ -254,4 +219,3 @@ func GetAnswersRequest(creator_id int, formId int, questionId int) (*sql.Rows, e
 	}
 	return rows, err
 }
-
