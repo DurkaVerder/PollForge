@@ -203,6 +203,22 @@ services:
     networks:
       - pollforge-network
 
+  comments-service:
+    build:
+      context: ./comments
+      dockerfile: Dockerfile
+    container_name: comments
+    environment:
+      - DB_URL=postgres://postgres:durka@postgres:5432/pollforge-database?sslmode=disable
+      - PORT=:8080
+    ports:
+      - "8088:8080"
+    depends_on:
+      postgres: 
+          condition: service_healthy
+    networks:
+      - pollforge-network
+      
 volumes:
   postgres_data:
   grafana-storage:
