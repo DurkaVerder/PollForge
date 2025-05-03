@@ -1,6 +1,7 @@
 package service
 
 import (
+	"database/sql"
 	"fmt"
 	"log"
 	"os"
@@ -57,3 +58,24 @@ func GetToken(auth string) (*jwt.Token, error) {
 	})
 	return token, err
 }
+
+func FormChek(creatorId int, formId int) error {
+	var existId int
+	err := storage.FormChekingRequest(existId, creatorId, formId)
+	if err != nil {
+		log.Printf("Ошибка при проверке на наличие формы: %v", err)
+		log.Printf("%s", err.Error())
+		return err
+	}
+	return err
+}
+
+func FormDelete(formId int, creatorId int) (sql.Result, error) {
+	err := storage.FormDeleteRequest(formId, creatorId)
+	if err != nil {
+		log.Printf("Ошибка при удалении данных: %v", err)
+		return nil, err
+	}
+	return nil, err
+}
+

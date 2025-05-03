@@ -45,3 +45,25 @@ func GetUserFormsRequest(userId int) (*sql.Rows, error) {
 	}
 	return rows, nil
 }
+
+func FormChekingRequest(existId int, creatorId int, formId int) error {
+
+	queryChek := "SELECT id FROM forms WHERE id  = $1 and creator_id = $2"
+	err := Db.QueryRow(queryChek, creatorId, formId).Scan(&existId)
+	if err != nil {
+		log.Printf("Ошибка при запросе на проверку наличия формы: %v", err)
+		return err
+	}
+	return err
+}
+
+func FormDeleteRequest(formId int, creatorId int) error {
+
+	query := "DELETE FROM forms WHERE id = $1 AND creator_id = $2"
+	_, err := Db.Exec(query, formId, creatorId)
+	if err != nil {
+		log.Printf("Ошибка при запросе удаления формы: %v", err)
+		return err
+	}
+	return err
+}

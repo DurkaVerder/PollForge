@@ -115,15 +115,6 @@ func QuestionDelete(creator_id int, formId int, questionId int) (sql.Result, err
 	return nil, err
 }
 
-func QuestionGet(creator_id int, formId int, questionId int) (models.Question, error) {
-	question, err := storage.QuestionGetRequest(creator_id, formId, questionId)
-	if err != nil {
-		log.Printf("Ошибка при получении данных вопроса: %v", err)
-		return question, err
-	}
-	return question, err
-}
-
 func QuestionUpdate(updateQuestion models.QuestionRequest, creator_Id int, formId int, questionId int) error {
 	err := storage.QuestionUpdateRequest(updateQuestion, creator_Id, formId, questionId)
 	if err != nil {
@@ -183,15 +174,6 @@ func AnswerDelete(creator_Id int, formId int, questionId int, answerId int) (sql
 		return nil, err
 	}
 	return nil, err
-}
-
-func AnswerGet(creator_Id int, formId int, questionId int, answerId int) (models.Answer, error) {
-	answer, err := storage.AnswerGetRequest(creator_Id, formId, questionId, answerId)
-	if err != nil {
-		log.Printf("Ошибка при получении данных ответа: %v", err)
-		return answer, err
-	}
-	return answer, err
 }
 
 func AnswerUpdate(updateAnswer models.AnswerRequest, creator_Id int, formId int, questionId int, answerId int) error {
