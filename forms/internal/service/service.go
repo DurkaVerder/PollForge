@@ -142,10 +142,13 @@ func QuestionsGet(creator_Id, formId int) ([]models.Question, error) {
 	for rows.Next() {
 		var question models.Question
 		err := rows.Scan(&question.Id,
-			&question.FormId,
-			&question.NumberOrder,
 			&question.Title,
-			&question.Required)
+			&question.NumberOrder,
+			&question.Required,
+			&question.AnswerTitle,
+			&question.AnswerNumberOrder,
+			&question.AnswerCount,
+			)
 		if err != nil {
 			log.Printf("Не удалось считать данные вопроса через запрос: %v", err)
 			return questions, err

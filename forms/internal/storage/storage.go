@@ -142,7 +142,7 @@ func QuestionsGetRequest(creator_id int, formId int) (*sql.Rows, error) {
 	query := `SELECT questions.id, questions.title, questions.number_order, questions.required, answers.title, answers.number_order, answers.count 
 			  FROM questions
 			  JOIN answers ON questions.id = answers.question_id 
-			  WHERE form_id = $1 AND creator_id = $2 ORDER BY number_order`
+			  WHERE form_id = $1 AND creator_id = $2 ORDER BY questions.number_order, answers.number_order`
 
 	rows, err := Db.Query(query, formId, creator_id)
 
@@ -152,8 +152,6 @@ func QuestionsGetRequest(creator_id int, formId int) (*sql.Rows, error) {
 	}
 	return rows, err
 }
-
-
 
 func QuestionUpdateRequest(updateQuestion models.QuestionRequest, creator_id int, formId int, questionId int) error {
 
@@ -197,8 +195,6 @@ func AnswerDeleteRequest(creator_id int, formId int, questionId int, answerId in
 	}
 	return nil, err
 }
-
-
 
 func AnswerUpdateRequest(updateAnswer models.AnswerRequest, creator_id int, formId int, questionId int, answerId int) error {
 	query := "UPDATE answers SET title = $1, number_order = $2, count = $3 WHERE id = $4 AND question_id = $5 AND form_id = $6 and creator_id = $7"
