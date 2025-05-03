@@ -6,6 +6,7 @@ require (
 	github.com/IBM/sarama v1.45.1
 	github.com/gin-gonic/gin v1.10.0
 	github.com/jordan-wright/email v4.0.1-0.20210109023952-943e75fe5223+incompatible
+	github.com/lib/pq v1.10.9
 	github.com/prometheus/client_golang v1.22.0
 )
 

@@ -6,6 +6,8 @@ import (
 	"os"
 
 	"golang.org/x/crypto/bcrypt"
+
+	_ "github.com/lib/pq" 
 )
 
 var Db *sql.DB

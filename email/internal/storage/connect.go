@@ -1,6 +1,10 @@
 package storage
 
-import "database/sql"
+import (
+	"database/sql"
+
+	_ "github.com/lib/pq"
+)
 
 func ConnectDB(driver, dns string) (*sql.DB, error) {
 	db, err := sql.Open(driver, dns)

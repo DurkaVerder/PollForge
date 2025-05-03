@@ -5,6 +5,8 @@ import (
 	"log"
 	"os"
 	"profile/internal/models"
+
+	_ "github.com/lib/pq" 
 )
 
 var Db *sql.DB

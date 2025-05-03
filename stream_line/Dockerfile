@@ -4,9 +4,10 @@ WORKDIR /app
 
 COPY . .
 
+
 RUN go mod tidy
 
-RUN go build -o app ./cmd/app/main.go
+RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o app ./cmd/app/main.go
 
 
 
@@ -18,5 +19,7 @@ RUN apk add --no-cache ca-certificates
 WORKDIR /root/
 
 COPY --from=builder /app/app .
+
+RUN ls -l
 
 CMD ["./app"]

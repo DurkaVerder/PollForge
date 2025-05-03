@@ -7,6 +7,8 @@ import (
 	"os"
 
 	"github.com/google/uuid"
+
+	_ "github.com/lib/pq" 
 )
 
 var Db *sql.DB
