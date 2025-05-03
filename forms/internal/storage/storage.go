@@ -51,6 +51,7 @@ func FormCreateRequest(form models.FormRequest, creatorId int) (int, string, err
 	}
 	return formId, link, err
 }
+
 func FormDeleteRequest(formId int, creatorId int) error {
 
 	query := "DELETE FROM forms WHERE id = $1 AND creator_id = $2"
