@@ -28,7 +28,6 @@ func FormCheck(creatorId int, formId int) error {
 	err := storage.FormCheckingRequest(existId, creatorId, formId)
 	if err != nil {
 		log.Printf("Ошибка при проверке на наличие формы: %v", err)
-		log.Printf("%s", err.Error())
 		return err
 	}
 	return err
@@ -100,7 +99,6 @@ func QuestionChek(creator_id int, formId int, questionId int) error {
 	err := storage.QuestionChekingRequest(existId, creator_id, formId, questionId)
 	if err != nil {
 		log.Printf("Ошибка при проверке на наличие вопроса: %v", err)
-		log.Printf("%s", err.Error())
 		return err
 	}
 	return err
@@ -164,7 +162,6 @@ func AnswerChek(creator_id int, formId int, questionId int, answerId int) error 
 	err := storage.AnswerChekingRequest(existId, creator_id, formId, questionId, answerId)
 	if err != nil {
 		log.Printf("Ошибка при проверке на наличие ответа: %v", err)
-		log.Printf("%s", err.Error())
 		return err
 	}
 	return err
