@@ -26,7 +26,7 @@ func ConnectToDb() error {
 	return nil
 }
 
-func FormChekingRequest(existId int, creatorId int, formId int) error {
+func FormCheckingRequest(existId int, creatorId int, formId int) error {
 
 	queryChek := "SELECT id FROM forms WHERE id  = $1 and creator_id = $2"
 	err := Db.QueryRow(queryChek, creatorId, formId).Scan(&existId)

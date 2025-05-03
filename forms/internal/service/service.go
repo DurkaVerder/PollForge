@@ -23,9 +23,9 @@ func GetToken(auth string) (*jwt.Token, error) {
 	return token, err
 }
 
-func FormChek(creatorId int, formId int) error {
+func FormCheck(creatorId int, formId int) error {
 	var existId int
-	err := storage.FormChekingRequest(existId, creatorId, formId)
+	err := storage.FormCheckingRequest(existId, creatorId, formId)
 	if err != nil {
 		log.Printf("Ошибка при проверке на наличие формы: %v", err)
 		log.Printf("%s", err.Error())
