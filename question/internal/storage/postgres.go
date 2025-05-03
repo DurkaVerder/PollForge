@@ -12,7 +12,7 @@ import (
 const (
 	maxRetries               = 3
 	QueryGetQuestions        = "SELECT id, title FROM questions WHERE form_id = $1 ORDER BY number_order"
-	QueryGetAnswers          = "SELECT a.id, a.title, a.question_id FROM answers a JOIN questions q ON a.question_id = q.id WHERE q.form_id = $1 ORDER BY q.number_order, a.number_order"
+	QueryGetAnswers          = "SELECT a.id, a.title, a.question_id FROM answers a INNER JOIN questions q ON a.question_id = q.id WHERE q.form_id = $1 ORDER BY q.number_order, a.number_order"
 	QueryUpdateCountAnswer   = "UPDATE answers SET count = count + 1 WHERE id = ANY($1)"
 	QueryExistsUserAnswer    = "SELECT EXISTS(SELECT 1 FROM answered_polls WHERE form_id = $1 AND user_id = $2)"
 	QueryInsertAnsweredPolls = "INSERT INTO answered_polls (form_id, user_id) VALUES ($1, $2)"

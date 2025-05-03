@@ -93,7 +93,7 @@ func FormUpdateRequest(updateForm models.FormRequest, creatorId int, formId int)
 }
 
 func GetFormsRequest(creatorId int) (*sql.Rows, error) {
-	query := `SELECT id, title, description, link, private_key, expires_at FROM forms WHERE creator_id = $1`
+	query := `SELECT id, title, description, link, private_key, expires_at FROM forms WHERE creator_id = $1 ORDER BY number_order`
 
 	rows, err := Db.Query(query, creatorId)
 
@@ -254,4 +254,3 @@ func GetAnswersRequest(creator_id int, formId int, questionId int) (*sql.Rows, e
 	}
 	return rows, err
 }
-
