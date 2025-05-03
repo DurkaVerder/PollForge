@@ -9,10 +9,8 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-
-
 func main() {
-
+	log.Print("НУ как, погнали")
 	err := storage.ConnectToDb()
 	if err != nil {
 		log.Fatal("Ошибка подключения к дб")
