@@ -33,34 +33,33 @@ services:
     networks:
       - pollforge-network
 
+
   kafka:
     image: bitnami/kafka:latest
     container_name: kafka
     environment:
-      - KAFKA_CFG_ZOOKEEPER_CONNECT=zookeeper:2181
-      - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://kafka:9092
-      - KAFKA_CFG_LISTENERS=PLAINTEXT://:9092
+      - KAFKA_KRAFT_MODE=true                                 
+      - KAFKA_CFG_PROCESS_ROLES=broker,controller             
+      - KAFKA_CFG_NODE_ID=1                                   
+      - KAFKA_CFG_CONTROLLER_QUORUM_VOTERS=1@kafka:9093      
+      - KAFKA_CFG_LISTENERS=PLAINTEXT://:9092,CONTROLLER://:9093
+      - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://localhost:9092
+      - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT
+      - KAFKA_CFG_CONTROLLER_LISTENER_NAMES=CONTROLLER
+      - KAFKA_CFG_INTER_BROKER_LISTENER_NAME=PLAINTEXT
+      - ALLOW_PLAINTEXT_LISTENER=yes                          
     ports:
       - "9092:9092"
-    depends_on:
-      - zookeeper
+    volumes:
+      - kafka-data:/bitnami/kafka
     healthcheck:
-      test: ["CMD", "kafka-topics.sh", "--zookeeper", "zookeeper:2181", "--list"]
+      test: ["CMD", "bash", "-c", "echo > /dev/tcp/localhost/9092"]
       interval: 10s
       timeout: 5s
       retries: 5
     networks:
       - pollforge-network
 
-  zookeeper:
-    image: bitnami/zookeeper:latest
-    container_name: zookeeper
-    environment:
-      - ALLOW_ANONYMOUS_LOGIN=yes
-    ports:
-      - "2181:2181"
-    networks:
-      - pollforge-network
   
   postgres:
     image: postgres:15
@@ -187,7 +186,7 @@ services:
       dockerfile: Dockerfile
     container_name: email
     environment:
-      - KAFKA_BROKER="kafka:9092"
+      - KAFKA_BROKER=kafka:9092
       - DB_URL=postgres://postgres:durka@postgres:5432/pollforge-database?sslmode=disable
       - SMTP_EMAIL=hotelbooking02@mail.ru
       - SMTP_PASSWORD=hPWFLzDD5mqWMPy1G1ty
@@ -197,6 +196,8 @@ services:
     ports:
       - "8087:8080"
     depends_on:
+      kafka: 
+          condition: service_healthy
       postgres: 
           condition: service_healthy
     networks:
@@ -205,6 +206,7 @@ services:
 volumes:
   postgres_data:
   grafana-storage:
+  kafka-data:
 
 networks:
   pollforge-network:
