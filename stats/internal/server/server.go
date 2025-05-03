@@ -4,6 +4,7 @@ import (
 	"stats/internal/websocket"
 
 	"github.com/gin-gonic/gin"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
 type Server struct {
@@ -20,6 +21,8 @@ func NewServer(ws *websocket.WebSocket, engine *gin.Engine) *Server {
 }
 
 func (s *Server) initRoutes() {
+	s.engine.GET("/metrics", gin.WrapH(promhttp.Handler()))
+
 	s.engine.GET("/ws", s.ws.HandleConnection)
 }
 

@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
 const (
@@ -32,6 +33,8 @@ func NewServer(handlers Handlers, engine *gin.Engine) *Server {
 func (s *Server) initRoutes() {
 	s.engine.Use(Logger())
 	s.engine.Use(Authorization())
+
+	s.engine.GET("/metrics", gin.WrapH(promhttp.Handler()))
 
 	s.engine.GET("/questions", s.handlers.HandlerAllQuestions)
 	s.engine.POST("/submit_answer", s.handlers.HandlerSubmitAnswer)
