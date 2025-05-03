@@ -53,8 +53,7 @@ CREATE TABLE comments(
     id SERIAL PRIMARY KEY,
     user_id INT NOT NULL,
     form_id INT NOT NULL,
-    title VARCHAR(255) NOT NULL,
-    count INT DEFAULT 0,
+    description VARCHAR(255) NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE,
     FOREIGN KEY (form_id) REFERENCES forms (id) ON DELETE CASCADE
