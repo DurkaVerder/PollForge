@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 	"profile/internal/models"
+	_ "github.com/lib/pq" // PostgreSQL driver
 )
 
 var Db *sql.DB

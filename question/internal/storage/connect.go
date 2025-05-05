@@ -3,6 +3,8 @@ package storage
 import (
 	"database/sql"
 	"time"
+
+	_ "github.com/lib/pq" 
 )
 
 const (

@@ -54,9 +54,9 @@ func getToken(auth string) (*jwt.Token, error) {
 func validToken(token *jwt.Token) (bool, error) {
 	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
 		if !claims.VerifyExpiresAt(time.Now().Unix(), true) {
-			return false, errors.New("токен истёк")
+			return false, errors.New("Токен истёк")
 		}
 		return true, nil
 	}
-	return false, errors.New("токен не валиден")
+	return false, errors.New("Токен не валиден")
 }

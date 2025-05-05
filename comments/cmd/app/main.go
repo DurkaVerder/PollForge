@@ -1,15 +1,12 @@
 package main
 
 import (
-	"forms/internal/router"
-	"forms/internal/storage"
-
+	"comments/internal/router"
+	"comments/internal/storage"
 	"log"
 
 	"github.com/gin-gonic/gin"
 )
-
-
 
 func main() {
 
