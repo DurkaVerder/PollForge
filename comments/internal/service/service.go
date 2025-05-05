@@ -6,7 +6,7 @@ import (
 	"log"
 )
 
-func GetAllComments(formId int) (*[]models.Comment, error) {
+func GetAllComments(formId int) ([]models.Comment, error) {
 	var comments []models.Comment
 
 	rows, err := storage.GetAllCommentsRequest(formId)
@@ -17,17 +17,17 @@ func GetAllComments(formId int) (*[]models.Comment, error) {
 	defer rows.Close()
 	for rows.Next() {
 		var comment models.Comment
-		err := rows.Scan(&comment.FormID, &comment.UserId, &comment.Description, &comment.CreatedAt)
+		err := rows.Scan(&comment.UserName, &comment.Description, &comment.CreatedAt)
 		if err != nil {
 			log.Printf("Ошибка при получении данных комментариев: %v", err)
 			return nil, err
 		}
 		comments = append(comments, comment)
 	}
-	return &comments, nil
+	return comments, nil
 }
 
-func CreateComment(comment models.Comment, formId int, creatorId int)(error){
+func CreateComment(comment models.Comment, formId int, creatorId int) error {
 	err := storage.CreateCommentRequest(comment, formId, creatorId)
 	if err != nil {
 		log.Printf("Ошибка при создании комментария: %v", err)
@@ -36,7 +36,7 @@ func CreateComment(comment models.Comment, formId int, creatorId int)(error){
 	return nil
 }
 
-func UpdateUserComment(comment models.Comment, commentId int, formId int, creatorId int) (error) {
+func UpdateUserComment(comment models.Comment, commentId int, formId int, creatorId int) error {
 	err := storage.UpdateCommentRequest(comment, commentId, formId, creatorId)
 	if err != nil {
 		log.Printf("Ошибка при обновлении комментария: %v", err)
@@ -45,7 +45,7 @@ func UpdateUserComment(comment models.Comment, commentId int, formId int, creato
 	return nil
 }
 
-func DeleteComment(commentId int, formId int, creatorId int) (error) {
+func DeleteComment(commentId int, formId int, creatorId int) error {
 	err := storage.DeleteCommentRequest(commentId, formId, creatorId)
 	if err != nil {
 		log.Printf("Ошибка при удалении комментария: %v", err)

@@ -28,7 +28,9 @@ func ConnectToDb() error {
 }
 
 func GetAllCommentsRequest(formId int)(*sql.Rows, error) {
-	query := `SELECT description, created_at, updated_at FROM comments WHERE form_id = $1 ORDER BY created_at DESC`
+	query := `SELECT user.name, comments.description, comments.created_at, FROM comments
+    JOIN users AS user ON comments.user_id = user.id 
+	WHERE form_id = $1 ORDER BY created_at DESC`
 
 	rows, err := Db.Query(query, formId)
 
