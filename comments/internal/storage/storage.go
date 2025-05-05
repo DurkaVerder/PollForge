@@ -49,7 +49,7 @@ func CreateCommentRequest(comment models.Comment, formId int, creatorId int) err
 }
 
 func UpdateCommentRequest(comment models.Comment, commentId int, formId int, creatorId int) error {
-	query := `UPDATE comments SET description = $1, WHERE form_id = $2 AND id = $3 AND user_id = $4`
+	query := `UPDATE comments SET description = $1 WHERE form_id = $2 AND id = $3 AND user_id = $4`
 	_, err := Db.Exec(query, comment.Description, formId, commentId, creatorId)
 	if err != nil {
 		log.Printf("Ошибка при запросе обновления комментария: %v", err)
