@@ -22,12 +22,12 @@ func extractFormID(c *gin.Context) (int, error) {
 
 func extractCommentID(c *gin.Context) (int, error) {
 	Commentstr := c.Param("id")
-	formId, err := strconv.Atoi(Commentstr)
+	commentId, err := strconv.Atoi(Commentstr)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"Ошибка": "Неверный id комментария"})
 		return 0, fmt.Errorf("неправильный тип id: %v", Commentstr)
 	}
-	return formId, nil
+	return commentId, nil
 }
 
 func extractUserID(c *gin.Context) (int, error) {
@@ -131,7 +131,7 @@ func DeleteComment(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"Ошибка": "Неверный id комментария"})
 		return
 	}
-	
+
 	err = service.DeleteComment(commentId, formId, userId)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"Ошибка": "Ошибка удаления комментария"})
