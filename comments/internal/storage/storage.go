@@ -5,7 +5,8 @@ import (
 	"database/sql"
 	"log"
 	"os"
-	_ "github.com/lib/pq" 
+
+	_ "github.com/lib/pq"
 )
 
 var Db *sql.DB
@@ -27,8 +28,8 @@ func ConnectToDb() error {
 	return nil
 }
 
-func GetAllCommentsRequest(formId int)(*sql.Rows, error) {
-	query := `SELECT user.name, comments.description, comments.created_at, FROM comments
+func GetAllCommentsRequest(formId int) (*sql.Rows, error) {
+	query := `SELECT user.name, comments.description, comments.created_at FROM comments
     JOIN users AS user ON comments.user_id = user.id 
 	WHERE form_id = $1 ORDER BY created_at DESC`
 
