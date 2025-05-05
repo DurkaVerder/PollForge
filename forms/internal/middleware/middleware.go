@@ -41,7 +41,7 @@ func JWTAuth() gin.HandlerFunc {
 }
 
 func getToken(auth string) (*jwt.Token, error) {
-	tokenStr := strings.TrimPrefix(auth, "Bearer")
+	tokenStr := strings.TrimSpace(strings.TrimPrefix(auth, "Bearer"))
 	token, err := jwt.Parse(tokenStr, func(t *jwt.Token) (interface{}, error) {
 		if t.Method != jwt.SigningMethodHS256 {
 			return nil, fmt.Errorf("неподходящий метод подписи")
@@ -54,9 +54,9 @@ func getToken(auth string) (*jwt.Token, error) {
 func validToken(token *jwt.Token) (bool, error) {
 	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
 		if !claims.VerifyExpiresAt(time.Now().Unix(), true) {
-			return false, errors.New("Токен истёк")
+			return false, errors.New("токен истёк")
 		}
 		return true, nil
 	}
-	return false, errors.New("Токен не валиден")
+	return false, errors.New("токен не валиден")
 }
