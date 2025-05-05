@@ -10,7 +10,7 @@ import (
 )
 
 func main() {
-	log.Print("Запуск миксорвиса авторизации")
+	log.Print("Запуск микросервиса авторизации")
 	err := storage.ConnectToDb()
 	if err != nil {
 		log.Fatal("Ошибка подключения к дб")
