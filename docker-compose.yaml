@@ -22,6 +22,7 @@ services:
       - question-service
       - stats-service
       - email-service
+      - comments-service
 
   grafana:
     image: grafana/grafana:latest

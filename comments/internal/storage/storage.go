@@ -5,7 +5,7 @@ import (
 	"database/sql"
 	"log"
 	"os"
-
+	
 	_ "github.com/lib/pq"
 )
 
@@ -18,12 +18,14 @@ func ConnectToDb() error {
 	Db, err = sql.Open("postgres", dsn)
 	if err != nil {
 		log.Printf("Ошибка подключения к базе данных: %v", err)
+		return err
 	}
 
 	err = Db.Ping()
 
 	if err != nil {
 		log.Printf("Ошибка доступа к базе данных: %v", err)
+		return err
 	}
 	return nil
 }
