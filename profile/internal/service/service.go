@@ -6,7 +6,6 @@ import (
 	"log"
 	"profile/internal/models"
 	"profile/internal/storage"
-
 )
 
 func GetUserProfile(userId int) (*models.UserProfile, error) {
