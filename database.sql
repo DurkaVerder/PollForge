@@ -5,7 +5,7 @@ CREATE TABLE users(
     name VARCHAR(255) NOT NULL UNIQUE,
     email VARCHAR(255) NOT NULL UNIQUE,
     password VARCHAR(255) NOT NULL,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE password_resets (
@@ -63,8 +63,7 @@ CREATE TABLE likes(
     id SERIAL PRIMARY KEY,
     form_id INT,
     count INT DEFAULT 0,
-    FOREIGN KEY (form_id) REFERENCES forms (id) ON DELETE CASCADE,
-    FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
+    FOREIGN KEY (form_id) REFERENCES forms (id) ON DELETE CASCADE
 );
 
 CREATE TABLE likes_forms (
@@ -74,7 +73,7 @@ CREATE TABLE likes_forms (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (form_id) REFERENCES forms (id) ON DELETE CASCADE,
     FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
-)
+);
 
 CREATE TABLE answered_polls (
     id SERIAL PRIMARY KEY,
@@ -83,7 +82,7 @@ CREATE TABLE answered_polls (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE,
     FOREIGN KEY (form_id) REFERENCES forms (id) ON DELETE CASCADE
-)
+);
 
 CREATE INDEX idx_users_id_name ON users (id, name);
 
@@ -97,6 +96,6 @@ CREATE INDEX idx_answers_id_question_id ON answers (id, question_id);
 
 CREATE INDEX idx_comments_id_user_id_form_id ON comments (id, user_id, form_id);
 
-CREATE INDEX idx_likes_id_form_id_user_id ON likes (id, form_id, user_id);
+CREATE INDEX idx_likes_id_form_id ON likes (id, form_id);
 
 CREATE INDEX idx_answered_polls_id_user_id_form_id ON answered_polls (id, user_id, form_id);
