@@ -10,8 +10,8 @@ import (
 const (
 	countWorker = 5
 
-	userRegisteredTemplate = "user_registered"
-	userLoginTemplate      = "user_login"
+	userRegisteredEvent = "user_registered"
+	userLoginEvent      = "user_login"
 )
 
 type DB interface {
@@ -57,7 +57,7 @@ func (s *Service) worker(msg <-chan models.MessageKafka) {
 	for m := range msg {
 		email, err := s.getEmailByUserID(m.UserID)
 		if err != nil {
-			s.logger.Println("Error getting email by user ID:", err)
+			s.logger.Println("Ошибка получения почты по id пользователя:", err)
 			continue
 		}
 
@@ -65,7 +65,7 @@ func (s *Service) worker(msg <-chan models.MessageKafka) {
 
 		err = s.emailNotifier.SendEmail(emailMsg.To, emailMsg.Subject, emailMsg.Body)
 		if err != nil {
-			s.logger.Println("Error sending email:", err)
+			s.logger.Println("Ошибка отправки письма:", err)
 			continue
 		}
 	}
@@ -82,15 +82,15 @@ func (s *Service) getEmailByUserID(userID string) (string, error) {
 func (s *Service) selectEmailTemplate(eventType string) (string, string) {
 	var subject, body string
 	switch eventType {
-	case userRegisteredTemplate:
-		subject = "Welcome to our service!"
-		body = "Thank you for registering. We are glad to have you."
-	case userLoginTemplate:
-		subject = "Login Notification"
-		body = "You have successfully logged in to your account."
+	case userRegisteredEvent:
+		subject = "Добро пожаловать в наш сервис!"
+		body = "Спасибо за регистрацию! Мы рады видеть вас в нашем сервисе."
+	case userLoginEvent:
+		subject = "Уведомление о входе в систему"
+		body = "Вы успешно вошли в систему. Если это были не вы, пожалуйста, измените пароль."
 	default:
-		subject = "Notification"
-		body = "Hi there! This is a notification."
+		subject = "Уведомление"
+		body = "У вас новое уведомление."
 	}
 
 	return subject, body

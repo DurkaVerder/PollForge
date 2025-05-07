@@ -2,6 +2,7 @@ package kafka
 
 import (
 	"auth/internal/models"
+	"context"
 	"encoding/json"
 	"log"
 	"os"
@@ -20,11 +21,13 @@ func InitProducer() {
 }
 
 func SendMessage(msg models.MessageKafka) error {
+	ctx := context.Background()
+
 	data, err := json.Marshal(msg)
 	if err != nil {
 		return err
 	}
-	err = writer.WriteMessages(nil, kafka.Message{
+	err = writer.WriteMessages(ctx, kafka.Message{
 		Value: data,
 	})
 	if err != nil {

@@ -2,6 +2,7 @@ package service
 
 import (
 	// "auth/internal/kafka"
+	"auth/internal/kafka"
 	"auth/internal/models"
 	"auth/internal/storage"
 	"errors"
@@ -62,13 +63,13 @@ func RegisterUser(request models.UserRequest) (string, error) {
 		return "", err
 	}
 
-	// kafkaMsg := models.MessageKafka{
-	// 	EventType: userRegisteredEvent,
-	// 	UserID:    userId,
-	// }
-	// if err := kafka.SendMessage(kafkaMsg); err != nil {
-	// 	log.Printf("Не удалось отправить сообщение Kafka: %v", err)
-	// }
+	kafkaMsg := models.MessageKafka{
+		EventType: userRegisteredEvent,
+		UserID:    userId,
+	}
+	if err := kafka.SendMessage(kafkaMsg); err != nil {
+		log.Printf("Не удалось отправить сообщение Kafka: %v", err)
+	}
 
 	token, err := GenerateJwt(userId)
 	return token, err
@@ -82,14 +83,14 @@ func LoggingUser(request models.UserRequest) (string, error) {
 		return "", err
 	}
 
-	// kafkaMsg := models.MessageKafka{
-	// 	EventType: userLoginEvent,
-	// 	UserID:    userId,
-	// }
+	kafkaMsg := models.MessageKafka{
+		EventType: userLoginEvent,
+		UserID:    userId,
+	}
 
-	// if err := kafka.SendMessage(kafkaMsg); err != nil {
-	// 	log.Printf("Не удалось отправить сообщение Kafka: %v", err)
-	// }
+	if err := kafka.SendMessage(kafkaMsg); err != nil {
+		log.Printf("Не удалось отправить сообщение Kafka: %v", err)
+	}
 
 	token, err := GenerateJwt(userId)
 	return token, err

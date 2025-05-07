@@ -191,9 +191,9 @@ services:
       - KAFKA_BROKER=kafka:9092
       - DB_URL=postgres://postgres:durka@postgres:5432/pollforge-database?sslmode=disable
       - SMTP_EMAIL=hotelbooking02@mail.ru
-      - SMTP_PASSWORD=hPWFLzDD5mqWMPy1G1ty
+      - SMTP_PASSWORD=P4cr9fkX3vRDjKLR6Euj
       - SMTP_HOST=smtp.mail.ru
-      - SMTP_PORT=465
+      - SMTP_PORT=587
       - PORT=:8080
     ports:
       - "8087:8080"

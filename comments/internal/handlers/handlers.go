@@ -36,12 +36,12 @@ func extractUserID(c *gin.Context) (int, error) {
 		c.JSON(http.StatusBadRequest, gin.H{"Ошибка": "id пользователя не найден"})
 		return 0, fmt.Errorf("id пользователя не найден")
 	}
-	creatorId, ok := creatorIdfl.(int)
+	creatorId, ok := creatorIdfl.(string)
 	if !ok {
 		c.JSON(http.StatusBadRequest, gin.H{"Ошибка": "Неправильный тип id"})
 		return 0, fmt.Errorf("неправильный тип id: %v", creatorIdfl)
 	}
-	return creatorId, nil
+	return strconv.Atoi(creatorId)
 }
 
 func GetComments(c *gin.Context) {
