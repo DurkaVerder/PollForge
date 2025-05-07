@@ -8,7 +8,7 @@ import (
 )
 
 const (
-	GetOtherFormsQuery = `SELECT f.id, f.title, f.description, l.count, EXISTS(SELECT * FROM likes_forms WHERE user_id = $1 AND form_id = f.id) AS is_liked, f.created_at, f.expires_at FROM forms f JOIN likes l ON l.form_id = f.id WHERE creator_id != $1`
+	GetOtherFormsQuery = `SELECT f.id, f.title, f.description, COALESCE(l.count, 0) AS count, EXISTS(SELECT * FROM likes_forms WHERE user_id = $1 AND form_id = f.id) AS is_liked, f.created_at, f.expires_at FROM forms f LEFT JOIN likes l ON l.form_id = f.id WHERE creator_id != $1`
 )
 
 type Postgres struct {
