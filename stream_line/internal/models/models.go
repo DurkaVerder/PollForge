@@ -22,7 +22,6 @@ type FormFromDB struct {
 	Like        LikeFromDB
 	CreatedAt   time.Time
 	ExpiresAt   time.Time
-	CreatorID   string
 }
 
 type Like struct {
