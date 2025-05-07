@@ -46,7 +46,7 @@ func UserRegistration(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, err.Error())
 		return
 	}
-	token, err := service.RegisterUser(request)
+	_, err = service.RegisterUser(request)
 	if err != nil {
 		log.Printf("Ошибка при регистрации аккаунта")
 		c.JSON(http.StatusBadRequest, err.Error())
@@ -54,6 +54,5 @@ func UserRegistration(c *gin.Context) {
 	}
 	c.JSON(http.StatusCreated, gin.H{
 		"message": "Пользователь создан",
-		"token":   token,
 	})
 }

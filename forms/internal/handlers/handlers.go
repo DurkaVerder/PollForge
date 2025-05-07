@@ -18,12 +18,13 @@ func extractUserID(c *gin.Context) (int, error) {
 		c.JSON(http.StatusBadRequest, gin.H{"Ошибка": "id пользователя не найден"})
 		return 0, fmt.Errorf("id пользователя не найден")
 	}
-	creatorId, ok := creatorIdfl.(int)
+	creatorId, ok := creatorIdfl.(string)
 	if !ok {
 		c.JSON(http.StatusBadRequest, gin.H{"Ошибка": "Неправильный тип id"})
 		return 0, fmt.Errorf("неправильный тип id: %v", creatorIdfl)
 	}
-	return creatorId, nil
+	log.Printf("id пользователя: %v", creatorId)
+	return strconv.Atoi(creatorId)
 }
 
 func extractFormID(c *gin.Context) (int, error) {
@@ -67,6 +68,7 @@ func CreateForm(c *gin.Context) {
 	}
 
 	creatorId, err := extractUserID(c)
+	log.Printf("id пользователя: %v", creatorId)
 	if err != nil {
 		log.Printf("Не удалось извлечь id пользователя: %v", err)
 		c.JSON(http.StatusBadRequest, gin.H{"Ошибка": "id пользователя не найден"})
@@ -97,6 +99,7 @@ func GetForm(c *gin.Context) {
 	var form models.Form
 
 	creatorId, err := extractUserID(c)
+	log.Printf("id пользователя: %v", creatorId)
 	if err != nil {
 		log.Printf("Не удалось извлечь id пользователя: %v", err)
 		c.JSON(http.StatusBadRequest, gin.H{"Ошибка": "id пользователя не найден"})
@@ -114,7 +117,7 @@ func GetForm(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"Ошибка": "Ошибка при получении формы"})
 		return
 	}
-
+	form.CreatorId = creatorId
 	c.JSON(http.StatusOK, form)
 }
 

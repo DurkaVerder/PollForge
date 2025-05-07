@@ -66,7 +66,7 @@ func FormDeleteRequest(formId int, creatorId int) error {
 }
 
 func FormGetRequest(creatorId int, formId int) (models.Form, error) {
-
+	log.Printf("id пользователя: %v", creatorId)
 	query := `SELECT id, title, description, link, private_key, expires_at 
 			  FROM forms 
 			  WHERE id = $1 AND creator_id = $2`
