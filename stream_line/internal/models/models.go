@@ -3,9 +3,10 @@ package models
 import "time"
 
 type Form struct {
-	ID          string `json:"id"`
+	ID          int    `json:"id"`
 	Title       string `json:"title"`
 	Description string `json:"description"`
+	Likes       Like   `json:"likes"`
 	CreatedAt   string `json:"created_at"`
 	ExpiresAt   string `json:"expires_at"`
 }
@@ -15,10 +16,20 @@ type FormResponse struct {
 }
 
 type FormFromDB struct {
-	ID          string
+	ID          int
 	Title       string
 	Description string
+	Like        LikeFromDB
 	CreatedAt   time.Time
 	ExpiresAt   time.Time
-	CreatorID   string
+}
+
+type Like struct {
+	Count   int  `json:"count"`
+	IsLiked bool `json:"is_liked"`
+}
+
+type LikeFromDB struct {
+	Count   int
+	IsLiked bool
 }

@@ -11,7 +11,9 @@ const (
 	countWorker = 5
 
 	userRegisteredEvent = "user_registered"
+
 	userLoginEvent      = "user_login"
+
 )
 
 type DB interface {
@@ -83,11 +85,13 @@ func (s *Service) selectEmailTemplate(eventType string) (string, string) {
 	var subject, body string
 	switch eventType {
 	case userRegisteredEvent:
+
 		subject = "Добро пожаловать в наш сервис!"
 		body = "Спасибо за регистрацию! Мы рады видеть вас в нашем сервисе."
 	case userLoginEvent:
 		subject = "Уведомление о входе в систему"
 		body = "Вы успешно вошли в систему. Если это были не вы, пожалуйста, измените пароль."
+
 	default:
 		subject = "Уведомление"
 		body = "У вас новое уведомление."

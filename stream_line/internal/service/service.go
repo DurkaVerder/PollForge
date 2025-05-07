@@ -43,8 +43,12 @@ func (s *Service) createFormResponse(forms []models.FormFromDB) models.FormRespo
 			ID:          form.ID,
 			Title:       form.Title,
 			Description: form.Description,
-			CreatedAt:   form.CreatedAt.Format("2006-01-02 15:04:05"),
-			ExpiresAt:   form.ExpiresAt.Format("2006-01-02 15:04:05"),
+			Likes: models.Like{
+				Count:   form.Like.Count,
+				IsLiked: form.Like.IsLiked,
+			},
+			CreatedAt: form.CreatedAt.Format("2006-01-02 15:04:05"),
+			ExpiresAt: form.ExpiresAt.Format("2006-01-02 15:04:05"),
 		}
 	}
 
