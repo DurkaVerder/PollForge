@@ -3,10 +3,12 @@ package storage
 import (
 	"database/sql"
 	"stream_line/internal/models"
+
+	_ "github.com/lib/pq"
 )
 
 const (
-	GetOtherFormsQuery = `SELECT id, title, description, created_at, expires_at FROM forms WHERE creator_id != $1`
+	GetOtherFormsQuery = `SELECT f.id, f.title, f.description, COALESCE(l.count, 0) AS count, EXISTS(SELECT * FROM likes_forms WHERE user_id = $1 AND form_id = f.id) AS is_liked, f.created_at, f.expires_at FROM forms f LEFT JOIN likes l ON l.form_id = f.id WHERE creator_id != $1`
 )
 
 type Postgres struct {
@@ -29,7 +31,7 @@ func (p *Postgres) GetOtherForms(userID string) ([]models.FormFromDB, error) {
 	var forms []models.FormFromDB
 	for rows.Next() {
 		var form models.FormFromDB
-		if err := rows.Scan(&form.ID, &form.Title, &form.Description, &form.CreatedAt, &form.ExpiresAt); err != nil {
+		if err := rows.Scan(&form.ID, &form.Title, &form.Description, &form.Like.Count, &form.Like.IsLiked, &form.CreatedAt, &form.ExpiresAt); err != nil {
 			return nil, err
 		}
 		forms = append(forms, form)
