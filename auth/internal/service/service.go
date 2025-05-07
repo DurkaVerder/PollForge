@@ -1,6 +1,7 @@
 package service
 
 import (
+	"auth/internal/kafka"
 	"auth/internal/models"
 	"auth/internal/storage"
 	"errors"
@@ -10,6 +11,11 @@ import (
 
 	"github.com/golang-jwt/jwt"
 	"golang.org/x/crypto/bcrypt"
+)
+
+const (
+	userRegisteredEvent = "user_registered"
+	userLoginEvent      = "user_login"
 )
 
 var jwtKey = []byte(os.Getenv("JWT_SECRET"))
@@ -30,6 +36,7 @@ func CheckUserRequest(request models.UserRequest) error {
 	// Потому что только одного надо выбрать если есть аккаунт c такой же почтой
 	err := storage.Db.QueryRow("SELECT EXISTS(SELECT 1 FROM users WHERE email = $1)", request.Email).Scan(&exist)
 	if err != nil {
+		log.Printf("Ошибка запроса к базе данных: %v", err.Error())
 		return err
 	}
 	if exist {
@@ -53,6 +60,15 @@ func RegisterUser(request models.UserRequest) (string, error) {
 		log.Printf("%s", err.Error())
 		return "", err
 	}
+
+	kafkaMsg := models.MessageKafka{
+		EventType: userRegisteredEvent,
+		UserID:    userId,
+	}
+	if err := kafka.SendMessage(kafkaMsg); err != nil {
+		log.Printf("Не удалось отправить сообщение Kafka: %v", err)
+	}
+
 	token, err := GenerateJwt(userId)
 	return token, err
 }
@@ -64,9 +80,16 @@ func LoggingUser(request models.UserRequest) (string, error) {
 		log.Printf("%s", err.Error())
 		return "", err
 	}
+
+	kafkaMsg := models.MessageKafka{
+		EventType: userLoginEvent,
+		UserID:    userId,
+	}
+
+	if err := kafka.SendMessage(kafkaMsg); err != nil {
+		log.Printf("Не удалось отправить сообщение Kafka: %v", err)
+	}
+
 	token, err := GenerateJwt(userId)
 	return token, err
 }
-
-
-
