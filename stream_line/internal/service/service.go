@@ -28,12 +28,12 @@ func (s *Service) GetStreamLine(userID string) (models.FormResponse, error) {
 		return models.FormResponse{}, err
 	}
 
-	response := s.createFormResponse(forms)
+	response := s.createFormResponse(forms, userID)
 
 	return response, nil
 }
 
-func (s *Service) createFormResponse(forms []models.FormFromDB) models.FormResponse {
+func (s *Service) createFormResponse(forms []models.FormFromDB, userID string) models.FormResponse {
 	response := models.FormResponse{
 		Forms: make([]models.Form, len(forms)),
 	}
@@ -43,8 +43,12 @@ func (s *Service) createFormResponse(forms []models.FormFromDB) models.FormRespo
 			ID:          form.ID,
 			Title:       form.Title,
 			Description: form.Description,
-			CreatedAt:   form.CreatedAt.Format("2006-01-02 15:04:05"),
-			ExpiresAt:   form.ExpiresAt.Format("2006-01-02 15:04:05"),
+			Likes: models.Like{
+				Count:   form.Like.Count,
+				IsLiked: form.Like.UserID == userID,
+			},
+			CreatedAt: form.CreatedAt.Format("2006-01-02 15:04:05"),
+			ExpiresAt: form.ExpiresAt.Format("2006-01-02 15:04:05"),
 		}
 	}
 
