@@ -4,8 +4,10 @@ import (
 	"comments/internal/models"
 	"comments/internal/service"
 	"fmt"
+	"log"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/gin-gonic/gin"
 )
@@ -61,12 +63,14 @@ func GetComments(c *gin.Context) {
 
 func CreateComment(c *gin.Context) {
 	formId, err := extractFormID(c)
+	log.Printf("formId: %v", formId)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"Ошибка": "Неверный id формы"})
 		return
 	}
 
-	var comment models.Comment
+	var comment models.CommentRequest
+	comment.CreatedAt = time.Now()
 	if err := c.ShouldBindJSON(&comment); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"Ошибка": "Неверный формат данных"})
 		return
@@ -76,6 +80,7 @@ func CreateComment(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"Ошибка": "Неверный id пользователя"})
 		return
 	}
+	log.Printf("userId: %v", userId)
 	err = service.CreateComment(comment, formId, userId)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"Ошибка": "Ошибка создания комментария"})

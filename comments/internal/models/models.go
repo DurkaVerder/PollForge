@@ -10,3 +10,15 @@ type Comment struct {
 	Description string `json:"description"`
 	CreatedAt  time.Time `json:"created_at"`
 }
+
+type CommentRequest struct {
+	Description string `json:"description"`
+	CreatedAt  time.Time 
+}
+
+type CommentResponce struct {
+	UserName string `json:"user_name"`
+	Description string `json:"description"`
+	CreatedAt  time.Time `json:"created_at"`
+}
+

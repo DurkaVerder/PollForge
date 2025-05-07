@@ -6,8 +6,8 @@ import (
 	"log"
 )
 
-func GetAllComments(formId int) ([]models.Comment, error) {
-	var comments []models.Comment
+func GetAllComments(formId int) ([]models.CommentResponce, error) {
+	var comments []models.CommentResponce
 
 	rows, err := storage.GetAllCommentsRequest(formId)
 	if err != nil {
@@ -16,7 +16,7 @@ func GetAllComments(formId int) ([]models.Comment, error) {
 	}
 	defer rows.Close()
 	for rows.Next() {
-		var comment models.Comment
+		var comment models.CommentResponce
 		err := rows.Scan(&comment.UserName, &comment.Description, &comment.CreatedAt)
 		if err != nil {
 			log.Printf("Ошибка при получении данных комментариев: %v", err)
@@ -27,7 +27,7 @@ func GetAllComments(formId int) ([]models.Comment, error) {
 	return comments, nil
 }
 
-func CreateComment(comment models.Comment, formId int, creatorId int) error {
+func CreateComment(comment models.CommentRequest, formId int, creatorId int) error {
 	err := storage.CreateCommentRequest(comment, formId, creatorId)
 	if err != nil {
 		log.Printf("Ошибка при создании комментария: %v", err)

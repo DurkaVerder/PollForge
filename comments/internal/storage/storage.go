@@ -5,7 +5,7 @@ import (
 	"database/sql"
 	"log"
 	"os"
-	
+
 	_ "github.com/lib/pq"
 )
 
@@ -31,8 +31,8 @@ func ConnectToDb() error {
 }
 
 func GetAllCommentsRequest(formId int) (*sql.Rows, error) {
-	query := `SELECT user.name, comments.description, comments.created_at FROM comments
-    JOIN users AS user ON comments.user_id = user.id 
+	query := `SELECT u.name, comments.description, comments.created_at FROM comments
+    JOIN users AS u ON comments.user_id = u.id 
 	WHERE form_id = $1 ORDER BY created_at DESC`
 
 	rows, err := Db.Query(query, formId)
@@ -44,7 +44,8 @@ func GetAllCommentsRequest(formId int) (*sql.Rows, error) {
 	return rows, nil
 }
 
-func CreateCommentRequest(comment models.Comment, formId int, creatorId int) error {
+func CreateCommentRequest(comment models.CommentRequest, formId int, creatorId int) error {
+
 	query := `INSERT INTO comments (form_id, user_id, description, created_at) VALUES ($1, $2, $3, $4)`
 	_, err := Db.Exec(query, formId, creatorId, comment.Description, comment.CreatedAt)
 	if err != nil {
