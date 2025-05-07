@@ -62,11 +62,19 @@ CREATE TABLE comments(
 CREATE TABLE likes(
     id SERIAL PRIMARY KEY,
     form_id INT,
-    user_id INT NOT NULL,
     count INT DEFAULT 0,
     FOREIGN KEY (form_id) REFERENCES forms (id) ON DELETE CASCADE,
     FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
 );
+
+CREATE TABLE likes_forms (
+    id SERIAL PRIMARY KEY,
+    form_id INT NOT NULL,
+    user_id INT NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (form_id) REFERENCES forms (id) ON DELETE CASCADE,
+    FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
+)
 
 CREATE TABLE answered_polls (
     id SERIAL PRIMARY KEY,

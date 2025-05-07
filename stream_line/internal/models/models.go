@@ -3,7 +3,7 @@ package models
 import "time"
 
 type Form struct {
-	ID          string `json:"id"`
+	ID          int    `json:"id"`
 	Title       string `json:"title"`
 	Description string `json:"description"`
 	Likes       Like   `json:"likes"`
@@ -16,7 +16,7 @@ type FormResponse struct {
 }
 
 type FormFromDB struct {
-	ID          string
+	ID          int
 	Title       string
 	Description string
 	Like        LikeFromDB

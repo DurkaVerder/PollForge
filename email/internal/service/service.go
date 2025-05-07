@@ -10,8 +10,8 @@ import (
 const (
 	countWorker = 5
 
-	userRegisteredTemplate = "user_registered"
-	userLoginTemplate      = "user_login"
+	userRegisteredEvent = "user_registered"
+	userLoginEvent     = "user_login"
 )
 
 type DB interface {
@@ -82,10 +82,10 @@ func (s *Service) getEmailByUserID(userID string) (string, error) {
 func (s *Service) selectEmailTemplate(eventType string) (string, string) {
 	var subject, body string
 	switch eventType {
-	case userRegisteredTemplate:
+	case userRegisteredEvent:
 		subject = "Welcome to our service!"
 		body = "Thank you for registering. We are glad to have you."
-	case userLoginTemplate:
+	case userLoginEvent:
 		subject = "Login Notification"
 		body = "You have successfully logged in to your account."
 	default:
