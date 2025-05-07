@@ -25,3 +25,8 @@ type Form struct {
 	Description string `json:"description"`
 	Link        string `json:"link"`
 }
+
+type MessageKafka struct {
+	EventType string `json:"event_type"`
+	UserID    string `json:"user_id"`
+}

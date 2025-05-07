@@ -13,23 +13,21 @@ import (
 func extractUserID(c *gin.Context) (int, error) {
 	creatorIdfl, ok := c.Get("id")
 	if !ok {
-		c.JSON(http.StatusBadRequest, gin.H{"Ошибка": "id пользователя не найден"})
+
 		return 0, fmt.Errorf("id пользователя не найден")
 	}
-	creatorId, ok := creatorIdfl.(int)
+	creatorId, ok := creatorIdfl.(string)
 	if !ok {
-		c.JSON(http.StatusBadRequest, gin.H{"Ошибка": "Неправильный тип id"})
-		return 0, fmt.Errorf("неправильный тип id: %v", creatorIdfl)
+		return 0, fmt.Errorf("неправильный тип id: %v", ok)
 	}
-	return creatorId, nil
+	return strconv.Atoi(creatorId)
 }
 
 func extractFormID(c *gin.Context) (int, error) {
 	formIdstr := c.Param("id")
 	formId, err := strconv.Atoi(formIdstr)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"Ошибка": "Неверный id формы"})
-		return 0, fmt.Errorf("неправильный тип id: %v", formIdstr)
+		return 0, fmt.Errorf("неправильный тип id: %v", err.Error())
 	}
 	return formId, nil
 }

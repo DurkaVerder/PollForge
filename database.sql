@@ -5,7 +5,7 @@ CREATE TABLE users(
     name VARCHAR(255) NOT NULL UNIQUE,
     email VARCHAR(255) NOT NULL UNIQUE,
     password VARCHAR(255) NOT NULL,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE password_resets (
@@ -83,7 +83,7 @@ CREATE TABLE answered_polls (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE,
     FOREIGN KEY (form_id) REFERENCES forms (id) ON DELETE CASCADE
-)
+);
 
 CREATE INDEX idx_users_id_name ON users (id, name);
 

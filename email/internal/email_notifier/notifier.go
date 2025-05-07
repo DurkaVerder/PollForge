@@ -1,6 +1,7 @@
 package emailnotifier
 
 import (
+	"log"
 	"net/smtp"
 
 	"github.com/jordan-wright/email"
@@ -23,10 +24,12 @@ func NewEmailNotifier(from, password, smtpHost, smtpPort string) *EmailNotifier 
 }
 
 func (emailNotifier *EmailNotifier) SendEmail(to, subject, body string) error {
+	log.Println("Отправка на почту:", to)
 	e := email.NewEmail()
 	e.From = emailNotifier.from
 	e.To = []string{to}
 	e.Subject = subject
 	e.Text = []byte(body)
-	return e.Send(emailNotifier.smtpHost+":"+emailNotifier.smtpPort, smtp.PlainAuth("", emailNotifier.from, emailNotifier.password, emailNotifier.smtpHost))
+	err := e.Send(emailNotifier.smtpHost+":"+emailNotifier.smtpPort, smtp.PlainAuth("", emailNotifier.from, emailNotifier.password, emailNotifier.smtpHost))
+	return err
 }
