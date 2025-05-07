@@ -31,6 +31,6 @@ type Like struct {
 }
 
 type LikeFromDB struct {
-	Count  int
-	UserID string
+	Count   int
+	IsLiked bool
 }
