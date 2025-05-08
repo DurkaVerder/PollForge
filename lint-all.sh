@@ -6,7 +6,9 @@ GREEN='\033[0;32m'
 RED='\033[0;31m'
 NC='\033[0m'
 
-CONFIG_PATH=".golangci.yml"
+cd services
+
+CONFIG_PATH="../.golangci.yml"
 
 echo -e "${NC}0_W_0 Проверка кода...${NC}"
 

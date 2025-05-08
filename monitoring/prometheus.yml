@@ -1,0 +1,17 @@
+global:
+  scrape_interval: 10s
+  evaluation_interval: 10s
+
+scrape_configs:
+  - job_name: 'microservices'
+    static_configs:
+      - targets:
+          - 'auth:8080'
+          - 'stream-line:8080'
+          - 'forms:8080'
+          - 'profile:8080'
+          - 'question:8080'
+          - 'email:8080'
+          - 'stats:8080'
+          - 'comments:8080'
+          
