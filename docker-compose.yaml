@@ -85,7 +85,7 @@ services:
 
   auth-service:
     build:
-      context: ./auth
+      context: ./services/auth
       dockerfile: Dockerfile
     container_name: auth
     environment:
@@ -104,7 +104,7 @@ services:
 
   stream-line-service:
     build:
-      context: ./stream_line
+      context: ./services/stream_line
       dockerfile: Dockerfile
     container_name: stream-line
     environment:
@@ -120,7 +120,7 @@ services:
 
   forms-service:
     build:
-      context: ./forms
+      context: ./services/forms
       dockerfile: Dockerfile
     container_name: forms
     environment:
@@ -136,7 +136,7 @@ services:
 
   profile-service:
     build:
-      context: ./profile
+      context: ./services/profile
       dockerfile: Dockerfile
     container_name: profile
     environment:
@@ -152,7 +152,7 @@ services:
 
   question-service:
     build:
-      context: ./question
+      context: ./services/question
       dockerfile: Dockerfile
     container_name: question
     environment:
@@ -168,7 +168,7 @@ services:
 
   stats-service:
     build:
-      context: ./stats
+      context: ./services/stats
       dockerfile: Dockerfile
     container_name: stats
     environment:
@@ -184,7 +184,7 @@ services:
 
   email-service:
     build:
-      context: ./email
+      context: ./services/email
       dockerfile: Dockerfile
     container_name: email
     environment:
@@ -207,7 +207,7 @@ services:
 
   comments-service:
     build:
-      context: ./comments
+      context: ./services/comments
       dockerfile: Dockerfile
     container_name: comments
     environment:
