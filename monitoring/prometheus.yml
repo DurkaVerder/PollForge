@@ -13,4 +13,5 @@ scrape_configs:
           - 'question:8080'
           - 'email:8080'
           - 'stats:8080'
+          - 'comments:8080'
           
