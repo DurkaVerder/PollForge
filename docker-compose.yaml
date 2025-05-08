@@ -72,7 +72,7 @@ services:
     ports:
       - "5432:5432" 
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      # - postgres_data:/var/lib/postgresql/data
       - ./database.sql:/docker-entrypoint-initdb.d/init.sql
     healthcheck:
         test: ["CMD", "pg_isready", "-U", "postgres"]
@@ -89,6 +89,7 @@ services:
       dockerfile: Dockerfile
     container_name: auth
     environment:
+      - KAFKA_BROKER=kafka:9092
       - DB_URL=postgres://postgres:durka@postgres:5432/pollforge-database?sslmode=disable
       - PORT=:8080
     ports:
@@ -190,9 +191,9 @@ services:
       - KAFKA_BROKER=kafka:9092
       - DB_URL=postgres://postgres:durka@postgres:5432/pollforge-database?sslmode=disable
       - SMTP_EMAIL=hotelbooking02@mail.ru
-      - SMTP_PASSWORD=hPWFLzDD5mqWMPy1G1ty
+      - SMTP_PASSWORD=P4cr9fkX3vRDjKLR6Euj
       - SMTP_HOST=smtp.mail.ru
-      - SMTP_PORT=465
+      - SMTP_PORT=587
       - PORT=:8080
     ports:
       - "8087:8080"

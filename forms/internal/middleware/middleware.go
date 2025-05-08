@@ -32,7 +32,6 @@ func JWTAuth() gin.HandlerFunc {
 		rawId, ok := claims["id"]
 		if !ok {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Нет id в токене"})
-
 			return
 		}
 		c.Set("id", rawId)
