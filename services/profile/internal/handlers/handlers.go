@@ -136,7 +136,7 @@ func DeleteProfile(c *gin.Context) {
 	err = service.DeleteProfile(id)
 	if err != nil {
 		log.Printf("Ошибка при удалении профиля: %v", err)
-		c.JSON(http.StatusInternalServerError, gin.H{"Ошибка": "Ошибка при обновлении профиля"})
+		c.JSON(http.StatusInternalServerError, gin.H{"Ошибка": "Ошибка при удалении профиля"})
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"Сообщение": "Профиль успешно удалён"})
