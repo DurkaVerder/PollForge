@@ -152,7 +152,7 @@ func QuestionsGetRequest(creator_id int, formId int) (*sql.Rows, error) {
 			a.number_order
 `
 
-	rows, err := Db.Query(query, formId, creator_id)
+	rows, err := Db.Query(query, creator_id, formId)
 
 	if err != nil {
 		log.Printf("Ошибка при запросе получения вопросов: %v", err)
