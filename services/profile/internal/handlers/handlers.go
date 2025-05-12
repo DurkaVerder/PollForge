@@ -119,7 +119,7 @@ func UpdateProfileName(c *gin.Context) {
 	err = service.UpdateProfile(id, profile)
 	if err != nil {
 		log.Printf("Ошибка при обновлении профиля: %v", err)
-		c.JSON(http.StatusInternalServerError, "Ошибка при обновлении профиля")
+		c.JSON(http.StatusInternalServerError, gin.H{"Ошибка":"Ошибка при обновлении профиля"})
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"Сообщение": "Профиль успешно обновлён"})
