@@ -84,7 +84,7 @@ func DeleteForm(c *gin.Context) {
 	}
 
 	// Проверка на существование формы для удаления, нужен id пользователя и id формы
-	err = service.FormCheсk(creatorId, formId)
+	err = service.FormCheck(creatorId, formId)
 	if err != nil {
 		log.Printf("Ошибка при проверке на существование формы: %v", err)
 		c.JSON(http.StatusNotFound, gin.H{"Ошибка": "Форма не найдена"})
