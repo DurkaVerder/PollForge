@@ -29,6 +29,7 @@ func GetUserForms(userId int) ([]models.Form, error) {
 	for rows.Next() {
 		var form models.Form
 		err := rows.Scan(&form.Id,
+			&form.CreatorId,
 			&form.Title,
 			&form.Description,
 			&form.Link,

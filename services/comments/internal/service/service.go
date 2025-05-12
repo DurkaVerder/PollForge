@@ -17,7 +17,7 @@ func GetAllComments(formId int) ([]models.CommentResponce, error) {
 	defer rows.Close()
 	for rows.Next() {
 		var comment models.CommentResponce
-		err := rows.Scan(&comment.UserName, &comment.Description, &comment.CreatedAt)
+		err := rows.Scan(&comment.Id, &comment.FormID, &comment.UserName, &comment.Description, &comment.CreatedAt)
 		if err != nil {
 			log.Printf("Ошибка при получении данных комментариев: %v", err)
 			return nil, err
