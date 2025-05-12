@@ -28,6 +28,7 @@ type Question struct {
 	AnswerTitle       string `json:"answer_title"`
 	AnswerNumberOrder int    `json:"answer_order"`
 	AnswerCount       int    `json:"answer_count"`
+	AnswerChosen	  bool   `json:"answer_chosen"`
 }
 
 type QuestionRequest struct {
@@ -42,7 +43,8 @@ type Answer struct {
 	Title       string `json:"title"`
 	NumberOrder int    `json:"number_order"`
 	Count       int    `json:"count"`
-	AnswerId    int    `json:"answer_id"`
+	Chosen      bool   `json:"chosen"`
+
 }
 
 type AnswerRequest struct {

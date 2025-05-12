@@ -142,7 +142,7 @@ func QuestionDeleteRequest(creator_id int, formId int, questionId int) (sql.Resu
 }
 
 func QuestionsGetRequest(creator_id int, formId int) (*sql.Rows, error) {
-	query := `SELECT questions.id, questions.title, questions.number_order, questions.required, answers.title, answers.number_order, answers.count 
+	query := `SELECT questions.id, questions.title, questions.number_order, questions.required, answers.title, answers.number_order, answers.count, answers.chosen
 			  FROM questions
 			  JOIN answers ON questions.id = answers.question_id 
 			  WHERE form_id = $1 AND creator_id = $2 ORDER BY questions.number_order, answers.number_order`
@@ -210,7 +210,7 @@ func AnswerUpdateRequest(updateAnswer models.AnswerRequest, creator_id int, form
 }
 
 func GetAnswersRequest(creator_id int, formId int, questionId int) (*sql.Rows, error) {
-	query := `SELECT id, question_id, title, number_order, count 
+	query := `SELECT id, question_id, title, number_order, count, chosen
 			  FROM answers 
 			  WHERE question_id = $1 AND form_id = $2 AND creator_id = $3`
 

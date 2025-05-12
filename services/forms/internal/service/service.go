@@ -5,9 +5,7 @@ import (
 	"forms/internal/models"
 	"forms/internal/storage"
 	"log"
-	
 )
-
 
 func FormCheck(creatorId int, formId int) error {
 	var existId int
@@ -132,7 +130,8 @@ func QuestionsGet(creator_Id, formId int) ([]models.Question, error) {
 			&question.AnswerTitle,
 			&question.AnswerNumberOrder,
 			&question.AnswerCount,
-			)
+			&question.AnswerChosen,
+		)
 		if err != nil {
 			log.Printf("Не удалось считать данные вопроса через запрос: %v", err)
 			return questions, err
@@ -195,7 +194,7 @@ func AnswersGet(creator_Id, formId int, questionId int) ([]models.Answer, error)
 			&answer.Title,
 			&answer.NumberOrder,
 			&answer.Count,
-			&answer.AnswerId)
+			&answer.Chosen)
 		if err != nil {
 			log.Printf("Не удалось считать данные ответа через запрос: %v", err)
 			return answers, err
