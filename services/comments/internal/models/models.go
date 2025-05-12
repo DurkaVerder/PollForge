@@ -22,5 +22,6 @@ type CommentResponce struct {
 	UserName string `json:"user_name"`
 	Description string `json:"description"`
 	CreatedAt  time.Time `json:"created_at"`
+	EditedAt    *time.Time `json:"edited_at,omitempty"`
 }
 

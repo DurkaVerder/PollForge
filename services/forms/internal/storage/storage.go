@@ -121,7 +121,7 @@ func QuestionCreateRequest(question models.QuestionRequest, creatorId int, formI
 func QuestionDeleteRequest(creator_id int, formId int, questionId int) (sql.Result, error) {
 
 	query := "DELETE FROM questions WHERE id = $1 AND form_id = $2 and creator_id = $3"
-	_, err := Db.Exec(query, questionId, formId)
+	_, err := Db.Exec(query, questionId, formId, creator_id)
 	if err != nil {
 		log.Printf("Ошибка при запросе удаления вопроса: %v", err)
 		return nil, err

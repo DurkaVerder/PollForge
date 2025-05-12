@@ -45,8 +45,6 @@ func GetUserForms(userId int) ([]models.Form, error) {
 	return forms, nil
 }
 
-
-
 func FormChek(creatorId int, formId int) error {
 	var existId int
 	err := storage.FormCheckingRequest(existId, creatorId, formId)
@@ -64,4 +62,20 @@ func FormDelete(formId int, creatorId int) (sql.Result, error) {
 		return nil, err
 	}
 	return nil, err
+}
+
+func UpdateProfile(userId int, profile models.UserProfile) error {
+	err := storage.UpdateProfileRequest(userId, profile)
+	if err != nil {
+		log.Printf("Ошибка при обновлении профиля: %v", err)
+	}
+	return err
+}
+
+func DeleteProfile(userId int) error {
+	err := storage.DeleteProfileRequest(userId)
+	if err != nil {
+		log.Printf("Ошибка при удалении профиля: %v", err)
+	}
+	return err
 }

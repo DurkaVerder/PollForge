@@ -68,3 +68,23 @@ func FormDeleteRequest(formId int, creatorId int) error {
 	}
 	return err
 }
+
+func UpdateProfileRequest(userId int, profile models.UserProfile) error {
+	query := "UPDATE users SET name = $1 WHERE id = $2"
+	_, err := Db.Exec(query, profile.Username, userId)
+	if err != nil {
+		log.Printf("Ошибка при обновлении профиля пользователя: %v", err)
+		return err
+	}
+	return nil
+}
+
+func DeleteProfileRequest(userId int) error {
+	query := "DELETE FROM users WHERE id = $1"
+	_, err := Db.Exec(query, userId)
+	if err != nil {
+		log.Printf("Ошибка при удалении профиля пользователя: %v", err)
+		return err
+	}
+	return nil
+}

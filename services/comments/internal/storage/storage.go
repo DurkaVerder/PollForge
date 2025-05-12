@@ -32,7 +32,7 @@ func ConnectToDb() error {
 }
 
 func GetAllCommentsRequest(formId int) (*sql.Rows, error) {
-	query := `SELECT comments.id, comments.form_id, u.name, comments.description, comments.created_at FROM comments
+	query := `SELECT comments.id, comments.form_id, u.name, comments.description, comments.created_at, comments.edited_at FROM comments
     JOIN users AS u ON comments.user_id = u.id 
 	WHERE form_id = $1 ORDER BY created_at`
 
@@ -57,7 +57,7 @@ func CreateCommentRequest(comment models.CommentRequest, formId int, creatorId i
 }
 
 func UpdateCommentRequest(comment models.Comment, commentId int, formId int, creatorId int) error {
-	query := `UPDATE comments SET description = $1 WHERE form_id = $2 AND id = $3 AND user_id = $4`
+	query := `UPDATE comments SET description = $1, edited_at = NOW() WHERE form_id = $2 AND id = $3 AND user_id = $4`
 	_, err := Db.Exec(query, comment.Description, formId, commentId, creatorId)
 	if err != nil {
 		log.Printf("Ошибка при запросе обновления комментария: %v", err)

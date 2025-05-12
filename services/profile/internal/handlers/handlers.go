@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"profile/internal/models"
 	"profile/internal/service"
 	"strconv"
 
@@ -98,4 +99,45 @@ func DeleteForm(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"Сообщение": "Форма успешно удалена"})
+}
+
+func UpdateProfileName(c *gin.Context) {
+	id, err := extractUserID(c)
+	if err != nil {
+		log.Printf("Ошибка при получении id пользователя: %v", err)
+		c.JSON(http.StatusUnauthorized, "id пользователя не найден")
+		return
+	}
+
+	var profile models.UserProfile
+	if err := c.ShouldBindJSON(&profile); err != nil {
+		log.Printf("Ошибка при получении данных профиля: %v", err)
+		c.JSON(http.StatusBadRequest, "Ошибка при получении данных профиля")
+		return
+	}
+
+	err = service.UpdateProfile(id, profile)
+	if err != nil {
+		log.Printf("Ошибка при обновлении профиля: %v", err)
+		c.JSON(http.StatusInternalServerError, "Ошибка при обновлении профиля")
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"Сообщение": "Профиль успешно обновлён"})
+}
+
+func DeleteProfile(c *gin.Context) {
+	id, err := extractUserID(c)
+	if err != nil {
+		log.Printf("Ошибка при получении id пользователя: %v", err)
+		c.JSON(http.StatusUnauthorized, "id пользователя не найден")
+		return
+	}
+
+	err = service.DeleteProfile(id)
+	if err != nil {
+		log.Printf("Ошибка при удалении профиля: %v", err)
+		c.JSON(http.StatusInternalServerError, "Ошибка при удалении профиля")
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"Сообщение": "Профиль успешно удалён"})
 }
