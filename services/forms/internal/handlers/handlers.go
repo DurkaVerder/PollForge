@@ -87,57 +87,36 @@ func CreateForm(c *gin.Context) {
 }
 
 func GetForm(c *gin.Context) {
-
-	// Конвертируем в численный тип данных строку с id для проверки
 	formId, err := extractFormID(c)
-
 	if err != nil {
 		log.Printf("Ошибка при извлечении id формы %v", err)
 		c.JSON(http.StatusBadRequest, gin.H{"Ошибка": "Неверный id формы"})
 		return
 	}
-	var form models.Form
 
 	creatorId, err := extractUserID(c)
-	log.Printf("id пользователя: %v", creatorId)
 	if err != nil {
 		log.Printf("Не удалось извлечь id пользователя: %v", err)
 		c.JSON(http.StatusBadRequest, gin.H{"Ошибка": "id пользователя не найден"})
 		return
 	}
 
-	form, err = service.FormGet(creatorId, formId)
-	// Проверка на наличие возвращаемого значения, если форм нет - сработает условие цикла
+	form, err := service.FormGet(creatorId, formId)
 	if err == sql.ErrNoRows {
-		log.Printf("Не удалось получить формы из-за их отсутствия: %v", err)
+		log.Printf("Форма не найдена: %v", err)
 		c.JSON(http.StatusNotFound, gin.H{"Ошибка": "Форма не найдена"})
 		return
 	} else if err != nil {
-		log.Printf("Не удалось получить формы из-за ошибки: %v", err)
+		log.Printf("Ошибка при получении формы: %v", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"Ошибка": "Ошибка при получении формы"})
 		return
 	}
-	form.CreatorId = creatorId
+
 	c.JSON(http.StatusOK, form)
 }
 
-func GetForms(c *gin.Context) {
 
-	creatorId, err := extractUserID(c)
-	if err != nil {
-		log.Printf("Не удалось извлечь id пользователя: %v", err)
-		c.JSON(http.StatusBadRequest, gin.H{"Ошибка": "id пользователя не найден"})
-		return
-	}
 
-	forms, err := service.FormsGet(creatorId)
-	if err != nil {
-		log.Printf("Не удалось получить формы: %v", err)
-		c.JSON(http.StatusInternalServerError, gin.H{"Ошибка": "Не удалось найти формы"})
-		return
-	}
-	c.JSON(http.StatusOK, forms)
-}
 
 func UpdateForm(c *gin.Context) {
 
@@ -259,38 +238,7 @@ func CreateQuestion(c *gin.Context) {
 
 }
 
-func GetQuestions(c *gin.Context) {
 
-	formId, err := extractFormID(c)
-	if err != nil {
-		log.Printf("Ошибка при извлечении id формы %v", err)
-		c.JSON(http.StatusBadRequest, gin.H{"Ошибка": "Неверный id формы"})
-		return
-	}
-
-	creatorId, err := extractUserID(c)
-	if err != nil {
-		log.Printf("Не удалось извлечь id пользователя: %v", err)
-		c.JSON(http.StatusBadRequest, gin.H{"Ошибка": "id пользователя не найден"})
-		return
-	}
-
-	err = service.FormCheck(creatorId, formId)
-	if err != nil {
-		log.Printf("Ошибка при проверке на существование формы: %v", err)
-		c.JSON(http.StatusNotFound, gin.H{"Ошибка": "Форма не найдена"})
-		return
-	}
-
-	questions, err := service.QuestionsGet(creatorId, formId)
-	if err != nil {
-		log.Printf("Ошибка при получении вопроса: %v", err)
-		c.JSON(http.StatusInternalServerError, gin.H{"Ошибка": "Не удалось получить вопросы"})
-		return
-	}
-	c.JSON(http.StatusOK, questions)
-
-}
 
 func UpdateQuestion(c *gin.Context) {
 	formId, err := extractFormID(c)
@@ -428,53 +376,6 @@ func CreateAnswer(c *gin.Context) {
 
 }
 
-func GetAnswers(c *gin.Context) {
-	formId, err := extractFormID(c)
-	if err != nil {
-		log.Printf("Ошибка при извлечении id формы %v", err)
-		c.JSON(http.StatusBadRequest, gin.H{"Ошибка": "Неверный id формы"})
-		return
-	}
-
-	questionId, err := extractQuestionID(c)
-	if err != nil {
-		log.Printf("Ошибка при извлечении id вопроса %v", err)
-		c.JSON(http.StatusBadRequest, gin.H{"Ошибка": "Неверный id вопроса"})
-		return
-	}
-
-	creatorId, err := extractUserID(c)
-	if err != nil {
-		log.Printf("Не удалось извлечь id пользователя: %v", err)
-		c.JSON(http.StatusBadRequest, gin.H{"Ошибка": "id пользователя не найден"})
-		return
-	}
-
-	answerId, err := extractAnswerID(c)
-	if err != nil {
-		log.Printf("Ошибка при извлечении id вопроса %v", err)
-		c.JSON(http.StatusBadRequest, gin.H{"Ошибка": "Неверный id ответа"})
-		return
-	}
-
-	err = service.AnswerChek(creatorId, formId, questionId, answerId)
-	if err != nil {
-		log.Printf("Ошибка при проверке ответа на существование: %v", err)
-		c.JSON(http.StatusNotFound, gin.H{"Ошибка": "Вопрос не найден"})
-		return
-	}
-
-	var answers []models.Answer
-
-	answers, err = service.AnswersGet(creatorId, formId, questionId)
-	if err != nil {
-		log.Printf("Ошибка при получении ответа: %v", err)
-		c.JSON(http.StatusInternalServerError, gin.H{"Ошибка": "Не удалось получить ответы"})
-		return
-	}
-	c.JSON(http.StatusOK, answers)
-
-}
 func UpdateAnswer(c *gin.Context) {
 	formId, err := extractFormID(c)
 	if err != nil {
