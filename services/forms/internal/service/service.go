@@ -100,15 +100,15 @@ func QuestionDelete(creator_id int, formId int, questionId int) (sql.Result, err
 func QuestionUpdate(updateQuestion models.QuestionRequest, creator_Id int, formId int, questionId int) error {
 	err := storage.QuestionUpdateRequest(updateQuestion, creator_Id, formId, questionId)
 	if err != nil {
-		log.Printf("Ошибка при удалении данных: %v", err)
+		log.Printf("Ошибка при изменении данных: %v", err)
 		return err
 	}
 	return err
 }
-func QuestionCreate(question models.QuestionRequest, formId int) (int, error) {
-	questionId, err := storage.QuestionCreateRequest(question, formId)
+func QuestionCreate(question models.QuestionRequest, creatorId int, formId int) (int, error) {
+	questionId, err := storage.QuestionCreateRequest(question, creatorId, formId)
 	if err != nil {
-		log.Printf("Ошибка при удалении данных: %v", err)
+		log.Printf("Ошибка при создании вопроса: %v", err)
 		return questionId, err
 	}
 	return questionId, err
@@ -124,9 +124,11 @@ func QuestionsGet(creator_Id, formId int) ([]models.Question, error) {
 	for rows.Next() {
 		var question models.Question
 		err := rows.Scan(&question.Id,
+			&question.FormId,
 			&question.Title,
 			&question.NumberOrder,
 			&question.Required,
+			&question.AnswerId,
 			&question.AnswerTitle,
 			&question.AnswerNumberOrder,
 			&question.AnswerCount,
@@ -170,8 +172,8 @@ func AnswerUpdate(updateAnswer models.AnswerRequest, creator_Id int, formId int,
 	return err
 }
 
-func AnswerCreate(answer models.AnswerRequest, formId int, questionId int) (int, error) {
-	answerId, err := storage.AnswerCreateRequest(answer, questionId)
+func AnswerCreate(answer models.AnswerRequest, creatorId int, formId int, questionId int) (int, error) {
+	answerId, err := storage.AnswerCreateRequest(answer, creatorId, formId, questionId)
 	if err != nil {
 		log.Printf("Ошибка при удалении данных: %v", err)
 		return answerId, err

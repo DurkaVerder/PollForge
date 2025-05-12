@@ -248,9 +248,9 @@ func CreateQuestion(c *gin.Context) {
 		return
 	}
 
-	questionId, err := service.QuestionCreate(question, formId)
+	questionId, err := service.QuestionCreate(question, creatorId, formId)
 	if err != nil {
-		log.Printf("Ошибка при создании вопросы: %v", err)
+		log.Printf("Ошибка при создании вопроса: %v", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"Ошибка": "Не удалось создать вопрос"})
 		return
 	}
@@ -417,7 +417,7 @@ func CreateAnswer(c *gin.Context) {
 		return
 	}
 
-	answerId, err := service.AnswerCreate(answer, formId, questionId)
+	answerId, err := service.AnswerCreate(answer, creatorId, formId, questionId)
 	if err != nil {
 		log.Printf("Ошибка при создании ответа: %v", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"Ошибка": "Не удалось создать ответ"})

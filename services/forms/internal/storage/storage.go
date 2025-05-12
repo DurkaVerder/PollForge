@@ -8,7 +8,7 @@ import (
 
 	"github.com/google/uuid"
 
-	_ "github.com/lib/pq" 
+	_ "github.com/lib/pq"
 )
 
 var Db *sql.DB
@@ -44,7 +44,6 @@ func FormCreateRequest(form models.FormRequest, creatorId int) (int, string, err
 	link := uuid.New().String()
 	query := `INSERT INTO forms (creator_id, title, description, link, private_key, expires_at) 
 			  VALUES($1, $2, $3, $4, $5, $6) RETURNING id`
-
 	var formId int
 	err := Db.QueryRow(query, creatorId, form.Title, form.Description, link, form.PrivateKey, form.ExpiresAt).Scan(&formId)
 	if err != nil {
@@ -118,12 +117,12 @@ func QuestionChekingRequest(existId int, creatorId int, formId int, questionId i
 	}
 	return err
 }
-func QuestionCreateRequest(question models.QuestionRequest, formId int) (int, error) {
-	query := `INSERT INTO questions (form_id, title, number_order, required) 
-			  VALUES($1, $2, $3, $4) RETURNING id`
+func QuestionCreateRequest(question models.QuestionRequest, creatorId int, formId int) (int, error) {
+	query := `INSERT INTO questions (form_id, creator_id, title, number_order, required) 
+			  VALUES($1, $2, $3, $4, $5) RETURNING id`
 
 	var questionId int
-	err := Db.QueryRow(query, formId, question.Title, question.NumberOrder, question.Required).Scan(&questionId)
+	err := Db.QueryRow(query, formId, creatorId, question.Title, question.NumberOrder, question.Required).Scan(&questionId)
 	if err != nil {
 		log.Printf("Ошибка при запросе создания вопроса: %v", err)
 		return questionId, err
@@ -142,10 +141,27 @@ func QuestionDeleteRequest(creator_id int, formId int, questionId int) (sql.Resu
 }
 
 func QuestionsGetRequest(creator_id int, formId int) (*sql.Rows, error) {
-	query := `SELECT questions.id, questions.title, questions.number_order, questions.required, answers.title, answers.number_order, answers.count, answers.chosen
-			  FROM questions
-			  JOIN answers ON questions.id = answers.question_id 
-			  WHERE form_id = $1 AND creator_id = $2 ORDER BY questions.number_order, answers.number_order`
+	query := `
+			SELECT
+			q.id,
+			q.form_id,
+			q.title,
+			q.number_order,
+			q.required,
+			COALESCE(a.id, 0)           AS answer_id,
+			COALESCE(a.title, '')       AS answer_title,
+			COALESCE(a.number_order, 0) AS answer_order,
+			COALESCE(a.count, 0)        AS answer_count,
+			COALESCE(a.chosen, FALSE)   AS answer_chosen
+			FROM questions AS q
+			LEFT JOIN answers AS a
+			ON q.id = a.question_id
+			WHERE q.creator_id = $1
+			AND q.form_id    = $2
+			ORDER BY
+			q.number_order,
+			a.number_order
+`
 
 	rows, err := Db.Query(query, formId, creator_id)
 
@@ -177,12 +193,12 @@ func AnswerChekingRequest(existId int, creatorId int, formId int, questionId int
 	return err
 }
 
-func AnswerCreateRequest(answer models.AnswerRequest, questionId int) (int, error) {
-	query := `INSERT INTO answers (question_id, title, number_order, count) 
-			  VALUES($1, $2, $3, $4) RETURNING id`
+func AnswerCreateRequest(answer models.AnswerRequest, creator_Id int, form_id int, questionId int) (int, error) {
+	query := `INSERT INTO answers (question_id, form_id, creator_id, title, number_order, count) 
+			  VALUES($1, $2, $3, $4, $5, $6) RETURNING id`
 
 	var answerId int
-	err := Db.QueryRow(query, questionId, answer.Title, answer.NumberOrder, answer.Count).Scan(&answerId)
+	err := Db.QueryRow(query, questionId, form_id, creator_Id, answer.Title, answer.NumberOrder, answer.Count).Scan(&answerId)
 	if err != nil {
 		log.Printf("Ошибка при запросе создания ответа: %v", err)
 		return answerId, err

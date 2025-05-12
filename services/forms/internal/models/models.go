@@ -25,16 +25,17 @@ type Question struct {
 	NumberOrder       int    `json:"number_order"`
 	Title             string `json:"title"`
 	Required          bool   `json:"required"`
+	AnswerId          int    `json:"answer_id"`
 	AnswerTitle       string `json:"answer_title"`
 	AnswerNumberOrder int    `json:"answer_order"`
 	AnswerCount       int    `json:"answer_count"`
-	AnswerChosen	  bool   `json:"answer_chosen"`
+	AnswerChosen      bool   `json:"answer_chosen"`
 }
 
 type QuestionRequest struct {
 	Title       string `json:"title" binding:"required"`
 	NumberOrder int    `json:"number_order" binding:"required"`
-	Required    bool   `json:"required" binding:"required"`
+	Required    bool   `json:"required"`
 }
 
 type Answer struct {
@@ -44,7 +45,6 @@ type Answer struct {
 	NumberOrder int    `json:"number_order"`
 	Count       int    `json:"count"`
 	Chosen      bool   `json:"chosen"`
-
 }
 
 type AnswerRequest struct {
