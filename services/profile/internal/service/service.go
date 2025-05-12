@@ -45,7 +45,7 @@ func GetUserForms(userId int) ([]models.Form, error) {
 	return forms, nil
 }
 
-func FormChek(creatorId int, formId int) error {
+func FormCheсk(creatorId int, formId int) error {
 	var existId int
 	err := storage.FormCheckingRequest(existId, creatorId, formId)
 	if err != nil {

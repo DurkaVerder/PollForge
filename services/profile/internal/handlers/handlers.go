@@ -61,7 +61,7 @@ func GetForms(c *gin.Context) {
 	forms, err := service.GetUserForms(id)
 	if err != nil {
 		log.Printf("Ошибка при получении форм: %v", err)
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Ошибка при получении форм"})
+		c.JSON(http.StatusInternalServerError, gin.H{"Ошибка": "Ошибка при получении форм"})
 		return
 	}
 
@@ -84,7 +84,7 @@ func DeleteForm(c *gin.Context) {
 	}
 
 	// Проверка на существование формы для удаления, нужен id пользователя и id формы
-	err = service.FormChek(creatorId, formId)
+	err = service.FormCheсk(creatorId, formId)
 	if err != nil {
 		log.Printf("Ошибка при проверке на существование формы: %v", err)
 		c.JSON(http.StatusNotFound, gin.H{"Ошибка": "Форма не найдена"})
@@ -105,14 +105,14 @@ func UpdateProfileName(c *gin.Context) {
 	id, err := extractUserID(c)
 	if err != nil {
 		log.Printf("Ошибка при получении id пользователя: %v", err)
-		c.JSON(http.StatusUnauthorized, "id пользователя не найден")
+		c.JSON(http.StatusUnauthorized, gin.H{"Ошибка":"id пользователя не найден"})
 		return
 	}
 
 	var profile models.UserProfile
 	if err := c.ShouldBindJSON(&profile); err != nil {
 		log.Printf("Ошибка при получении данных профиля: %v", err)
-		c.JSON(http.StatusBadRequest, "Ошибка при получении данных профиля")
+		c.JSON(http.StatusBadRequest, gin.H{"Ошибка":"Ошибка при получении данных профиля"})
 		return
 	}
 
@@ -129,14 +129,14 @@ func DeleteProfile(c *gin.Context) {
 	id, err := extractUserID(c)
 	if err != nil {
 		log.Printf("Ошибка при получении id пользователя: %v", err)
-		c.JSON(http.StatusUnauthorized, "id пользователя не найден")
+		c.JSON(http.StatusUnauthorized, gin.H{"Ошибка": "id пользователя не найден"})
 		return
 	}
 
 	err = service.DeleteProfile(id)
 	if err != nil {
 		log.Printf("Ошибка при удалении профиля: %v", err)
-		c.JSON(http.StatusInternalServerError, "Ошибка при удалении профиля")
+		c.JSON(http.StatusInternalServerError, gin.H{"Ошибка": "Ошибка при обновлении профиля"})
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"Сообщение": "Профиль успешно удалён"})

@@ -16,7 +16,7 @@ type CommentRequest struct {
 	CreatedAt  time.Time 
 }
 
-type CommentResponce struct {
+type CommentResponse struct {
 	Id	   int       `json:"id"`
 	FormID   int    `json:"form_id"`
 	UserName string `json:"user_name"`
