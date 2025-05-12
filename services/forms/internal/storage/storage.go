@@ -8,7 +8,7 @@ import (
 
 	"github.com/google/uuid"
 
-	_ "github.com/lib/pq" 
+	_ "github.com/lib/pq"
 )
 
 var Db *sql.DB
@@ -44,7 +44,6 @@ func FormCreateRequest(form models.FormRequest, creatorId int) (int, string, err
 	link := uuid.New().String()
 	query := `INSERT INTO forms (creator_id, title, description, link, private_key, expires_at) 
 			  VALUES($1, $2, $3, $4, $5, $6) RETURNING id`
-
 	var formId int
 	err := Db.QueryRow(query, creatorId, form.Title, form.Description, link, form.PrivateKey, form.ExpiresAt).Scan(&formId)
 	if err != nil {
@@ -65,25 +64,6 @@ func FormDeleteRequest(formId int, creatorId int) error {
 	return err
 }
 
-func FormGetRequest(creatorId int, formId int) (models.Form, error) {
-	log.Printf("id пользователя: %v", creatorId)
-	query := `SELECT id, title, description, link, private_key, expires_at 
-			  FROM forms 
-			  WHERE id = $1 AND creator_id = $2`
-	var form models.Form
-	err := Db.QueryRow(query, formId, creatorId).Scan(&form.Id,
-		&form.Title,
-		&form.Description,
-		&form.Link,
-		&form.PrivateKey,
-		&form.ExpiresAt)
-	if err != nil {
-		log.Printf("Ошибка при запросе получения формы: %v", err)
-		return form, err
-	}
-	return form, err
-}
-
 func FormUpdateRequest(updateForm models.FormRequest, creatorId int, formId int) error {
 
 	query := "UPDATE forms SET title = $1, description = $2, private_key = $3, expires_at = $4 WHERE id = $5 AND creator_id = $6"
@@ -95,17 +75,25 @@ func FormUpdateRequest(updateForm models.FormRequest, creatorId int, formId int)
 	return err
 }
 
-func GetFormsRequest(creatorId int) (*sql.Rows, error) {
-	query := `SELECT id, title, description, link, private_key, expires_at FROM forms WHERE creator_id = $1 ORDER BY number_order`
-
-	rows, err := Db.Query(query, creatorId)
-
+func FormGetRequest(creatorId int, formId int) (models.Form, error) {
+	var form models.Form
+	query := `
+		SELECT id, title, description, link, private_key, expires_at
+		FROM forms
+		WHERE id = $1 AND creator_id = $2
+		`
+	err := Db.QueryRow(query, formId, creatorId).Scan(
+		&form.Id,
+		&form.Title,
+		&form.Description,
+		&form.Link,
+		&form.PrivateKey,
+		&form.ExpiresAt,
+	)
 	if err != nil {
-		log.Printf("Не удалось найти формы через запрос: %v", err)
-		return nil, err
+		return form, err
 	}
-
-	return rows, err
+	return form, nil
 }
 
 func QuestionChekingRequest(existId int, creatorId int, formId int, questionId int) error {
@@ -118,12 +106,12 @@ func QuestionChekingRequest(existId int, creatorId int, formId int, questionId i
 	}
 	return err
 }
-func QuestionCreateRequest(question models.QuestionRequest, formId int) (int, error) {
-	query := `INSERT INTO questions (form_id, title, number_order, required) 
-			  VALUES($1, $2, $3, $4) RETURNING id`
+func QuestionCreateRequest(question models.QuestionRequest, creatorId int, formId int) (int, error) {
+	query := `INSERT INTO questions (form_id, creator_id, title, number_order, required) 
+			  VALUES($1, $2, $3, $4, $5) RETURNING id`
 
 	var questionId int
-	err := Db.QueryRow(query, formId, question.Title, question.NumberOrder, question.Required).Scan(&questionId)
+	err := Db.QueryRow(query, formId, creatorId, question.Title, question.NumberOrder, question.Required).Scan(&questionId)
 	if err != nil {
 		log.Printf("Ошибка при запросе создания вопроса: %v", err)
 		return questionId, err
@@ -133,7 +121,7 @@ func QuestionCreateRequest(question models.QuestionRequest, formId int) (int, er
 func QuestionDeleteRequest(creator_id int, formId int, questionId int) (sql.Result, error) {
 
 	query := "DELETE FROM questions WHERE id = $1 AND form_id = $2 and creator_id = $3"
-	_, err := Db.Exec(query, questionId, formId)
+	_, err := Db.Exec(query, questionId, formId, creator_id)
 	if err != nil {
 		log.Printf("Ошибка при запросе удаления вопроса: %v", err)
 		return nil, err
@@ -142,12 +130,29 @@ func QuestionDeleteRequest(creator_id int, formId int, questionId int) (sql.Resu
 }
 
 func QuestionsGetRequest(creator_id int, formId int) (*sql.Rows, error) {
-	query := `SELECT questions.id, questions.title, questions.number_order, questions.required, answers.title, answers.number_order, answers.count 
-			  FROM questions
-			  JOIN answers ON questions.id = answers.question_id 
-			  WHERE form_id = $1 AND creator_id = $2 ORDER BY questions.number_order, answers.number_order`
+	query := `
+			SELECT
+			q.id,
+			q.form_id,
+			q.title,
+			q.number_order,
+			q.required,
+			COALESCE(a.id, 0)           AS answer_id,
+			COALESCE(a.title, '')       AS answer_title,
+			COALESCE(a.number_order, 0) AS answer_order,
+			COALESCE(a.count, 0)        AS answer_count,
+			COALESCE(a.chosen, FALSE)   AS answer_chosen
+			FROM questions AS q
+			LEFT JOIN answers AS a
+			ON q.id = a.question_id
+			WHERE q.creator_id = $1
+			AND q.form_id    = $2
+			ORDER BY
+			q.number_order,
+			a.number_order
+`
 
-	rows, err := Db.Query(query, formId, creator_id)
+	rows, err := Db.Query(query, creator_id, formId)
 
 	if err != nil {
 		log.Printf("Ошибка при запросе получения вопросов: %v", err)
@@ -177,18 +182,19 @@ func AnswerChekingRequest(existId int, creatorId int, formId int, questionId int
 	return err
 }
 
-func AnswerCreateRequest(answer models.AnswerRequest, questionId int) (int, error) {
-	query := `INSERT INTO answers (question_id, title, number_order, count) 
-			  VALUES($1, $2, $3, $4) RETURNING id`
+func AnswerCreateRequest(answer models.AnswerRequest, creatorId int, formId int, questionId int) (int, error) {
+	query := `INSERT INTO answers (question_id, form_id, creator_id, title, number_order, count) 
+			  VALUES($1, $2, $3, $4, $5, $6) RETURNING id`
 
 	var answerId int
-	err := Db.QueryRow(query, questionId, answer.Title, answer.NumberOrder, answer.Count).Scan(&answerId)
+	err := Db.QueryRow(query, questionId, formId, creatorId, answer.Title, answer.NumberOrder, answer.Count).Scan(&answerId)
 	if err != nil {
 		log.Printf("Ошибка при запросе создания ответа: %v", err)
 		return answerId, err
 	}
 	return answerId, err
 }
+
 func AnswerDeleteRequest(creator_id int, formId int, questionId int, answerId int) (sql.Result, error) {
 	query := "DELETE FROM answers WHERE id = $1 AND question_id = $2 AND form_id = $3 and creator_id = $4"
 	_, err := Db.Exec(query, answerId, questionId, formId, creator_id)
@@ -209,16 +215,75 @@ func AnswerUpdateRequest(updateAnswer models.AnswerRequest, creator_id int, form
 	return err
 }
 
-func GetAnswersRequest(creator_id int, formId int, questionId int) (*sql.Rows, error) {
-	query := `SELECT id, question_id, title, number_order, count 
-			  FROM answers 
-			  WHERE question_id = $1 AND form_id = $2 AND creator_id = $3`
+func QuestionsWithAnswersGet(formId, creatorId int) ([]models.QuestionOutput, error) {
+	query := `
+			SELECT
+			q.id,
+			q.number_order,
+			q.title,
+			q.required,
+			a.id,
+			a.title,
+			a.number_order,
+			a.count,
+			a.chosen
+			FROM questions q
+			LEFT JOIN answers a ON q.id = a.question_id
+			WHERE q.form_id = $1 AND q.creator_id = $2
+			ORDER BY q.number_order, a.number_order`
 
-	rows, err := Db.Query(query, questionId, formId, creator_id)
-
+	rows, err := Db.Query(query, formId, creatorId)
 	if err != nil {
-		log.Printf("Ошибка при запросе получения ответов: %v", err)
 		return nil, err
 	}
-	return rows, err
+	defer rows.Close()
+
+	questionMap := make(map[int]*models.QuestionOutput)
+	var orderedIDs []int
+
+	for rows.Next() {
+		var (
+			qID, qOrder    int
+			qTitle         string
+			qRequired      bool
+			aID            sql.NullInt64
+			aTitle         sql.NullString
+			aOrder, aCount sql.NullInt64
+			aChosen        sql.NullBool
+		)
+
+		err := rows.Scan(&qID, &qOrder, &qTitle, &qRequired, &aID, &aTitle, &aOrder, &aCount, &aChosen)
+		if err != nil {
+			return nil, err
+		}
+
+		q, exists := questionMap[qID]
+		if !exists {
+			q = &models.QuestionOutput{
+				Id:          qID,
+				NumberOrder: qOrder,
+				Title:       qTitle,
+				Required:    qRequired,
+				Answers:     []models.Answer{},
+			}
+			questionMap[qID] = q
+			orderedIDs = append(orderedIDs, qID)
+		}
+
+		if aID.Valid {
+			q.Answers = append(q.Answers, models.Answer{
+				Id:          int(aID.Int64),
+				Title:       aTitle.String,
+				NumberOrder: int(aOrder.Int64),
+				Count:       int(aCount.Int64),
+				Chosen:      aChosen.Bool,
+			})
+		}
+	}
+
+	questions := make([]models.QuestionOutput, 0, len(orderedIDs))
+	for _, id := range orderedIDs {
+		questions = append(questions, *questionMap[id])
+	}
+	return questions, nil
 }

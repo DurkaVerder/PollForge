@@ -16,9 +16,12 @@ type CommentRequest struct {
 	CreatedAt  time.Time 
 }
 
-type CommentResponce struct {
+type CommentResponse struct {
+	Id	   int       `json:"id"`
+	FormID   int    `json:"form_id"`
 	UserName string `json:"user_name"`
 	Description string `json:"description"`
 	CreatedAt  time.Time `json:"created_at"`
+	EditedAt    *time.Time `json:"edited_at,omitempty"`
 }
 

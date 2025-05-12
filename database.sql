@@ -45,6 +45,7 @@ CREATE TABLE answers(
     form_id INT NOT NULL,
     title VARCHAR(255) NOT NULL,
     number_order INT,
+    chosen BOOLEAN DEFAULT FALSE,
     count BIGINT DEFAULT 0,
     FOREIGN KEY (question_id) REFERENCES questions (id) ON DELETE CASCADE
 );
@@ -55,6 +56,7 @@ CREATE TABLE comments(
     form_id INT NOT NULL,
     description VARCHAR(255) NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    edited_at TIMESTAMP WITH TIME ZONE NULL,
     FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE,
     FOREIGN KEY (form_id) REFERENCES forms (id) ON DELETE CASCADE
 );

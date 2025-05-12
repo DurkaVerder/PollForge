@@ -87,10 +87,10 @@ func (s *Service) selectEmailTemplate(eventType string) (string, string) {
 	case userRegisteredEvent:
 
 		subject = "Добро пожаловать в наш сервис!"
-		body = "Спасибо за регистрацию! Мы рады видеть вас в нашем сервисе."
+		body = "Спасибо за регистрацию! Мы рады видеть вас в нашем сервисе!"
 	case userLoginEvent:
 		subject = "Уведомление о входе в систему!"
-		body = "Вы успешно вошли в систему. Если это были не вы, пожалуйста, измените пароль."
+		body = "Вы успешно вошли в систему. Если это были не вы, пожалуйста, измените пароль!"
 
 	default:
 		subject = "Уведомление"
@@ -110,3 +110,4 @@ func (s *Service) createEmail(email, eventType string) Email {
 		Body:    body,
 	}
 }
+
