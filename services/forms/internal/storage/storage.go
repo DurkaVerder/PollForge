@@ -283,7 +283,7 @@ func QuestionsWithAnswersGet(formId, creatorId int) ([]models.QuestionOutput, er
 		}
 	}
 
-	var questions []models.QuestionOutput
+	questions := make([]models.QuestionOutput, 0, len(orderedIDs))
 	for _, id := range orderedIDs {
 		questions = append(questions, *questionMap[id])
 	}
