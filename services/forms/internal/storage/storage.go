@@ -64,8 +64,6 @@ func FormDeleteRequest(formId int, creatorId int) error {
 	return err
 }
 
-
-
 func FormUpdateRequest(updateForm models.FormRequest, creatorId int, formId int) error {
 
 	query := "UPDATE forms SET title = $1, description = $2, private_key = $3, expires_at = $4 WHERE id = $5 AND creator_id = $6"
@@ -184,18 +182,19 @@ func AnswerChekingRequest(existId int, creatorId int, formId int, questionId int
 	return err
 }
 
-func AnswerCreateRequest(answer models.AnswerRequest, creator_Id int, form_id int, questionId int) (int, error) {
+func AnswerCreateRequest(answer models.AnswerRequest, creatorId int, formId int, questionId int) (int, error) {
 	query := `INSERT INTO answers (question_id, form_id, creator_id, title, number_order, count) 
 			  VALUES($1, $2, $3, $4, $5, $6) RETURNING id`
 
 	var answerId int
-	err := Db.QueryRow(query, questionId, form_id, creator_Id, answer.Title, answer.NumberOrder, answer.Count).Scan(&answerId)
+	err := Db.QueryRow(query, questionId, formId, creatorId, answer.Title, answer.NumberOrder, answer.Count).Scan(&answerId)
 	if err != nil {
 		log.Printf("Ошибка при запросе создания ответа: %v", err)
 		return answerId, err
 	}
 	return answerId, err
 }
+
 func AnswerDeleteRequest(creator_id int, formId int, questionId int, answerId int) (sql.Result, error) {
 	query := "DELETE FROM answers WHERE id = $1 AND question_id = $2 AND form_id = $3 and creator_id = $4"
 	_, err := Db.Exec(query, answerId, questionId, formId, creator_id)
@@ -215,7 +214,6 @@ func AnswerUpdateRequest(updateAnswer models.AnswerRequest, creator_id int, form
 	}
 	return err
 }
-
 
 func QuestionsWithAnswersGet(formId, creatorId int) ([]models.QuestionOutput, error) {
 	query := `
@@ -245,13 +243,13 @@ func QuestionsWithAnswersGet(formId, creatorId int) ([]models.QuestionOutput, er
 
 	for rows.Next() {
 		var (
-			qID, qOrder             int
-			qTitle                  string
-			qRequired               bool
-			aID                     sql.NullInt64
-			aTitle                  sql.NullString
-			aOrder, aCount          sql.NullInt64
-			aChosen                 sql.NullBool
+			qID, qOrder    int
+			qTitle         string
+			qRequired      bool
+			aID            sql.NullInt64
+			aTitle         sql.NullString
+			aOrder, aCount sql.NullInt64
+			aChosen        sql.NullBool
 		)
 
 		err := rows.Scan(&qID, &qOrder, &qTitle, &qRequired, &aID, &aTitle, &aOrder, &aCount, &aChosen)
