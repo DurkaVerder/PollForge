@@ -171,8 +171,12 @@ func (s *Service) calculatePercent(answers []models.AnswerFromDB) {
 	}
 
 	for i, answer := range answers {
-		percent := float64(answer.CountVotes*100) / float64(totalVotes)
-		answers[i].Percent = roundToTwoDecimalPlaces(percent)
+		if totalVotes == 0 {
+			answers[i].Percent = 0
+		} else {
+			percent := float64(answer.CountVotes*100) / float64(totalVotes)
+			answers[i].Percent = roundToTwoDecimalPlaces(percent)
+		}
 	}
 }
 
