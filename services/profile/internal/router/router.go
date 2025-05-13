@@ -18,9 +18,10 @@ func SetUpRouter(r *gin.Engine) {
 	protected.Use(middleware.JWTAuth())
 	{
 		protected.GET("/profile", handlers.GetProfile)
+		protected.PUT("/profile", handlers.UpdateProfileName)
+		protected.DELETE("/profile", handlers.DeleteProfile)
 		protected.GET("/forms", handlers.GetForms)
 		protected.DELETE("/forms/:id", handlers.DeleteForm)
-
 	}
 
 	if err := r.Run(profile_port); err != nil {

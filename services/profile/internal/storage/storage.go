@@ -39,7 +39,7 @@ func GetUserProfileRequest(userId int) (*models.UserProfile, error) {
 }
 
 func GetUserFormsRequest(userId int) (*sql.Rows, error) {
-	rows, err := Db.Query("SELECT id, title, description, link, private_key, expires_at FROM forms WHERE creator_id = $1", userId)
+	rows, err := Db.Query("SELECT id, creator_id, title, description, link, private_key, expires_at FROM forms WHERE creator_id = $1", userId)
 	if err != nil {
 		log.Printf("Ошибка при получении форм пользователя: %v", err)
 		return nil, err
@@ -67,4 +67,24 @@ func FormDeleteRequest(formId int, creatorId int) error {
 		return err
 	}
 	return err
+}
+
+func UpdateProfileRequest(userId int, profile models.UserProfile) error {
+	query := "UPDATE users SET name = $1 WHERE id = $2"
+	_, err := Db.Exec(query, profile.Username, userId)
+	if err != nil {
+		log.Printf("Ошибка при обновлении профиля пользователя: %v", err)
+		return err
+	}
+	return nil
+}
+
+func DeleteProfileRequest(userId int) error {
+	query := "DELETE FROM users WHERE id = $1"
+	_, err := Db.Exec(query, userId)
+	if err != nil {
+		log.Printf("Ошибка при удалении профиля пользователя: %v", err)
+		return err
+	}
+	return nil
 }

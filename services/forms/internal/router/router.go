@@ -23,7 +23,6 @@ func SetUpRouter(r *gin.Engine) {
 		protected.DELETE("/forms/:id", handlers.DeleteForm)
 
 		protected.POST("/forms/:id/questions", handlers.CreateQuestion)
-		protected.GET("/forms/:id/questions", handlers.GetQuestions)
 		protected.PUT("/forms/:id/questions/:question_id", handlers.UpdateQuestion)
 		protected.DELETE("/forms/:id/questions/:question_id", handlers.DeleteQuestion)
 
