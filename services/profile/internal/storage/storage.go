@@ -28,9 +28,9 @@ func ConnectToDb() error {
 }
 
 func GetUserProfileRequest(userId int) (*models.UserProfile, error) {
-	row := Db.QueryRow("SELECT id, name, email FROM users WHERE id = $1", userId)
+	row := Db.QueryRow("SELECT id, name, email, COALESCE(avatar_url, '') FROM users WHERE id = $1", userId)
 	var profile models.UserProfile
-	err := row.Scan(&profile.ID, &profile.Username, &profile.Email)
+	err := row.Scan(&profile.ID, &profile.Username, &profile.Email, &profile.AvatarURL)
 	if err != nil {
 		log.Printf("Ошибка при получении профиля пользователя: %v", err)
 		return nil, err
@@ -88,3 +88,14 @@ func DeleteProfileRequest(userId int) error {
 	}
 	return nil
 }
+
+func UploadAvatarRequest(userId int, avatarURL string) error {
+    query := "UPDATE users SET avatar_url = $1 WHERE id = $2"
+    _, err := Db.Exec(query, avatarURL, userId)
+    if err != nil {
+        log.Printf("Ошибка при загрузке аватара: %v", err)
+        return err
+    }
+    return nil
+}
+

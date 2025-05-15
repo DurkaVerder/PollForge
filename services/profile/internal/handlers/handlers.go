@@ -4,9 +4,12 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"path/filepath"
 	"profile/internal/models"
 	"profile/internal/service"
 	"strconv"
+	"strings"
+	"time"
 
 	"github.com/gin-gonic/gin"
 )
@@ -140,4 +143,48 @@ func DeleteProfile(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"Сообщение": "Профиль успешно удалён"})
+}
+
+func UploadAvatar(c *gin.Context) {
+    id, err := extractUserID(c)
+    if err != nil {
+        log.Printf("Ошибка при получении id пользователя: %v", err)
+        c.JSON(http.StatusUnauthorized, gin.H{"Ошибка": "id пользователя не найден"})
+        return
+    }
+
+    file, err := c.FormFile("avatar")
+    if err != nil {
+        log.Printf("Ошибка при получении файла: %v", err)
+        c.JSON(http.StatusBadRequest, gin.H{"Ошибка": "Ошибка при получении файла"})
+        return
+    }
+
+    if !strings.HasSuffix(strings.ToLower(file.Filename), ".jpg") && !strings.HasSuffix(strings.ToLower(file.Filename), ".png") {
+        c.JSON(http.StatusBadRequest, gin.H{"Ошибка": "Поддерживаются только JPG и PNG"})
+        return
+    }
+
+    ext := filepath.Ext(file.Filename)
+    filename := fmt.Sprintf("%d_%d%s", id, time.Now().Unix(), ext)
+    filepath := fmt.Sprintf("/uploads/avatars/%s", filename)
+
+    if err := c.SaveUploadedFile(file, filepath); err != nil {
+        log.Printf("Ошибка при сохранении файла: %v", err)
+        c.JSON(http.StatusInternalServerError, gin.H{"Ошибка": "Ошибка при сохранении файла"})
+        return
+    }
+    avatarURL := fmt.Sprintf("/avatars/%s", filename)
+
+    err = service.UploadAvatar(id, avatarURL)
+    if err != nil {
+        log.Printf("Ошибка при загрузке аватара: %v", err)
+        c.JSON(http.StatusInternalServerError, gin.H{"Ошибка": "Ошибка при загрузке аватара"})
+        return
+    }
+
+    c.JSON(http.StatusOK, gin.H{
+        "Сообщение":  "Аватар успешно загружен",
+        "avatar_url": avatarURL,
+    })
 }

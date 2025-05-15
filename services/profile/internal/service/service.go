@@ -4,8 +4,10 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
+	"os"
 	"profile/internal/models"
 	"profile/internal/storage"
+	"strings"
 )
 
 func GetUserProfile(userId int) (*models.UserProfile, error) {
@@ -78,4 +80,27 @@ func DeleteProfile(userId int) error {
 		log.Printf("Ошибка при удалении профиля: %v", err)
 	}
 	return err
+}
+
+func UploadAvatar(userId int, avatarURL string) error {
+    profile, err := storage.GetUserProfileRequest(userId)
+    if err != nil {
+        log.Printf("Ошибка при получении профиля: %v", err)
+        return err
+    }
+
+    if profile.AvatarURL != "" {
+        oldFilePath := strings.TrimPrefix(profile.AvatarURL, "/avatars/")
+        fullPath := fmt.Sprintf("/uploads/avatars/%s", oldFilePath)
+		log.Printf("Удаление старого аватара: %s", fullPath)
+        if err := os.Remove(fullPath); err != nil {
+            log.Printf("Ошибка при удалении старого аватара: %v", err)
+        }
+    }
+    err = storage.UploadAvatarRequest(userId, avatarURL)
+    if err != nil {
+        log.Printf("Ошибка при загрузке аватара: %v", err)
+        return fmt.Errorf("ошибка при загрузке аватара")
+    }
+    return nil
 }
