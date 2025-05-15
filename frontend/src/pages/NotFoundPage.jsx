@@ -1,17 +1,23 @@
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
 export default function NotFoundPage() {
+  const navigate = useNavigate();
+
+  const handleClick = () => {
+    navigate('/');
+  };
+
   return (
-    <div className="min-h-screen flex items-center justify-center">
+    <div className="min-h-screen flex justify-center ">
       <div className="text-center">
-        <h1 className="text-4xl font-bold mb-4">404 - Page Not Found</h1>
-        <p className="text-gray-600 mb-8">The page you're looking for doesn't exist.</p>
-        <Link 
-          to="/" 
-          className="bg-primary-500 text-white px-6 py-3 rounded-lg hover:bg-primary-600 transition-colors"
+        <h1 className="text-4xl font-bold mb-4">404 — Страница не найдена</h1>
+        <p className="text-gray-600 mb-8">Страница, которую вы ищете, не существует.</p>
+        <button
+          onClick={handleClick}
+          className="bg-primary-500 h-10 w-full text-white text-lg px-8 py-4 rounded-lg hover:bg-primary-600 transition-colors"
         >
-          Return Home
-        </Link>
+          Вернуться на главную
+        </button>
       </div>
     </div>
   );

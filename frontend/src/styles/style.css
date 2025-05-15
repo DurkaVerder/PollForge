@@ -35,8 +35,11 @@ html {
 }
 body {
     line-height: inherit;
-    margin: 0;
+    margin: 0 auto;        
+    width: 80%;
+    background-color: #f9fafb;       
 }
+
 hr {
     border-top-width: 1px;
     color: inherit;

@@ -11,7 +11,7 @@ export default function Sidebar() {
               className="flex items-center p-3 rounded-lg bg-primary-50 text-primary-700"
             >
               <span className="material-symbols-outlined mr-3">dynamic_feed</span>
-              Feed
+              Лента
             </Link>
           </li>
           <li>
@@ -20,7 +20,7 @@ export default function Sidebar() {
               className="flex items-center p-3 rounded-lg hover:bg-gray-100 transition-colors duration-200"
             >
               <span className="material-symbols-outlined mr-3">person</span>
-              My Profile
+              Мой профиль
             </Link>
           </li>
           <li>
@@ -29,7 +29,7 @@ export default function Sidebar() {
               className="flex items-center p-3 rounded-lg hover:bg-gray-100 transition-colors duration-200"
             >
               <span className="material-symbols-outlined mr-3">poll</span>
-              My Polls
+              Мои опросы
             </Link>
           </li>
           <li>
@@ -38,7 +38,7 @@ export default function Sidebar() {
               className="flex items-center p-3 rounded-lg hover:bg-gray-100 transition-colors duration-200"
             >
               <span className="material-symbols-outlined mr-3">explore</span>
-              Explore
+              Обзор
             </Link>
           </li>
           <li>
@@ -47,7 +47,7 @@ export default function Sidebar() {
               className="flex items-center p-3 rounded-lg hover:bg-gray-100 transition-colors duration-200"
             >
               <span className="material-symbols-outlined mr-3">trending_up</span>
-              Trending
+              Популярное
             </Link>
           </li>
         </ul>

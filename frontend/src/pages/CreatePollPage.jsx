@@ -7,8 +7,8 @@ export default function CreatePollPage() {
       
       <div className="flex-1">
         <div className="bg-white rounded-lg shadow-md p-6">
-          <h2 className="text-2xl font-bold mb-6">Create New Poll</h2>
-          {/* Добавьте форму для создания опроса */}
+          <h2 className="text-2xl font-bold mb-6">Создать новый опрос</h2>
+          {/* Здесь добавьте форму для создания опроса */}
         </div>
       </div>
     </main>

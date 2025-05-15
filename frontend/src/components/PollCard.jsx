@@ -20,7 +20,7 @@ export default function PollCard({ poll }) {
         <div className="flex items-center">
           <img
             src={poll.user.avatar}
-            alt="User avatar"
+            alt="Аватар пользователя"
             className="h-10 w-10 rounded-full mr-3"
           />
           <div>
@@ -64,17 +64,17 @@ export default function PollCard({ poll }) {
       ))}
 
       <div className="flex justify-between text-sm text-gray-500">
-        <span>{poll.votes} votes</span>
-        <span>Ends in {poll.endsIn}</span>
+        <span>{poll.votes} голосов</span>
+        <span>Заканчивается через {poll.endsIn}</span>
       </div>
       <div className="mt-4 flex justify-between">
         <button className="flex items-center text-primary-600 hover:text-primary-700 transition-colors">
           <span className="material-symbols-outlined mr-1">comment</span>
-          {poll.comments} Comments
+          {poll.comments} комментариев
         </button>
         <button className="flex items-center text-primary-600 hover:text-primary-700 transition-colors">
           <span className="material-symbols-outlined mr-1">share</span>
-          Share
+          Поделиться
         </button>
       </div>
     </div>
