@@ -20,7 +20,7 @@ CREATE TABLE forms(
     id SERIAL PRIMARY KEY,
     creator_id INT NOT NULL,
     title VARCHAR(255) NOT NULL,
-    description VARCHAR(255) NOT NULL,
+    description VARCHAR(255),
     link VARCHAR(255) NOT NULL,
     private_key BOOLEAN DEFAULT FALSE,
     expires_at TIMESTAMP NOT NULL,
@@ -45,9 +45,17 @@ CREATE TABLE answers(
     form_id INT NOT NULL,
     title VARCHAR(255) NOT NULL,
     number_order INT,
-    chosen BOOLEAN DEFAULT FALSE,
     count BIGINT DEFAULT 0,
     FOREIGN KEY (question_id) REFERENCES questions (id) ON DELETE CASCADE
+);
+
+CREATE TABLE answers_chosen (
+    id SERIAL PRIMARY KEY,
+    answer_id INT NOT NULL,
+    user_id INT NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (answer_id) REFERENCES answers (id) ON DELETE CASCADE,
+    FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
 );
 
 CREATE TABLE comments(
