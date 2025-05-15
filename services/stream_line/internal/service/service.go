@@ -85,7 +85,7 @@ func (s *Service) CreatePolls(data MergedData) []models.Polls {
 	questionWithAnswers := s.mergeQuestionWithAnswers(data.Questions, data.Answers)
 	formsWithQuestions := s.mergeFormsWithQuestions(data.Forms, questionWithAnswers)
 
-	var polls []models.Polls
+	polls := make([]models.Polls, 0, len(formsWithQuestions))
 	for _, formWithQuestions := range formsWithQuestions {
 		var poll models.Polls
 		poll.ID = formWithQuestions.form.ID
@@ -97,7 +97,7 @@ func (s *Service) CreatePolls(data MergedData) []models.Polls {
 		poll.CreatedAt = formWithQuestions.form.CreatedAt.Format("2006-01-02 15:04:05")
 		poll.ExpiresAt = formWithQuestions.form.ExpiresAt.Format("2006-01-02 15:04:05")
 
-		poll.Questions = make([]models.Question, len(formWithQuestions.questions))
+		poll.Questions = make([]models.Question, 0, len(formWithQuestions.questions))
 		for i, questionWithAnswers := range formWithQuestions.questions {
 			poll.Questions[i].ID = questionWithAnswers.question.ID
 			poll.Questions[i].Title = questionWithAnswers.question.Title
@@ -123,7 +123,7 @@ func (s *Service) mergeQuestionWithAnswers(questions []models.QuestionFromDB, an
 		questionMap[answer.QuestionID] = append(questionMap[answer.QuestionID], answer)
 	}
 
-	var result []QuestionWithAnswers
+	result := make([]QuestionWithAnswers, 0, len(questions))
 	for _, question := range questions {
 		answers := questionMap[question.ID]
 		sort.Slice(answers, func(i, j int) bool {
@@ -145,7 +145,7 @@ func (s *Service) mergeFormsWithQuestions(forms []models.FormFromDB, questions [
 		formMap[question.question.FormID] = append(formMap[question.question.FormID], question)
 	}
 
-	var result []FormWithQuestions
+	result := make([]FormWithQuestions, 0, len(forms))
 	for _, form := range forms {
 		questions := formMap[form.ID]
 		sort.Slice(questions, func(i, j int) bool {
