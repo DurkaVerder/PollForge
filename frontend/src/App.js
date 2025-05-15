@@ -1,25 +1,35 @@
-import logo from './logo.svg';
-import './App.css';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import './styles/style.css';
+import Header from './components/Header';
+import Footer from './components/Footer';
+import HomePage from './pages/HomePage';
+import ProfilePage from './pages/ProfilePage';
+import CreatePollPage from './pages/CreatePollPage';
+import MyPollsPage from './pages/MyPollsPage';
+// import ExplorePage from './pages/ExplorePage';
+// import TrendingPage from './pages/TrendingPage';
+import NotFoundPage from './pages/NotFoundPage';
 
-function App() {
+export default function App() {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <Router>
+      <div id="webcrumbs">
+        <div className="w-[1200px] p-4 font-sans bg-gray-50 min-h-screen">
+          <Header />
+          
+          <Routes>
+            <Route path="/" element={<HomePage />} />
+            <Route path="/profile" element={<ProfilePage />} />
+            <Route path="/create-poll" element={<CreatePollPage />} />
+            <Route path="/my-polls" element={<MyPollsPage />} />
+            {/* <Route path="/explore" element={<ExplorePage />} />
+            <Route path="/trending" element={<TrendingPage />} /> */}
+            <Route path="*" element={<NotFoundPage />} />
+          </Routes>
+          
+          <Footer />
+        </div>
+      </div>
+    </Router>
   );
 }
-
-export default App;
