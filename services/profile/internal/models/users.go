@@ -19,7 +19,7 @@ type UserProfile struct {
 	ID       int    `json:"id"`
 	Username string `json:"name"`
 	Email    string `json:"email"`
-	AvatarURL string `json:"avatar"`
+	AvatarURL string `json:"avatar_url"`
 }
 
 type Form struct {
