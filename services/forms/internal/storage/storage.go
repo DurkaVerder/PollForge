@@ -218,7 +218,7 @@ func AnswerUpdateRequest(updateAnswer models.AnswerRequest, creator_id int, form
 func QuestionsWithAnswersGet(formId, creatorId int) ([]models.QuestionOutput, error) {
 	query := `
 			SELECT
-			q.id,
+			q.id, 
 			q.number_order,
 			q.title,
 			q.required,
@@ -286,4 +286,26 @@ func QuestionsWithAnswersGet(formId, creatorId int) ([]models.QuestionOutput, er
 		questions = append(questions, *questionMap[id])
 	}
 	return questions, nil
+}
+
+func GetFormByLinkRequest(link string) (models.Form, error) {
+	var form models.Form
+	query := `
+		SELECT id, creator_id, title, description, link, private_key, expires_at
+		FROM forms
+		WHERE link = $1
+		`
+	err := Db.QueryRow(query, link).Scan(
+		&form.Id,
+		&form.CreatorId,
+		&form.Title,
+		&form.Description,
+		&form.Link,
+		&form.PrivateKey,
+		&form.ExpiresAt,
+	)
+	if err != nil {
+		return form, err
+	}
+	return form, nil
 }

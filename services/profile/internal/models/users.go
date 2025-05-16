@@ -28,7 +28,7 @@ type Form struct {
 	CreatorId   int       `json:"creator_id"`
 	Title       string    `json:"title"`
 	Description string    `json:"description"`
-	Link        string    `json:"link"`
+	Link      string    `json:"link"`
 	PrivateKey  bool      `json:"private_key"`
 	ExpiresAt   time.Time `json:"expires_at"`
 }

@@ -115,7 +115,7 @@ func UpdateProfileBio(userId int, bio string) error {
 	err := storage.UpdateProfileBioRequest(userId, bio)
 	if err != nil {
 		log.Printf("Ошибка при обновлении описании профиля: %v", err)
-		return fmt.Errorf("Ошибка при обновлении описании профиля: %v", err)
+		return fmt.Errorf("ошибка при обновлении профиля: %v", err)
 	}
 	return nil
 }
