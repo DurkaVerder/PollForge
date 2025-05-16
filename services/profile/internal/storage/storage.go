@@ -104,7 +104,7 @@ func UpdateProfileBioRequest(userId int, bio string) error {
 	query := "UPDATE users SET bio = $1 WHERE id = $2"
 	_, err := Db.Exec(query, bio, userId)
 	if err != nil {
-		log.Printf("Ошибка при обновлении описании пользователя: %v", err)
+		log.Printf("Ошибка при обновлении профиля пользователя: %v", err)
 		return err
 	}
 	return nil
