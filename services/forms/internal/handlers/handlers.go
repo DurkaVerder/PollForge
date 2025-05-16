@@ -7,16 +7,12 @@ import (
 	"forms/internal/service"
 	"log"
 	"net/http"
-	"os"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
 
-var (
-	host = os.Getenv("HOST")
-	port = os.Getenv("PORT")
-)
+
 
 func extractUserID(c *gin.Context) (int, error) {
 	creatorIdfl, ok := c.Get("id")
