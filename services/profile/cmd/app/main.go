@@ -17,7 +17,10 @@ func main() {
 	if err != nil {
 		log.Fatal("Ошибка подключения к дб")
 	}
-	os.MkdirAll("/uploads/avatars", 0755)
+	err = os.MkdirAll("/uploads/avatars", 0755)
+	if err != nil {
+		log.Fatal("Ошибка создания директории для аватаров")
+	}
 	r := gin.Default()
 	r.Static("/avatars", "/uploads/avatars")
 	r.MaxMultipartMemory = 8 << 20
