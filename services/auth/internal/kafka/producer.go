@@ -46,4 +46,3 @@ func SendMessage(msg models.MessageKafka) error {
 	}
 	return nil
 }
-
