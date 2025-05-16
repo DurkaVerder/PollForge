@@ -167,9 +167,9 @@ func UploadAvatar(c *gin.Context) {
 
     ext := filepath.Ext(file.Filename)
     filename := fmt.Sprintf("%d_%d%s", id, time.Now().Unix(), ext)
-    filepath := fmt.Sprintf("/uploads/avatars/%s", filename)
+    filePath := fmt.Sprintf("/uploads/avatars/%s", filename)
 
-    if err := c.SaveUploadedFile(file, filepath); err != nil {
+    if err := c.SaveUploadedFile(file, filePath); err != nil {
         log.Printf("Ошибка при сохранении файла: %v", err)
         c.JSON(http.StatusInternalServerError, gin.H{"Ошибка": "Ошибка при сохранении файла"})
         return
