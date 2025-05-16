@@ -102,3 +102,4 @@ CREATE INDEX idx_comments_id_user_id_form_id ON comments (id, user_id, form_id);
 CREATE INDEX idx_likes_id_form_id ON likes (id, form_id);
 
 CREATE INDEX idx_answered_polls_id_user_id_form_id ON answered_polls (id, user_id, form_id);
+
