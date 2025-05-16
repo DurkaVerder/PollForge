@@ -66,8 +66,8 @@ func FormDelete(formId int, creatorId int) (sql.Result, error) {
 	return nil, err
 }
 
-func UpdateProfile(userId int, profile models.UserProfile) error {
-	err := storage.UpdateProfileRequest(userId, profile)
+func UpdateProfileName(userId int, profile models.UserProfile) error {
+	err := storage.UpdateProfileNameRequest(userId, profile)
 	if err != nil {
 		log.Printf("Ошибка при обновлении профиля: %v", err)
 	}
@@ -83,24 +83,39 @@ func DeleteProfile(userId int) error {
 }
 
 func UploadAvatar(userId int, avatarURL string) error {
-    profile, err := storage.GetUserProfileRequest(userId)
-    if err != nil {
-        log.Printf("Ошибка при получении профиля: %v", err)
-        return err
-    }
+	profile, err := storage.GetUserProfileRequest(userId)
+	if err != nil {
+		log.Printf("Ошибка при получении профиля: %v", err)
+		return err
+	}
 
-    if profile.AvatarURL != "" {
-        oldFilePath := strings.TrimPrefix(profile.AvatarURL, "/avatars/")
-        fullPath := fmt.Sprintf("/uploads/avatars/%s", oldFilePath)
+	if profile.AvatarURL != "" {
+
+		if !strings.HasPrefix(profile.AvatarURL, "/avatars/") {
+			log.Printf("Некорректный путь аватара: %s", profile.AvatarURL)
+			return fmt.Errorf("недопустимый путь аватара")
+		}
+
+		oldFilePath := strings.TrimPrefix(profile.AvatarURL, "/avatars/")
+		fullPath := fmt.Sprintf("/uploads/avatars/%s", oldFilePath)
 		log.Printf("Удаление старого аватара: %s", fullPath)
-        if err := os.Remove(fullPath); err != nil {
-            log.Printf("Ошибка при удалении старого аватара: %v", err)
-        }
-    }
-    err = storage.UploadAvatarRequest(userId, avatarURL)
-    if err != nil {
-        log.Printf("Ошибка при загрузке аватара: %v", err)
-        return fmt.Errorf("ошибка при загрузке аватара")
-    }
-    return nil
+		if err := os.Remove(fullPath); err != nil {
+			log.Printf("Ошибка при удалении старого аватара: %v", err)
+		}
+	}
+	err = storage.UploadAvatarRequest(userId, avatarURL)
+	if err != nil {
+		log.Printf("Ошибка при загрузке аватара: %v", err)
+		return fmt.Errorf("ошибка при загрузке аватара: %v", err)
+	}
+	return nil
+}
+
+func UpdateProfileBio(userId int, bio string) error {
+	err := storage.UpdateProfileBioRequest(userId, bio)
+	if err != nil {
+		log.Printf("Ошибка при обновлении описании профиля: %v", err)
+		return fmt.Errorf("Ошибка при обновлении описании профиля: %v", err)
+	}
+	return nil
 }

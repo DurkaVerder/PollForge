@@ -19,7 +19,9 @@ func SetUpRouter(r *gin.Engine) {
 	{
 		protected.GET("/profile", handlers.GetProfile)
 		protected.GET("/forms", handlers.GetForms)
-		protected.PUT("/profile", handlers.UpdateProfileName)
+		protected.PUT("/profile/name", handlers.UpdateProfileName)
+		protected.PUT("/profile/bio", handlers.UpdateProfileBio)
+
 		protected.DELETE("/profile", handlers.DeleteProfile)
 		protected.DELETE("/forms/:id", handlers.DeleteForm)
 		protected.POST("/profile/avatar", handlers.UploadAvatar)

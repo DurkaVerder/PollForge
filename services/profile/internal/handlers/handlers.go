@@ -119,7 +119,7 @@ func UpdateProfileName(c *gin.Context) {
 		return
 	}
 
-	err = service.UpdateProfile(id, profile)
+	err = service.UpdateProfileName(id, profile)
 	if err != nil {
 		log.Printf("Ошибка при обновлении профиля: %v", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"Ошибка":"Ошибка при обновлении профиля"})
@@ -187,4 +187,28 @@ func UploadAvatar(c *gin.Context) {
         "Сообщение":  "Аватар успешно загружен",
         "avatar_url": avatarURL,
     })
+}
+
+func UpdateProfileBio(c *gin.Context) {
+	id, err := extractUserID(c)
+	if err != nil {
+		log.Printf("Ошибка при получении id пользователя: %v", err)
+		c.JSON(http.StatusUnauthorized, gin.H{"Ошибка": "id пользователя не найден"})
+		return
+	}
+
+	var profile models.UserProfile
+	if err := c.ShouldBindJSON(&profile); err != nil {
+		log.Printf("Ошибка при получении данных профиля: %v", err)
+		c.JSON(http.StatusBadRequest, gin.H{"Ошибка": "Ошибка при получении данных профиля"})
+		return
+	}
+
+	err = service.UpdateProfileBio(id, profile.Bio)
+	if err != nil {
+		log.Printf("Ошибка при обновлении профиля: %v", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"Ошибка": "Ошибка при обновлении профиля"})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"Сообщение": "Описание профиля успешно обновлено"})
 }
