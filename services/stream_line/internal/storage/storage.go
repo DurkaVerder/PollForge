@@ -8,7 +8,7 @@ import (
 )
 
 const (
-	GetOtherFormsQuery = `SELECT f.id, f.title, f.description, COALESCE(l.count, 0) AS count, EXISTS(SELECT * FROM likes_forms WHERE user_id = $1 AND form_id = f.id) AS is_liked, (SELECT COUNT(id) FROM comments c WHERE c.form_id = f.id) AS count_votes, f.created_at, f.expires_at FROM forms f LEFT JOIN likes l ON l.form_id = f.id WHERE creator_id != $1 AND f.expires_at > NOW() AND f.private_key = false LIMIT 10`
+	GetOtherFormsQuery = `SELECT f.id, f.title, f.description, f.link, COALESCE(l.count, 0) AS count, EXISTS(SELECT * FROM likes_forms WHERE user_id = $1 AND form_id = f.id) AS is_liked, (SELECT COUNT(id) FROM comments c WHERE c.form_id = f.id) AS count_votes, f.created_at, f.expires_at FROM forms f LEFT JOIN likes l ON l.form_id = f.id WHERE creator_id != $1 AND f.expires_at > NOW() AND f.private_key = false LIMIT 10`
 	GetQuestionQuery   = `SELECT id, title, form_id, number_order FROM questions WHERE form_id IN $1`
 	GetAnswerQuery     = `SELECT a.id, a.title, a.question_id, a.number_order, a.count, EXISTS(SELECT * FROM answers_chosen WHERE user_id = $2 AND answer_id = a.id) AS is_selected FROM answers a WHERE a.question_id IN $1`
 )
@@ -33,7 +33,7 @@ func (p *Postgres) GetFormsByOtherUserIDWithCountLikesAndComments(userID string)
 	var forms []models.FormFromDB
 	for rows.Next() {
 		var form models.FormFromDB
-		if err := rows.Scan(&form.ID, &form.Title, &form.Description, &form.Like.Count, &form.Like.IsLiked, &form.CountVotes, &form.CreatedAt, &form.ExpiresAt); err != nil {
+		if err := rows.Scan(&form.ID, &form.Title, &form.Description, &form.Link, &form.Like.Count, &form.Like.IsLiked, &form.CountVotes, &form.CreatedAt, &form.ExpiresAt); err != nil {
 			return nil, err
 		}
 		forms = append(forms, form)
