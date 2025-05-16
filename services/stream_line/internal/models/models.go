@@ -10,6 +10,7 @@ type Polls struct {
 	ID          int        `json:"id"`
 	Title       string     `json:"title"`
 	Description string     `json:"description"`
+	Link        string     `json:"link"`
 	Likes       Like       `json:"likes"`
 	CountVotes  int        `json:"count_votes"`
 	Questions   []Question `json:"questions"`
@@ -43,6 +44,7 @@ type FormFromDB struct {
 	ID          int
 	Title       string
 	Description string
+	Link        string
 	Like        LikeFromDB
 	CountVotes  int
 	CreatedAt   time.Time
