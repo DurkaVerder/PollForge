@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"log"
 	"os"
+	"time"
 
 	"golang.org/x/crypto/bcrypt"
 
@@ -22,6 +23,10 @@ func ConnectToDb() error {
 		log.Printf("Ошибка подключения к базе данных: %v", err)
 		return err
 	}
+	Db.SetMaxOpenConns(50)
+    Db.SetMaxIdleConns(25)
+    Db.SetConnMaxIdleTime(5 * time.Minute)
+	
 	err = Db.Ping()
 	if err != nil {
 		log.Printf("Ошибка доступа к базе данных: %v", err)

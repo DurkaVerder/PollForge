@@ -15,11 +15,14 @@ func SetUpRouter(r *gin.Engine) {
 
 	forms_port := os.Getenv("PORT")
 	protected := r.Group("/api")
+
+	r.GET("/forms/link/:link", handlers.GetFormByLink).Use(middleware.JWTAuth())
+
 	protected.Use(middleware.JWTAuth())
 	{
-		protected.POST("/forms",     handlers.CreateForm)
-		protected.GET("/forms/:id",  handlers.GetForm)
-		protected.PUT("/forms/:id",  handlers.UpdateForm)
+		protected.POST("/forms", handlers.CreateForm)
+		protected.GET("/forms/:id", handlers.GetForm)
+		protected.PUT("/forms/:id", handlers.UpdateForm)
 		protected.DELETE("/forms/:id", handlers.DeleteForm)
 
 		protected.POST("/forms/:id/questions", handlers.CreateQuestion)

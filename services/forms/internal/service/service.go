@@ -135,3 +135,21 @@ func AnswerCreate(answer models.AnswerRequest, creatorId int, formId int, questi
 	}
 	return answerId, err
 }
+
+func GetFormByLink(link string) (models.Form, error) {
+	var form models.Form
+
+	form, err := storage.GetFormByLinkRequest(link)
+	if err != nil {
+		log.Printf("Ошибка при получении формы по ссылке: %v", err)
+		return form, err
+	}
+
+	// Получение вопросов с ответами
+	form.Questions, err = storage.QuestionsWithAnswersGet(form.Id, form.CreatorId)
+	if err != nil {
+		return form, err
+	}
+
+	return form, nil
+}

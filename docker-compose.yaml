@@ -19,9 +19,9 @@ services:
       - stream-line-service
       - forms-service
       - profile-service
-      - question-service
       - stats-service
       - email-service
+      - vote-service
       - comments-service
 
   grafana:
@@ -144,6 +144,8 @@ services:
       - PORT=:8080
     ports:
       - "8084:8080"
+    volumes:
+      - avatar_data:/uploads/avatars
     depends_on:
       postgres: 
           condition: service_healthy
@@ -222,6 +224,7 @@ services:
       - pollforge-network
       
 volumes:
+  avatar_data:
   postgres_data:
   grafana-storage:
   kafka-data:

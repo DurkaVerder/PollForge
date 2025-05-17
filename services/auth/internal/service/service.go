@@ -21,6 +21,20 @@ const (
 
 var jwtKey = []byte(os.Getenv("JWT_SECRET"))
 
+func handleRegistration(req models.UserRequest) (string, error) {
+	// Проверяем, есть ли уже пользователь
+	if err := CheckUserRequest(req); err != nil {
+		return "", err
+	}
+	// Регистрируем и получаем токен (Jwt + Kafka внутри)
+	return registerUserInternal(req)
+}
+
+func handleLogin(req models.UserRequest) (string, error) {
+	// Логиним и получаем токен
+	return loginUserInternal(req)
+}
+
 func GenerateJwt(userId string) (string, error) {
 
 	claims := jwt.MapClaims{
@@ -47,9 +61,9 @@ func CheckUserRequest(request models.UserRequest) error {
 	return nil
 }
 
-func RegisterUser(request models.UserRequest) (string, error) {
+func registerUserInternal(request models.UserRequest) (string, error) {
 	var userId string
-	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(request.Password), bcrypt.DefaultCost)
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(request.Password), 10)
 	if err != nil {
 		log.Printf("Ошибка при создании хеша пароля")
 		return "", err
@@ -63,6 +77,13 @@ func RegisterUser(request models.UserRequest) (string, error) {
 		return "", err
 	}
 
+	token, err := GenerateJwt(userId)
+	if err != nil {
+		log.Printf("Ошибка при создании токена")
+		log.Printf("%s", err.Error())
+		return "", err
+	}
+
 	kafkaMsg := models.MessageKafka{
 		EventType: userRegisteredEvent,
 		UserID:    userId,
@@ -70,12 +91,11 @@ func RegisterUser(request models.UserRequest) (string, error) {
 	if err := kafka.SendMessage(kafkaMsg); err != nil {
 		log.Printf("Не удалось отправить сообщение Kafka: %v", err)
 	}
-
-	token, err := GenerateJwt(userId)
+	
 	return token, err
 }
 
-func LoggingUser(request models.UserRequest) (string, error) {
+func loginUserInternal(request models.UserRequest) (string, error) {
 	userId, err := storage.CheckingLoggingData(request)
 	if err != nil {
 		log.Printf("Ошибка при сопоставлении пароля и почты")

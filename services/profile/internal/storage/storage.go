@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 	"profile/internal/models"
+
 	_ "github.com/lib/pq" // PostgreSQL driver
 )
 
@@ -28,9 +29,9 @@ func ConnectToDb() error {
 }
 
 func GetUserProfileRequest(userId int) (*models.UserProfile, error) {
-	row := Db.QueryRow("SELECT id, name, email FROM users WHERE id = $1", userId)
+	row := Db.QueryRow("SELECT id, name, email, COALESCE(bio, ''), COALESCE(avatar_url, '') FROM users WHERE id = $1", userId)
 	var profile models.UserProfile
-	err := row.Scan(&profile.ID, &profile.Username, &profile.Email)
+	err := row.Scan(&profile.ID, &profile.Username, &profile.Email, &profile.Bio, &profile.AvatarURL)
 	if err != nil {
 		log.Printf("Ошибка при получении профиля пользователя: %v", err)
 		return nil, err
@@ -69,7 +70,7 @@ func FormDeleteRequest(formId int, creatorId int) error {
 	return err
 }
 
-func UpdateProfileRequest(userId int, profile models.UserProfile) error {
+func UpdateProfileNameRequest(userId int, profile models.UserProfile) error {
 	query := "UPDATE users SET name = $1 WHERE id = $2"
 	_, err := Db.Exec(query, profile.Username, userId)
 	if err != nil {
@@ -84,6 +85,26 @@ func DeleteProfileRequest(userId int) error {
 	_, err := Db.Exec(query, userId)
 	if err != nil {
 		log.Printf("Ошибка при удалении профиля пользователя: %v", err)
+		return err
+	}
+	return nil
+}
+
+func UploadAvatarRequest(userId int, avatarURL string) error {
+	query := "UPDATE users SET avatar_url = $1 WHERE id = $2"
+	_, err := Db.Exec(query, avatarURL, userId)
+	if err != nil {
+		log.Printf("Ошибка при загрузке аватара: %v", err)
+		return err
+	}
+	return nil
+}
+
+func UpdateProfileBioRequest(userId int, bio string) error {
+	query := "UPDATE users SET bio = $1 WHERE id = $2"
+	_, err := Db.Exec(query, bio, userId)
+	if err != nil {
+		log.Printf("Ошибка при обновлении профиля пользователя: %v", err)
 		return err
 	}
 	return nil

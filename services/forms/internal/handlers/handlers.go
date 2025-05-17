@@ -12,6 +12,8 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+
+
 func extractUserID(c *gin.Context) (int, error) {
 	creatorIdfl, ok := c.Get("id")
 	if !ok {
@@ -83,7 +85,9 @@ func CreateForm(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"Ошибка": "Не удалось создать форму"})
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"form_id": formId, "link": link})
+	url := fmt.Sprintf("/forms/link/%s", link)
+
+	c.JSON(http.StatusOK, gin.H{"form_id": formId, "link": url})
 }
 
 func GetForm(c *gin.Context) {
@@ -114,9 +118,6 @@ func GetForm(c *gin.Context) {
 
 	c.JSON(http.StatusOK, form)
 }
-
-
-
 
 func UpdateForm(c *gin.Context) {
 
@@ -237,8 +238,6 @@ func CreateQuestion(c *gin.Context) {
 		"id вопроса": questionId})
 
 }
-
-
 
 func UpdateQuestion(c *gin.Context) {
 	formId, err := extractFormID(c)
@@ -475,4 +474,14 @@ func DeleteAnswer(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, gin.H{"Сообщение": "Ответ успешно удален"})
 
+}
+
+func GetFormByLink(c *gin.Context) {
+	link := c.Param("link")
+	form, err := service.GetFormByLink(link)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "форма не найдена"})
+		return
+	}
+	c.JSON(http.StatusOK, form)
 }

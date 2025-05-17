@@ -4,7 +4,9 @@ CREATE TABLE users(
     id SERIAL PRIMARY KEY,
     name VARCHAR(255) NOT NULL UNIQUE,
     email VARCHAR(255) NOT NULL UNIQUE,
+    bio VARCHAR(255),
     password VARCHAR(255) NOT NULL,
+    avatar_url VARCHAR(255),
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -109,3 +111,4 @@ CREATE INDEX idx_comments_id_user_id_form_id ON comments (id, user_id, form_id);
 CREATE INDEX idx_likes_id_form_id ON likes (id, form_id);
 
 CREATE INDEX idx_answered_polls_id_user_id_form_id ON answered_polls (id, user_id, form_id);
+

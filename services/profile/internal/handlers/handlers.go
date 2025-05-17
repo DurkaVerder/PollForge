@@ -4,9 +4,12 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"path/filepath"
 	"profile/internal/models"
 	"profile/internal/service"
 	"strconv"
+	"strings"
+	"time"
 
 	"github.com/gin-gonic/gin"
 )
@@ -105,21 +108,21 @@ func UpdateProfileName(c *gin.Context) {
 	id, err := extractUserID(c)
 	if err != nil {
 		log.Printf("Ошибка при получении id пользователя: %v", err)
-		c.JSON(http.StatusUnauthorized, gin.H{"Ошибка":"id пользователя не найден"})
+		c.JSON(http.StatusUnauthorized, gin.H{"Ошибка": "id пользователя не найден"})
 		return
 	}
 
 	var profile models.UserProfile
 	if err := c.ShouldBindJSON(&profile); err != nil {
 		log.Printf("Ошибка при получении данных профиля: %v", err)
-		c.JSON(http.StatusBadRequest, gin.H{"Ошибка":"Ошибка при получении данных профиля"})
+		c.JSON(http.StatusBadRequest, gin.H{"Ошибка": "Ошибка при получении данных профиля"})
 		return
 	}
 
-	err = service.UpdateProfile(id, profile)
+	err = service.UpdateProfileName(id, profile)
 	if err != nil {
 		log.Printf("Ошибка при обновлении профиля: %v", err)
-		c.JSON(http.StatusInternalServerError, gin.H{"Ошибка":"Ошибка при обновлении профиля"})
+		c.JSON(http.StatusInternalServerError, gin.H{"Ошибка": "Ошибка при обновлении профиля"})
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"Сообщение": "Профиль успешно обновлён"})
@@ -140,4 +143,91 @@ func DeleteProfile(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"Сообщение": "Профиль успешно удалён"})
+}
+
+func UploadAvatar(c *gin.Context) {
+	id, err := extractUserID(c)
+	if err != nil {
+		log.Printf("Ошибка при получении id пользователя: %v", err)
+		c.JSON(http.StatusUnauthorized, gin.H{"Ошибка": "id пользователя не найден"})
+		return
+	}
+
+	file, err := c.FormFile("avatar")
+	if err != nil {
+		log.Printf("Ошибка при получении файла: %v", err)
+		c.JSON(http.StatusBadRequest, gin.H{"Ошибка": "Ошибка при получении файла"})
+		return
+	}
+
+	if !strings.HasSuffix(strings.ToLower(file.Filename), ".jpg") && !strings.HasSuffix(strings.ToLower(file.Filename), ".png") {
+		c.JSON(http.StatusBadRequest, gin.H{"Ошибка": "Поддерживаются только JPG и PNG"})
+		return
+	}
+	openedFile, err := file.Open()
+	if err != nil {
+		log.Printf("Ошибка при открытии файла: %v", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"Ошибка": "Ошибка при обработке файла"})
+		return
+	}
+	defer openedFile.Close()
+
+	buffer := make([]byte, 512)
+	if _, err := openedFile.Read(buffer); err != nil {
+		log.Printf("Ошибка при чтении файла: %v", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"Ошибка": "Ошибка при обработке файла"})
+		return
+	}
+
+	mimeType := http.DetectContentType(buffer)
+	if mimeType != "image/jpeg" && mimeType != "image/png" {
+		c.JSON(http.StatusBadRequest, gin.H{"Ошибка": "Поддерживаются только JPG и PNG"})
+		return
+	}
+	ext := filepath.Ext(file.Filename)
+	filename := fmt.Sprintf("%d_%d%s", id, time.Now().Unix(), ext)
+	filePath := fmt.Sprintf("/uploads/avatars/%s", filename)
+
+	if err := c.SaveUploadedFile(file, filePath); err != nil {
+		log.Printf("Ошибка при сохранении файла: %v", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"Ошибка": "Ошибка при сохранении файла"})
+		return
+	}
+	avatarURL := fmt.Sprintf("/avatars/%s", filename)
+
+	err = service.UploadAvatar(id, avatarURL)
+	if err != nil {
+		log.Printf("Ошибка при загрузке аватара: %v", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"Ошибка": "Ошибка при загрузке аватара"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"Сообщение":  "Аватар успешно загружен",
+		"avatar_url": avatarURL,
+	})
+}
+
+func UpdateProfileBio(c *gin.Context) {
+	id, err := extractUserID(c)
+	if err != nil {
+		log.Printf("Ошибка при получении id пользователя: %v", err)
+		c.JSON(http.StatusUnauthorized, gin.H{"Ошибка": "id пользователя не найден"})
+		return
+	}
+
+	var profile models.UserProfile
+	if err := c.ShouldBindJSON(&profile); err != nil {
+		log.Printf("Ошибка при получении данных профиля: %v", err)
+		c.JSON(http.StatusBadRequest, gin.H{"Ошибка": "Ошибка при получении данных профиля"})
+		return
+	}
+
+	err = service.UpdateProfileBio(id, profile.Bio)
+	if err != nil {
+		log.Printf("Ошибка при обновлении профиля: %v", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"Ошибка": "Ошибка при обновлении профиля"})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"Сообщение": "Описание профиля успешно обновлено"})
 }

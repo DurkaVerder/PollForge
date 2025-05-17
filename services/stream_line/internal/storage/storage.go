@@ -4,13 +4,13 @@ import (
 	"database/sql"
 	"stream_line/internal/models"
 
-	_ "github.com/lib/pq"
+	"github.com/lib/pq"
 )
 
 const (
-	GetOtherFormsQuery = `SELECT f.id, f.title, f.description, f.link, COALESCE(l.count, 0) AS count, EXISTS(SELECT * FROM likes_forms WHERE user_id = $1 AND form_id = f.id) AS is_liked, (SELECT COUNT(id) FROM comments c WHERE c.form_id = f.id) AS count_votes, f.created_at, f.expires_at FROM forms f LEFT JOIN likes l ON l.form_id = f.id WHERE creator_id != $1 AND f.expires_at > NOW() AND f.private_key = false LIMIT 10`
-	GetQuestionQuery   = `SELECT id, title, form_id, number_order FROM questions WHERE form_id IN $1`
-	GetAnswerQuery     = `SELECT a.id, a.title, a.question_id, a.number_order, a.count, EXISTS(SELECT * FROM answers_chosen WHERE user_id = $2 AND answer_id = a.id) AS is_selected FROM answers a WHERE a.question_id IN $1`
+	GetOtherFormsQuery = `SELECT f.id, f.title, f.description, f.link, COALESCE(l.count, 0) AS count, EXISTS(SELECT * FROM likes_forms WHERE user_id = $1 AND form_id = f.id) AS is_liked, (SELECT COUNT(id) FROM comments c WHERE c.form_id = f.id) AS count_votes, f.created_at, f.expires_at FROM forms f LEFT JOIN likes l ON l.form_id = f.id WHERE f.expires_at > NOW() AND f.private_key = false`
+	GetQuestionQuery   = `SELECT id, title, form_id, number_order FROM questions WHERE form_id = ANY($1)`
+	GetAnswerQuery     = `SELECT a.id, a.title, a.question_id, a.number_order, a.count, EXISTS(SELECT * FROM answers_chosen WHERE user_id = $2 AND answer_id = a.id) AS is_selected FROM answers a WHERE a.question_id = ANY($1)`
 )
 
 type Postgres struct {
@@ -43,7 +43,7 @@ func (p *Postgres) GetFormsByOtherUserIDWithCountLikesAndComments(userID string)
 }
 
 func (p *Postgres) GetQuestionsByFormsID(formIDs []int) ([]models.QuestionFromDB, error) {
-	rows, err := p.db.Query(GetQuestionQuery, formIDs)
+	rows, err := p.db.Query(GetQuestionQuery, pq.Array(formIDs))
 	if err != nil {
 		return nil, err
 	}
@@ -62,7 +62,7 @@ func (p *Postgres) GetQuestionsByFormsID(formIDs []int) ([]models.QuestionFromDB
 }
 
 func (p *Postgres) GetAnswersByQuestionsID(questionIDs []int, userID string) ([]models.AnswerFromDB, error) {
-	rows, err := p.db.Query(GetAnswerQuery, questionIDs, userID)
+	rows, err := p.db.Query(GetAnswerQuery, pq.Array(questionIDs), userID)
 	if err != nil {
 		return nil, err
 	}
