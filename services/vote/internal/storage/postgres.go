@@ -10,8 +10,8 @@ import (
 
 const (
 	maxRetries                  = 3
-	QueryUpdateCountAnswerPlus  = "UPDATE answers SET count = count + 1 WHERE id = $1"
-	QueryUpdateCountAnswerMinus = "UPDATE answers SET count = count - 1 WHERE id = $1 AND count > 0"
+	QueryUpdateCountAnswerPlus  = "UPDATE answers SET count = count + 1 WHERE id = $1 AND NOT EXISTS (SELECT 1 FROM answers_chosen WHERE answer_id = $1 AND user_id = $2)"
+	QueryUpdateCountAnswerMinus = "UPDATE answers SET count = count - 1 WHERE id = $1 AND count > 0 AND EXISTS (SELECT 1 FROM answers_chosen WHERE answer_id = $1 AND user_id = $2)"
 
 	QueryInsertAnswerChoice = "INSERT INTO answers_chosen (answer_id, user_id) VALUES ($1, $2) ON CONFLICT (answer_id, user_id) DO NOTHING"
 	QueryDeleteAnswerChoice = "DELETE FROM answers_chosen WHERE answer_id = $1 AND user_id = $2"
@@ -35,7 +35,7 @@ func (p *Postgres) UpdateCountAnswerUp(answerId, userID int) error {
 			return err
 		}
 
-		result, err := tx.Exec(QueryUpdateCountAnswerPlus, answerId)
+		result, err := tx.Exec(QueryUpdateCountAnswerPlus, answerId, userID)
 		if err != nil {
 			log.Printf("UpdateCountAnswerUp: Ошибка при выполнении запроса: %v\n", err)
 
@@ -94,7 +94,7 @@ func (p *Postgres) UpdateCountAnswerDown(answerId, userID int) error {
 			return err
 		}
 
-		result, err := tx.Exec(QueryUpdateCountAnswerMinus, answerId)
+		result, err := tx.Exec(QueryUpdateCountAnswerMinus, answerId, userID)
 		if err != nil {
 			log.Printf("UpdateCountAnswerDown: Ошибка при выполнении запроса: %v\n", err)
 
