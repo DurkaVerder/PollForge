@@ -141,7 +141,6 @@ func QuestionsGetRequest(creator_id int, formId int) (*sql.Rows, error) {
 			COALESCE(a.title, '')       AS answer_title,
 			COALESCE(a.number_order, 0) AS answer_order,
 			COALESCE(a.count, 0)        AS answer_count,
-			COALESCE(a.chosen, FALSE)   AS answer_chosen
 			FROM questions AS q
 			LEFT JOIN answers AS a
 			ON q.id = a.question_id
@@ -218,7 +217,7 @@ func AnswerUpdateRequest(updateAnswer models.AnswerRequest, creator_id int, form
 func QuestionsWithAnswersGet(formId, creatorId int) ([]models.QuestionOutput, error) {
 	query := `
 			SELECT
-			q.id,
+			q.id, 
 			q.number_order,
 			q.title,
 			q.required,
@@ -226,7 +225,6 @@ func QuestionsWithAnswersGet(formId, creatorId int) ([]models.QuestionOutput, er
 			a.title,
 			a.number_order,
 			a.count,
-			a.chosen
 			FROM questions q
 			LEFT JOIN answers a ON q.id = a.question_id
 			WHERE q.form_id = $1 AND q.creator_id = $2
@@ -249,10 +247,9 @@ func QuestionsWithAnswersGet(formId, creatorId int) ([]models.QuestionOutput, er
 			aID            sql.NullInt64
 			aTitle         sql.NullString
 			aOrder, aCount sql.NullInt64
-			aChosen        sql.NullBool
 		)
 
-		err := rows.Scan(&qID, &qOrder, &qTitle, &qRequired, &aID, &aTitle, &aOrder, &aCount, &aChosen)
+		err := rows.Scan(&qID, &qOrder, &qTitle, &qRequired, &aID, &aTitle, &aOrder, &aCount)
 		if err != nil {
 			return nil, err
 		}
@@ -276,7 +273,6 @@ func QuestionsWithAnswersGet(formId, creatorId int) ([]models.QuestionOutput, er
 				Title:       aTitle.String,
 				NumberOrder: int(aOrder.Int64),
 				Count:       int(aCount.Int64),
-				Chosen:      aChosen.Bool,
 			})
 		}
 	}
@@ -286,4 +282,26 @@ func QuestionsWithAnswersGet(formId, creatorId int) ([]models.QuestionOutput, er
 		questions = append(questions, *questionMap[id])
 	}
 	return questions, nil
+}
+
+func GetFormByLinkRequest(link string) (models.Form, error) {
+	var form models.Form
+	query := `
+		SELECT id, creator_id, title, description, link, private_key, expires_at
+		FROM forms
+		WHERE link = $1
+		`
+	err := Db.QueryRow(query, link).Scan(
+		&form.Id,
+		&form.CreatorId,
+		&form.Title,
+		&form.Description,
+		&form.Link,
+		&form.PrivateKey,
+		&form.ExpiresAt,
+	)
+	if err != nil {
+		return form, err
+	}
+	return form, nil
 }
