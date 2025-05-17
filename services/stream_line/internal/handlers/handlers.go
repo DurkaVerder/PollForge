@@ -8,7 +8,7 @@ import (
 )
 
 type Service interface {
-	GetStreamLine(userID string) (models.FormResponse, error)
+	GetStreamLines(userID string) (*models.StreamLineResponse, error)
 }
 
 type StreamLineHandler struct {
@@ -34,11 +34,11 @@ func (h *StreamLineHandler) GetStreamLine(ctx *gin.Context) {
 		return
 	}
 
-	forms, err := h.s.GetStreamLine(userID)
+	polls, err := h.s.GetStreamLines(userID)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
-	ctx.JSON(http.StatusOK, forms)
+	ctx.JSON(http.StatusOK, polls)
 }

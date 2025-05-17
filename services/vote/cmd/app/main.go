@@ -8,7 +8,6 @@ import (
 	"question/internal/service"
 	"question/internal/storage"
 	"question/models"
-	"sync"
 
 	"github.com/gin-gonic/gin"
 )
@@ -25,18 +24,17 @@ func main() {
 	}
 
 	postgres := storage.NewPostgres(db)
+	defer postgres.Close()
 
-	answersChannel := make(chan []models.SubmitAnswer, 100)
+	answersChannel := make(chan models.Vote, 100)
 
-	questionService := service.NewService(postgres, answersChannel)
+	voteService := service.NewService(postgres, answersChannel)
 
-	wg := &sync.WaitGroup{}
-	questionService.StartWorker(countWorkers, wg)
+	voteService.Start(countWorkers)
 
-	handlers := handlers.NewHandler(questionService)
+	handlers := handlers.NewHandler(voteService)
 
 	engine := gin.Default()
-	engine.Use(gin.Logger())
 
 	ctx, cancel := context.WithCancel(context.Background())
 
@@ -48,9 +46,8 @@ func main() {
 
 	<-ctx.Done()
 
-	questionService.Close()
-	wg.Wait()
-	
+	voteService.Close()
+
 	if err := postgres.Close(); err != nil {
 		panic(err)
 	}
