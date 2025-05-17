@@ -150,11 +150,11 @@ services:
     networks:
       - pollforge-network
 
-  question-service:
+  vote-service:
     build:
-      context: ./services/question
+      context: ./services/vote
       dockerfile: Dockerfile
-    container_name: question
+    container_name: vote
     environment:
       - DB_URL=postgres://postgres:durka@postgres:5432/pollforge-database?sslmode=disable
       - PORT=:8080
