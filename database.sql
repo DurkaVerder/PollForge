@@ -50,9 +50,9 @@ CREATE TABLE answers(
 );
 
 CREATE TABLE answers_chosen (
-    id SERIAL PRIMARY KEY,
     answer_id INT NOT NULL,
     user_id INT NOT NULL,
+    PRIMARY KEY (answer_id, user_id),
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (answer_id) REFERENCES answers (id) ON DELETE CASCADE,
     FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
