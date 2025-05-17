@@ -48,5 +48,4 @@ type Answer struct {
 	Title       string `json:"title"`
 	NumberOrder int    `json:"number_order"`
 	Count       int    `json:"count"`
-	Chosen      bool   `json:"chosen"`
 }
