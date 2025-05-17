@@ -11,7 +11,7 @@ import (
 )
 
 const (
-	userIDKey = "userID"
+	userIDKey = "id"
 )
 
 type Handlers interface {
@@ -63,7 +63,7 @@ func Logger() gin.HandlerFunc {
 
 func Authorization() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		authHeader := ctx.Request.Header.Get("Authorization")
+		authHeader := ctx.GetHeader("Authorization")
 		userID, err := service.GetParamFromJWT(authHeader, userIDKey)
 		if err != nil {
 			ctx.JSON(401, gin.H{"error": "Authorization header is required", "message": err.Error()})

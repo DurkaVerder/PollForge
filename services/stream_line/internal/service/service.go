@@ -65,7 +65,7 @@ func (s *Service) GetStreamLines(userID string) (*models.StreamLineResponse, err
 		return nil, err
 	}
 	s.logger.Printf("Forms: %v %v Questions: %v %v Answers: %v %v", len(forms), forms, len(questions), questions, len(answers), answers)
-	
+
 	mergedData := MergedData{
 		Forms:     forms,
 		Questions: questions,
@@ -99,7 +99,7 @@ func (s *Service) CreatePolls(data MergedData) []models.Polls {
 		poll.CreatedAt = formWithQuestions.form.CreatedAt.Format("2006-01-02 15:04:05")
 		poll.ExpiresAt = formWithQuestions.form.ExpiresAt.Format("2006-01-02 15:04:05")
 
-		poll.Questions = make([]models.Question, 0, len(formWithQuestions.questions))
+		poll.Questions = make([]models.Question, len(formWithQuestions.questions))
 		for i, questionWithAnswers := range formWithQuestions.questions {
 			poll.Questions[i].ID = questionWithAnswers.question.ID
 			poll.Questions[i].Title = questionWithAnswers.question.Title
