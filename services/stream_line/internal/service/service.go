@@ -64,7 +64,8 @@ func (s *Service) GetStreamLines(userID string) (*models.StreamLineResponse, err
 		s.logger.Println("Error getting answers:", err)
 		return nil, err
 	}
-
+	s.logger.Printf("Forms: %v %v Questions: %v %v Answers: %v %v", len(forms), forms, len(questions), questions, len(answers), answers)
+	
 	mergedData := MergedData{
 		Forms:     forms,
 		Questions: questions,
