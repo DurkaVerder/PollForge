@@ -19,9 +19,9 @@ services:
       - stream-line-service
       - forms-service
       - profile-service
-      - question-service
       - stats-service
       - email-service
+      - vote-service
       - comments-service
 
   grafana:
