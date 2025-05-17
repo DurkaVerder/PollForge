@@ -3,6 +3,7 @@ package server
 import (
 	"log"
 	"question/internal/service"
+	"strconv"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -14,8 +15,7 @@ const (
 )
 
 type Handlers interface {
-	HandlerAllQuestions(c *gin.Context)
-	HandlerSubmitAnswer(c *gin.Context)
+	HandlerVote(c *gin.Context)
 }
 
 type Server struct {
@@ -32,12 +32,12 @@ func NewServer(handlers Handlers, engine *gin.Engine) *Server {
 
 func (s *Server) initRoutes() {
 	s.engine.Use(Logger())
-	s.engine.Use(Authorization())
 
 	s.engine.GET("/metrics", gin.WrapH(promhttp.Handler()))
 
-	s.engine.GET("/questions", s.handlers.HandlerAllQuestions)
-	s.engine.POST("/submit_answer", s.handlers.HandlerSubmitAnswer)
+	vote := s.engine.Group("/vote")
+	vote.Use(Authorization())
+	vote.POST("/input", s.handlers.HandlerVote)
 }
 
 func (s *Server) Start(port string) {
@@ -71,7 +71,14 @@ func Authorization() gin.HandlerFunc {
 			return
 		}
 
-		ctx.Set("userID", userID)
+		userIDInt, err := strconv.Atoi(userID)
+		if err != nil {
+			ctx.JSON(401, gin.H{"error": "Invalid user ID", "message": err.Error()})
+			ctx.Abort()
+			return
+		}
+
+		ctx.Set("userID", userIDInt)
 
 		ctx.Next()
 	}
