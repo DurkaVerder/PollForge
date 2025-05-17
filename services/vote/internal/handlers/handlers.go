@@ -3,7 +3,7 @@ package handlers
 import (
 	"log"
 	"net/http"
-	"question/models"
+	"question/internal/models"
 
 	"github.com/gin-gonic/gin"
 )

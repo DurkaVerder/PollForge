@@ -1,7 +1,6 @@
 package middleware
 
 import (
-	"log"
 	"net/http"
 	"stream_line/internal/service"
 
@@ -27,16 +26,5 @@ func AuthMiddleware() gin.HandlerFunc {
 		c.Set("userID", userID)
 
 		c.Next()
-	}
-}
-
-func LoggerMiddleware() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		logger := log.New(c.Writer, "[Middleware]", log.LstdFlags|log.Lshortfile)
-		logger.Printf("Request: %s %s", c.Request.Method, c.Request.URL.Path)
-
-		c.Next()
-
-		logger.Printf("Response: %d", c.Writer.Status())
 	}
 }

@@ -65,6 +65,7 @@ func (s *Service) GetStreamLines(userID string) (*models.StreamLineResponse, err
 		return nil, err
 	}
 
+
 	mergedData := MergedData{
 		Forms:     forms,
 		Questions: questions,
@@ -94,20 +95,22 @@ func (s *Service) CreatePolls(data MergedData) []models.Polls {
 		poll.Link = formWithQuestions.form.Link
 		poll.Likes.Count = formWithQuestions.form.Like.Count
 		poll.Likes.IsLiked = formWithQuestions.form.Like.IsLiked
-		poll.CountVotes = formWithQuestions.form.CountVotes
+		poll.CountComments = formWithQuestions.form.CountComments
 		poll.CreatedAt = formWithQuestions.form.CreatedAt.Format("2006-01-02 15:04:05")
 		poll.ExpiresAt = formWithQuestions.form.ExpiresAt.Format("2006-01-02 15:04:05")
 
-		poll.Questions = make([]models.Question, 0, len(formWithQuestions.questions))
+		poll.Questions = make([]models.Question, len(formWithQuestions.questions))
 		for i, questionWithAnswers := range formWithQuestions.questions {
 			poll.Questions[i].ID = questionWithAnswers.question.ID
 			poll.Questions[i].Title = questionWithAnswers.question.Title
+			poll.Questions[i].TotalCountVotes = questionWithAnswers.question.TotalCountVotes
 			poll.Questions[i].Answers = make([]models.Answer, len(questionWithAnswers.answers))
 
 			for j, answer := range questionWithAnswers.answers {
 				poll.Questions[i].Answers[j].ID = answer.ID
 				poll.Questions[i].Answers[j].Title = answer.Title
 				poll.Questions[i].Answers[j].Percent = answer.Percent
+				poll.Questions[i].Answers[j].CountVotes = answer.CountVotes
 				poll.Questions[i].Answers[j].IsSelected = answer.IsSelected
 			}
 		}
@@ -130,7 +133,8 @@ func (s *Service) mergeQuestionWithAnswers(questions []models.QuestionFromDB, an
 		sort.Slice(answers, func(i, j int) bool {
 			return answers[i].NumberOrder < answers[j].NumberOrder
 		})
-		s.calculatePercent(answers)
+		totalVotes := s.calculateVotesAndPercent(answers)
+		question.TotalCountVotes = totalVotes
 		result = append(result, QuestionWithAnswers{
 			question: question,
 			answers:  answers,
@@ -165,12 +169,18 @@ func roundToTwoDecimalPlaces(val float64) float64 {
 	return math.Round(val*100) / 100
 }
 
-func (s *Service) calculatePercent(answers []models.AnswerFromDB) {
+func (s *Service) calculateVotesAndPercent(answers []models.AnswerFromDB) int {
 	var totalVotes int
 	for _, answer := range answers {
 		totalVotes += answer.CountVotes
 	}
 
+	s.calculatePercent(answers, totalVotes)
+
+	return totalVotes
+}
+
+func (s *Service) calculatePercent(answers []models.AnswerFromDB, totalVotes int) {
 	for i, answer := range answers {
 		if totalVotes == 0 {
 			answers[i].Percent = 0

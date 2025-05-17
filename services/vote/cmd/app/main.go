@@ -4,10 +4,10 @@ import (
 	"context"
 	"os"
 	"question/internal/handlers"
+	"question/internal/models"
 	"question/internal/server"
 	"question/internal/service"
 	"question/internal/storage"
-	"question/models"
 
 	"github.com/gin-gonic/gin"
 )
