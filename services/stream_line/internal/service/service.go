@@ -64,7 +64,7 @@ func (s *Service) GetStreamLines(userID string) (*models.StreamLineResponse, err
 		s.logger.Println("Error getting answers:", err)
 		return nil, err
 	}
-	s.logger.Printf("Forms: %v %v Questions: %v %v Answers: %v %v", len(forms), forms, len(questions), questions, len(answers), answers)
+
 
 	mergedData := MergedData{
 		Forms:     forms,
@@ -133,7 +133,7 @@ func (s *Service) mergeQuestionWithAnswers(questions []models.QuestionFromDB, an
 		sort.Slice(answers, func(i, j int) bool {
 			return answers[i].NumberOrder < answers[j].NumberOrder
 		})
-		totalVotes := s.calculatePercentWithReturnsCountVotes(answers)
+		totalVotes := s.calculateVotesAndPercent(answers)
 		question.TotalCountVotes = totalVotes
 		result = append(result, QuestionWithAnswers{
 			question: question,
@@ -169,7 +169,7 @@ func roundToTwoDecimalPlaces(val float64) float64 {
 	return math.Round(val*100) / 100
 }
 
-func (s *Service) calculatePercentWithReturnsCountVotes(answers []models.AnswerFromDB) int {
+func (s *Service) calculateVotesAndPercent(answers []models.AnswerFromDB) int {
 	var totalVotes int
 	for _, answer := range answers {
 		totalVotes += answer.CountVotes
