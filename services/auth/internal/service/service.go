@@ -6,6 +6,7 @@ import (
 	"auth/internal/models"
 	"auth/internal/storage"
 	"errors"
+	"fmt"
 	"log"
 	"os"
 	"time"
@@ -17,6 +18,7 @@ import (
 const (
 	userRegisteredEvent = "user_registered"
 	userLoginEvent      = "user_login"
+	userPasswordEvent   = "user_reset"
 )
 
 var jwtKey = []byte(os.Getenv("JWT_SECRET"))
@@ -30,16 +32,34 @@ func handleRegistration(req models.UserRequest) (string, error) {
 	return registerUserInternal(req)
 }
 
+func AsyncConfirmReset(token, newPassword string) error {
+
+	return ConfirmPasswordReset(token, newPassword)
+}
+
 func handleLogin(req models.UserRequest) (string, error) {
 	// Логиним и получаем токен
 	return loginUserInternal(req)
 }
 
+func handleReset(req models.UserRequest) (string, error) {
+	return resetUserInternal(req)
+}
 func GenerateJwt(userId string) (string, error) {
 
 	claims := jwt.MapClaims{
 		"id":  userId,
 		"exp": time.Now().Add(time.Hour * 6).Unix(),
+	}
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	return token.SignedString(jwtKey)
+}
+
+func GenerateCheapJwt(userId string) (string, error) {
+
+	claims := jwt.MapClaims{
+		"id":  userId,
+		"exp": time.Now().Add(time.Hour * 1).Unix(),
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	return token.SignedString(jwtKey)
@@ -90,8 +110,9 @@ func registerUserInternal(request models.UserRequest) (string, error) {
 	}
 	if err := kafka.SendMessage(kafkaMsg); err != nil {
 		log.Printf("Не удалось отправить сообщение Kafka: %v", err)
+		return "", fmt.Errorf("Ошибка отправки сообщения Kafka")
 	}
-	
+
 	return token, err
 }
 
@@ -110,8 +131,69 @@ func loginUserInternal(request models.UserRequest) (string, error) {
 
 	if err := kafka.SendMessage(kafkaMsg); err != nil {
 		log.Printf("Не удалось отправить сообщение Kafka: %v", err)
+		return "", fmt.Errorf("Ошибка отправки сообщения Kafka")
 	}
 
 	token, err := GenerateJwt(userId)
 	return token, err
+}
+
+func resetUserInternal(req models.UserRequest) (string, error) {
+	// 1) Генерируем и сохраняем токен сброса в auth-сервисе
+
+	userId, err := storage.GetUserIDByEmail(req.Email)
+	if err != nil {
+		log.Printf("Не удалось отправить сообщение Kafka: %v", err)
+		return "", fmt.Errorf("Ошибка отправки сообщения Kafka")
+	}
+
+	token, err := GenerateCheapJwt(userId)
+
+	if err != nil {
+		log.Printf("Ошибка при генерации jwt для сброса пароля: %v", err)
+		return "", err
+	}
+
+	kafkaMsg := models.MessageKafka{
+		EventType: string(userPasswordEvent),
+		UserID:    userId,
+		Token:     token,
+	}
+	if err := kafka.SendMessage(kafkaMsg); err != nil {
+		log.Printf("Не удалось отправить reset-event в Kafka: %v", err)
+	}
+	return token, nil
+}
+
+func ConfirmPasswordReset(token, newPassword string) error {
+
+	pr, err := storage.GetPasswordResetByToken(token)
+	if err != nil {
+		return fmt.Errorf("токен не найден: %w", err)
+	}
+
+	if time.Now().After(pr.ExpiresAt) {
+
+		storage.DeletePasswordReset(pr.ID)
+		return errors.New("срок действия токена истёк")
+
+	}
+
+	hashed, err := bcrypt.GenerateFromPassword([]byte(newPassword), bcrypt.DefaultCost)
+	if err != nil {
+		log.Printf("Ошибка при хешировании пароля %v", err)
+		return err
+	}
+
+	if err := storage.UpdateUserPassword(pr.UserID, string(hashed)); err != nil {
+		log.Printf("Ошибка при обновлении пароля пользователя: %v", err)
+		return err
+	}
+
+	if err := storage.DeletePasswordReset(pr.ID); err != nil {
+		log.Printf("Ошибка при удалении токена для смены пароля пользователя: %v", err)
+		return err
+	}
+
+	return nil
 }
