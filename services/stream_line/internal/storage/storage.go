@@ -33,7 +33,7 @@ func (p *Postgres) GetFormsByOtherUserIDWithCountLikesAndComments(userID string)
 	var forms []models.FormFromDB
 	for rows.Next() {
 		var form models.FormFromDB
-		if err := rows.Scan(&form.ID, &form.Title, &form.Description, &form.Link, &form.Like.Count, &form.Like.IsLiked, &form.CountVotes, &form.CreatedAt, &form.ExpiresAt); err != nil {
+		if err := rows.Scan(&form.ID, &form.Title, &form.Description, &form.Link, &form.Like.Count, &form.Like.IsLiked, &form.CountComments, &form.CreatedAt, &form.ExpiresAt); err != nil {
 			return nil, err
 		}
 		forms = append(forms, form)

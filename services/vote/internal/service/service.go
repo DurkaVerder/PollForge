@@ -2,7 +2,7 @@ package service
 
 import (
 	"log"
-	"question/models"
+	"question/internal/models"
 	"sync"
 )
 

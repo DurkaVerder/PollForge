@@ -3,7 +3,9 @@ package server
 import (
 	"stream_line/internal/handlers"
 	"stream_line/internal/middleware"
+	"time"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
@@ -23,11 +25,20 @@ func NewServer(handlers *handlers.StreamLineHandler, engine *gin.Engine) *Server
 
 func (s *Server) initRoutes() {
 
+	s.engine.Use(cors.New(cors.Config{
+		AllowOrigins:     []string{"http://localhost:3000", "https://pollforge.ru"},
+		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization"},
+		ExposeHeaders:    []string{"Content-Length"},
+		AllowCredentials: true,
+		MaxAge:           12 * time.Hour,
+	}))
+
 	s.engine.GET("/metrics", gin.WrapH(promhttp.Handler()))
 
-	streamLine := s.engine.Group("/streamline")
+	streamLine := s.engine.Group("/api/streamline")
+
 	streamLine.Use(middleware.AuthMiddleware())
-	streamLine.Use(middleware.LoggerMiddleware())
 	{
 		streamLine.GET("/news", s.handlers.GetStreamLine)
 	}

@@ -2,6 +2,25 @@ version: '3.9'
 
 services:
 
+  nginx:
+    image: nginx:latest
+    container_name: nginx
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+    networks:
+      - pollforge-network
+    depends_on:
+      - auth-service
+      - stream-line-service
+      - forms-service
+      - profile-service
+      - stats-service
+      - email-service
+      - vote-service
+      - comments-service
+
   prometheus:
     image: prom/prometheus:latest
     container_name: prometheus
