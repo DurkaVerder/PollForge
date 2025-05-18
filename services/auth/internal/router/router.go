@@ -11,7 +11,6 @@ import (
 )
 
 func SetUpRouter(r *gin.Engine) {
-	r.GET("/metrics", gin.WrapH(promhttp.Handler()))
 
 	r.Use(cors.New(cors.Config{
 		AllowOrigins:     []string{"http://localhost:3000", "https://pollforge.ru"},
@@ -22,6 +21,7 @@ func SetUpRouter(r *gin.Engine) {
 		MaxAge:           12 * time.Hour,
 	}))
 
+	r.GET("/metrics", gin.WrapH(promhttp.Handler()))
 	auth_port := os.Getenv("PORT")
 	auth := r.Group("/api/auth")
 	{
