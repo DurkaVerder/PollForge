@@ -156,7 +156,7 @@ func resetUserInternal(req models.UserRequest) (string, error) {
 
 	expiresAt := time.Now().Add(1 * time.Hour)
 
-	//создаём запись в бд для сброса пароля
+	// создаём запись в бд для сброса пароля
 	if err := storage.CreatePasswordReset(userId, token, expiresAt); err != nil {
 		log.Printf("Ошибка создании токена сброса - %v - resetUserInternal", err)
 		return "", fmt.Errorf("не удалось сохранить токен сброса: %w", err)
@@ -182,7 +182,11 @@ func ConfirmPasswordReset(token, newPassword string) error {
 
 	if time.Now().After(pr.ExpiresAt) {
 
-		storage.DeletePasswordReset(pr.ID)
+		err = storage.DeletePasswordReset(pr.ID)
+		if err != nil {
+			log.Printf("Ошибка при удалении токена сброса - %v - ConfirmPasswordReset", err)
+			return err
+		}
 		return errors.New("срок действия токена истёк")
 
 	}
