@@ -76,7 +76,7 @@ func CheckUserRequest(request models.UserRequest) error {
 	}
 	if exist {
 		log.Printf("Такой пользователь уже есть, %v", exist)
-		return errors.New("Такой пользователь уже есть")
+		return errors.New("такой пользователь уже есть")
 	}
 	return nil
 }
@@ -109,8 +109,8 @@ func registerUserInternal(request models.UserRequest) (string, error) {
 		UserID:    userId,
 	}
 	if err := kafka.SendMessage(kafkaMsg); err != nil {
-		log.Printf("Не удалось отправить сообщение Kafka: %v", err)
-		return "", fmt.Errorf("Ошибка отправки сообщения Kafka")
+		log.Printf("Не удалось отправить сообщение Kafka: %v - registerUserInternal", err)
+		return "", fmt.Errorf("ошибка отправки сообщения Kafka")
 	}
 
 	return token, err
@@ -119,7 +119,7 @@ func registerUserInternal(request models.UserRequest) (string, error) {
 func loginUserInternal(request models.UserRequest) (string, error) {
 	userId, err := storage.CheckingLoggingData(request)
 	if err != nil {
-		log.Printf("Ошибка при сопоставлении пароля и почты")
+		log.Printf("Ошибка при сопоставлении пароля и почты - loginUserInternal")
 		log.Printf("%s", err.Error())
 		return "", err
 	}
@@ -130,8 +130,8 @@ func loginUserInternal(request models.UserRequest) (string, error) {
 	}
 
 	if err := kafka.SendMessage(kafkaMsg); err != nil {
-		log.Printf("Не удалось отправить сообщение Kafka: %v", err)
-		return "", fmt.Errorf("Ошибка отправки сообщения Kafka")
+		log.Printf("Не удалось отправить сообщение Kafka: %v - loginUserInternal", err)
+		return "", fmt.Errorf("ошибка отправки сообщения Kafka")
 	}
 
 	token, err := GenerateJwt(userId)
@@ -143,8 +143,8 @@ func resetUserInternal(req models.UserRequest) (string, error) {
 
 	userId, err := storage.GetUserIDByEmail(req.Email)
 	if err != nil {
-		log.Printf("Не удалось отправить сообщение Kafka: %v", err)
-		return "", fmt.Errorf("Ошибка отправки сообщения Kafka")
+		log.Printf("Не удалось отправить сообщение Kafka: %v - resetUserInternal", err)
+		return "", fmt.Errorf("ошибка отправки сообщения Kafka")
 	}
 
 	token, err := GenerateCheapJwt(userId)
@@ -155,11 +155,12 @@ func resetUserInternal(req models.UserRequest) (string, error) {
 	}
 
 	expiresAt := time.Now().Add(1 * time.Hour)
-	
+
 	//создаём запись в бд для сброса пароля
 	if err := storage.CreatePasswordReset(userId, token, expiresAt); err != nil {
-        return "", fmt.Errorf("не удалось сохранить токен сброса: %w", err)
-    }
+		log.Printf("Ошибка создании токена сброса - %v - resetUserInternal", err)
+		return "", fmt.Errorf("не удалось сохранить токен сброса: %w", err)
+	}
 
 	kafkaMsg := models.MessageKafka{
 		EventType: string(userPasswordEvent),
