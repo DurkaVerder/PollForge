@@ -1,10 +1,8 @@
 package server
 
 import (
-	"log"
 	"question/internal/service"
 	"strconv"
-	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
@@ -31,11 +29,10 @@ func NewServer(handlers Handlers, engine *gin.Engine) *Server {
 }
 
 func (s *Server) initRoutes() {
-	s.engine.Use(Logger())
 
 	s.engine.GET("/metrics", gin.WrapH(promhttp.Handler()))
 
-	vote := s.engine.Group("/vote")
+	vote := s.engine.Group("/api/vote")
 	vote.Use(Authorization())
 	vote.POST("/input", s.handlers.HandlerVote)
 }
@@ -45,19 +42,6 @@ func (s *Server) Start(port string) {
 
 	if err := s.engine.Run(port); err != nil {
 		panic(err)
-	}
-}
-
-func Logger() gin.HandlerFunc {
-	return func(ctx *gin.Context) {
-		t := time.Now()
-
-		log.Printf("Request: %s %s", ctx.Request.Method, ctx.Request.URL.Path)
-
-		ctx.Next()
-
-		latency := time.Since(t)
-		log.Printf("Response: %d %s in %v", ctx.Writer.Status(), ctx.Request.URL.Path, latency)
 	}
 }
 

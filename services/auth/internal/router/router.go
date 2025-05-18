@@ -10,9 +10,9 @@ import (
 
 func SetUpRouter(r *gin.Engine) {
 	r.GET("/metrics", gin.WrapH(promhttp.Handler()))
-	
+
 	auth_port := os.Getenv("PORT")
-	auth := r.Group("/api")
+	auth := r.Group("/api/auth")
 	{
 		auth.POST("/register", handlers.UserRegistration)
 		auth.POST("/logging", handlers.UserLogging)
