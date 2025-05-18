@@ -13,7 +13,7 @@ func SetUpRouter(r *gin.Engine) {
 
 	r.GET("/metrics", gin.WrapH(promhttp.Handler()))
 	auth_port := os.Getenv("PORT")
-	protected := r.Group("/api")
+	protected := r.Group("/api/comments")
 	protected.Use(middleware.JWTAuth())
 	{
 		protected.GET("/forms/:form_id/comments", handlers.GetComments)

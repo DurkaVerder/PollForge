@@ -24,7 +24,7 @@ func NewServer(handlers *handlers.StreamLineHandler, engine *gin.Engine) *Server
 func (s *Server) initRoutes() {
 	s.engine.GET("/metrics", gin.WrapH(promhttp.Handler()))
 
-	streamLine := s.engine.Group("/streamline")
+	streamLine := s.engine.Group("/api/streamline")
 
 	streamLine.Use(middleware.AuthMiddleware())
 	{
