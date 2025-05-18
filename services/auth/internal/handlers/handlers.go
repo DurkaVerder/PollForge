@@ -62,7 +62,7 @@ func PasswordResetRequest(c *gin.Context) {
         c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
         return
     }
-    // возвращаем токен или просто сообщение
+    // возвращаем сообщение о отправленной ссылке
     c.JSON(http.StatusOK, gin.H{"message": "ссылка для сброса отправлена"})
 }
 
