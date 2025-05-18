@@ -77,7 +77,7 @@ func GetUserIDByEmail(email string) (string, error) {
     return id, nil
 }
 
-func CreatePasswordReset(userID int, token string, expiresAt time.Time) error {
+func CreatePasswordReset(userID string, token string, expiresAt time.Time) error {
     query := `
       INSERT INTO password_resets (user_id, token, expires_at)
       VALUES ($1, $2, $3)

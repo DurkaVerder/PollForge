@@ -154,6 +154,13 @@ func resetUserInternal(req models.UserRequest) (string, error) {
 		return "", err
 	}
 
+	expiresAt := time.Now().Add(1 * time.Hour)
+	
+	//создаём запись в бд для сброса пароля
+	if err := storage.CreatePasswordReset(userId, token, expiresAt); err != nil {
+        return "", fmt.Errorf("не удалось сохранить токен сброса: %w", err)
+    }
+
 	kafkaMsg := models.MessageKafka{
 		EventType: string(userPasswordEvent),
 		UserID:    userId,
