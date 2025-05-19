@@ -1,5 +1,7 @@
 package models
 
+import "time"
+
 type User struct {
 	ID       int    `json:"id"`
 	Username string `json:"name"`
@@ -29,4 +31,21 @@ type Form struct {
 type MessageKafka struct {
 	EventType string `json:"event_type"`
 	UserID    string `json:"user_id"`
+	Token     string `json:"token,omitempty"`
+}
+
+type PasswordResetRequest struct {
+	Email string `json:"email" binding:"required,email"`
+}
+
+type PasswordResetConfirm struct {
+	Token       string `json:"token" binding:"required"`
+	NewPassword string `json:"new_password" binding:"required,min=8"`
+}
+
+type PasswordReset struct {
+	ID        int       `json:"id"`        
+	UserID    int       `json:"user_id"`   
+	Token     string    `json:"token"`      
+	ExpiresAt time.Time `json:"expires_at"` 
 }

@@ -13,6 +13,7 @@ type JobType string
 const (
 	JobRegister JobType = "register"
 	JobLogin    JobType = "login"
+	JobResetPassword JobType = "reset"
 )
 
 type Job struct {
@@ -51,6 +52,8 @@ func worker(id int, jobs <-chan Job) {
 			token, err = handleRegistration(job.Request)
 		case JobLogin:
 			token, err = handleLogin(job.Request)
+		case JobResetPassword:
+			token, err = handleReset(job.Request)
 		default:
 			err = errors.New("неизвестный тип задачи")
 		}
@@ -72,4 +75,11 @@ func AsyncLoginUser(request models.UserRequest) (string, error) {
 	jobQueue <- Job{Type: JobLogin, Request: request, Result: resultChan}
 	res := <-resultChan
 	return res.Token, res.Error
+}
+
+func AsyncResetPassword(request models.UserRequest) (string, error) {
+    resultChan := make(chan JobResult)
+    jobQueue <- Job{Type: JobResetPassword, Request: request, Result: resultChan}
+    res := <-resultChan
+    return res.Token, res.Error
 }
