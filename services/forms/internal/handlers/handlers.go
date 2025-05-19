@@ -235,7 +235,7 @@ func CreateQuestion(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"Сообщение": "Вопрос успешно создан",
-		"id вопроса": questionId})
+		"question_id": questionId})
 
 }
 
@@ -371,7 +371,7 @@ func CreateAnswer(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"Сообщение": "Ответ успешно создан",
-		"id ответа": answerId})
+		"answer_id": answerId})
 
 }
 
