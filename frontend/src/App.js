@@ -11,7 +11,7 @@ import MyPollsPage from './pages/MyPollsPage';
 // import ExplorePage from './pages/ExplorePage';
 // import TrendingPage from './pages/TrendingPage';
 import NotFoundPage from './pages/NotFoundPage';
-
+import ProtectedRoute from './components/ProtectedRoute'; 
 
 const MainLayout = () => (
   <div className="w-[1200px] p-4 font-sans bg-gray-50 min-h-screen">
@@ -20,7 +20,6 @@ const MainLayout = () => (
     <Footer />
   </div>
 );
-
 
 const AuthLayout = () => (
   <div className="w-[1200px] p-4 font-sans bg-gray-50 min-h-screen">
@@ -33,20 +32,49 @@ export default function App() {
     <Router>
       <div id="webcrumbs">
         <Routes>
-          {/* Маршруты с Header и Footer */}
-          <Route element={<MainLayout />}>
-            <Route path="/" element={<HomePage />} />
-            <Route path="/profile" element={<ProfilePage />} />
-            <Route path="/create-poll" element={<CreatePollPage />} />
-            <Route path="/my-polls" element={<MyPollsPage />} />
-            {/* <Route path="/explore" element={<ExplorePage />} />
-            <Route path="/trending" element={<TrendingPage />} /> */}
-            <Route path="*" element={<NotFoundPage />} />
-          </Route>
           {/* Маршруты без Header и Footer */}
           <Route element={<AuthLayout />}>
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
+          </Route>
+
+          {/* Защищённые маршруты с Header и Footer */}
+          <Route element={<MainLayout />}>
+            <Route
+              path="/"
+              element={
+                <ProtectedRoute>
+                  <HomePage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/profile"
+              element={
+                <ProtectedRoute>
+                  <ProfilePage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/create-poll"
+              element={
+                <ProtectedRoute>
+                  <CreatePollPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/my-polls"
+              element={
+                <ProtectedRoute>
+                  <MyPollsPage />
+                </ProtectedRoute>
+              }
+            />
+            {/* <Route path="/explore" element={<ProtectedRoute><ExplorePage /></ProtectedRoute>} /> */}
+            {/* <Route path="/trending" element={<ProtectedRoute><TrendingPage /></ProtectedRoute>} /> */}
+            <Route path="*" element={<NotFoundPage />} />
           </Route>
         </Routes>
       </div>
