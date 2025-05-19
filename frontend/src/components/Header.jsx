@@ -1,6 +1,15 @@
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { useCallback } from 'react';
 
 export default function Header() {
+  const navigate = useNavigate();
+
+  const handleLogout = useCallback(() => {
+    localStorage.removeItem('authToken');
+
+    navigate('/login');
+  }, [navigate]);
+
   return (
     <header className="bg-white rounded-lg shadow-md p-4 mb-6 flex items-center justify-between sticky top-0 z-10">
       <Link
@@ -52,13 +61,13 @@ export default function Header() {
                   <span className="material-symbols-outlined mr-2 align-middle">settings</span>
                   Настройки
                 </a>
-                <a
-                  href="#logout"
-                  className="block px-4 py-2 hover:bg-gray-100 transition-colors duration-200 text-red-500"
+                <button
+                  onClick={handleLogout}
+                  className="w-full text-left px-4 py-2 hover:bg-gray-100 transition-colors duration-200 text-red-500 flex items-center"
                 >
                   <span className="material-symbols-outlined mr-2 align-middle">logout</span>
                   Выйти
-                </a>
+                </button>
               </div>
             </div>
           </details>
