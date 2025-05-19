@@ -27,6 +27,8 @@ func SetUpRouter(r *gin.Engine) {
 	{
 		auth.POST("/register", handlers.UserRegistration)
 		auth.POST("/logging", handlers.UserLogging)
+		auth.POST("/password_resets", handlers.PasswordResetRequest)
+		auth.POST("/password_resets/confirm", handlers.PasswordResetConfirmHandler)
 	}
 	if err := r.Run(auth_port); err != nil {
 		panic(err)
