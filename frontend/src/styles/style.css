@@ -1,3 +1,7 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 @import url(https://fonts.googleapis.com/css2?family=Lato&display=swap);
 @import url(https://fonts.googleapis.com/css2?family=Open+Sans&display=swap);
 @import url(https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200);
@@ -1052,4 +1056,15 @@ video {
 
 .modal-content button.bg-gray-300:hover {
   background: #9ca3af; /* Соответствует hover:bg-gray-400 */
+}
+
+.bg-red-100 {
+  --tw-bg-opacity: 1;
+  background-color: rgb(254 226 226 / var(--tw-bg-opacity)); /* светло-красный */
+}
+
+/* Цвет текста: text-red-800 */
+.text-red-800 {
+  --tw-text-opacity: 1;
+  color: rgb(153 27 27 / var(--tw-text-opacity)); /* насыщенный красный */
 }

@@ -372,8 +372,8 @@ export default function CreatePollPage() {
                         disabled={question.answers.length >= MAX_ANSWERS}
                         className={`px-3 py-1 rounded-lg text-sm ${
                           question.answers.length >= MAX_ANSWERS
-                            ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                            : 'bg-primary-50 text-primary-600 hover:bg-primary-100'
+                            ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                            : 'bg-gray-300 text-gray-600 hover:bg-primary-100'
                         }`}
                       >
                         + Добавить ответ
