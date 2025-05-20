@@ -372,7 +372,7 @@ export default function CreatePollPage() {
                         disabled={question.answers.length >= MAX_ANSWERS}
                         className={`px-3 py-1 rounded-lg text-sm ${
                           question.answers.length >= MAX_ANSWERS
-                            ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                            ? 'bg-gray-100 text-gray-600 cursor-not-allowed'
                             : 'bg-primary-50 text-primary-600 hover:bg-primary-100'
                         }`}
                       >
@@ -426,7 +426,7 @@ export default function CreatePollPage() {
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className={`h-10 w-24 px-6 py-2 bg-primary-500 text-white rounded-lg hover:bg-primary-600 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 ${
+                className={`h-10 w-24 px-2 py-2 bg-primary-500 text-white rounded-lg hover:bg-primary-600 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 ${
                   isSubmitting ? 'opacity-70 cursor-not-allowed' : ''
                 }`}
               >

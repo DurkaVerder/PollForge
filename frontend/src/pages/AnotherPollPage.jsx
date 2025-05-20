@@ -144,6 +144,11 @@ export default function AnotherPollPage() {
     }
   };
 
+
+  if (error || !poll ) {
+    navigate("/404");
+  }
+
   if (loading) {
     return (
       <main className="flex flex-col lg:flex-row gap-6">
@@ -155,9 +160,20 @@ export default function AnotherPollPage() {
     );
   }
 
-  if (error || !poll) {
-    navigate("/404");
+
+  if (new Date(poll.expires_at) < new Date()){
+    return (
+      <main className="flex flex-col lg:flex-row gap-6">
+        <Sidebar />
+        <div className="bg-white flex-1 flex justify-center rounded-lg items-center h-64">
+          <div className="bg-red-100 text-red-800 p-4 rounded-lg shadow-md">
+            Опрос завершен
+          </div>
+        </div>
+      </main>
+    );
   }
+  
 
   return (
     <main className="flex flex-col lg:flex-row gap-6">

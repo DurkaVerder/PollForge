@@ -65,7 +65,7 @@ export default function MyPollsPage() {
   };
 
   return (
-    <main className="flex flex-col lg:flex-row gap-6 p-6">
+    <main className="flex flex-col lg:flex-row gap-6 ">
       <Sidebar />
       
       <div className="flex-1">
@@ -111,7 +111,7 @@ export default function MyPollsPage() {
             </Link>
           </div>
         ) : (
-          <div className="space-y-4">
+          <div className="space-y-6">
             {polls.map(poll => {
               const status = getPollStatus(poll.expires_at);
               return (
