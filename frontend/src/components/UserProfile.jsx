@@ -1,4 +1,44 @@
+import { useState, useEffect } from 'react';
+import defaultAvatar from '../static/img/default-avatar.png';
+import { Link } from 'react-router-dom';
+
 export default function UserProfile() {
+  const [profile, setProfile] = useState({
+    id: 1,
+    name: 'Загрузка...',
+    email: '',
+    bio: '',
+    avatar_url: ''
+  });
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const response = await fetch('http://localhost:80/api/profile/', {
+          headers: {
+            'Authorization': 'Bearer ' + localStorage.getItem('authToken')
+          }
+        });
+
+        if (!response.ok) {
+          throw new Error('Ошибка загрузки профиля');
+        }
+
+        const data = await response.json();
+        setProfile(data);
+      } catch (err) {
+        setError(err.message);
+        console.error('Profile fetch error:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProfile();
+  }, []);
+  const EditProfileURL = `/profile/${profile.id}/edit`;
   const topics = [
     {
       title: "Технологии",
@@ -26,29 +66,47 @@ export default function UserProfile() {
     }
   ];
 
+  if (loading) {
+    return (
+      <section className="bg-white rounded-lg shadow-md p-6 mb-8 flex justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary-500"></div>
+      </section>
+    );
+  }
+
+  if (error) {
+    return (
+      <section className="bg-white rounded-lg shadow-md p-6 mb-8">
+        <div className="text-red-500">{error}</div>
+      </section>
+    );
+  }
+
   return (
     <section className="bg-white rounded-lg shadow-md p-6 mb-8" id="profile">
       <div className="flex flex-col md:flex-row md:items-center mb-6 gap-6">
         <div className="flex-shrink-0">
           <div className="h-24 w-24 rounded-full overflow-hidden border-4 border-primary-100 shadow-md">
             <img
-              src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3MzkyNDZ8MHwxfHNlYXJjaHw0fHx1c2VyfGVufDB8fHx8MTc0NjcxNTkzNXww&ixlib=rb-4.1.0&q=80&w=1080"
+              src={profile.avatar_url || defaultAvatar}
               alt="Профиль пользователя"
               className="h-full w-full object-cover"
             />
           </div>
         </div>
         <div className="flex-1">
-          <h2 className="text-2xl font-bold">Джон Доу</h2>
-          <p className="text-gray-500">@johndoe</p>
+          <h2 className="text-2xl font-bold">{profile.name}</h2>
+          <p className="text-gray-500">{profile.email}</p>
           <p className="mt-2">
-            Увлечён созданием интересных опросов и сбором мнений.
+            {profile.bio || 'Пользователь пока не добавил информацию о себе'}
           </p>
         </div>
         <div className="flex space-x-3 mt-4 md:mt-0">
-          <button className="bg-primary-500 hover:bg-primary-600 text-white px-4 py-2 rounded-lg transition-colors duration-300">
-            Редактировать профиль
-          </button>
+          <Link
+            to={EditProfileURL}
+            className="bg-primary-500 hover:bg-primary-600 text-white px-4 py-2 rounded-lg transition-colors duration-300">
+                Редактировать профиль
+          </Link>
           <button className="border border-gray-300 hover:border-gray-400 px-4 py-2 rounded-lg transition-colors duration-300">
             Настройки
           </button>
@@ -159,7 +217,9 @@ export default function UserProfile() {
               <span className="material-symbols-outlined ml-1">arrow_forward</span>
             </button>
           </div>
+          
         </div>
+        
       </div>
     </section>
   );

@@ -140,7 +140,7 @@ func QuestionsGetRequest(creator_id int, formId int) (*sql.Rows, error) {
 			COALESCE(a.id, 0)           AS answer_id,
 			COALESCE(a.title, '')       AS answer_title,
 			COALESCE(a.number_order, 0) AS answer_order,
-			COALESCE(a.count, 0)        AS answer_count,
+			COALESCE(a.count, 0)        AS answer_count
 			FROM questions AS q
 			LEFT JOIN answers AS a
 			ON q.id = a.question_id
@@ -224,7 +224,7 @@ func QuestionsWithAnswersGet(formId, creatorId int) ([]models.QuestionOutput, er
 			a.id,
 			a.title,
 			a.number_order,
-			a.count,
+			a.count
 			FROM questions q
 			LEFT JOIN answers a ON q.id = a.question_id
 			WHERE q.form_id = $1 AND q.creator_id = $2
