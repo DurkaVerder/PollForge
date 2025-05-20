@@ -12,6 +12,7 @@ import MyPollsPage from './pages/MyPollsPage';
 // import TrendingPage from './pages/TrendingPage';
 import NotFoundPage from './pages/NotFoundPage';
 import ProtectedRoute from './components/ProtectedRoute'; 
+import EditProfilePage from './pages/EditProfilePage';
 
 const MainLayout = () => (
   <div className="w-[1200px] p-4 font-sans bg-gray-50 min-h-screen">
@@ -69,6 +70,14 @@ export default function App() {
               element={
                 <ProtectedRoute>
                   <MyPollsPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route 
+              path="/profile/:id/edit"
+              element={
+                <ProtectedRoute>
+                  <EditProfilePage />
                 </ProtectedRoute>
               }
             />

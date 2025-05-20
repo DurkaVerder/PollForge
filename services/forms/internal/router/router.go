@@ -26,7 +26,7 @@ func SetUpRouter(r *gin.Engine) {
 	forms_port := os.Getenv("PORT")
 	protected := r.Group("/api/forms")
 
-	r.GET("/forms/link/:link", handlers.GetFormByLink).Use(middleware.JWTAuth())
+	r.GET("/api/forms/link/:link", handlers.GetFormByLink).Use(middleware.JWTAuth())
 
 	protected.Use(middleware.JWTAuth())
 	{
