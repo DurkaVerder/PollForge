@@ -65,7 +65,7 @@ export default function MyPollsPage() {
   };
 
   return (
-    <main className="flex flex-col lg:flex-row gap-6 p-6">
+    <main className="flex flex-col lg:flex-row gap-6 ">
       <Sidebar />
       
       <div className="flex-1">
