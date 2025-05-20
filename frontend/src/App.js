@@ -13,6 +13,8 @@ import MyPollsPage from './pages/MyPollsPage';
 import NotFoundPage from './pages/NotFoundPage';
 import ProtectedRoute from './components/ProtectedRoute'; 
 import EditProfilePage from './pages/EditProfilePage';
+import PollDetailPage from './pages/PollDetailPage';
+import AnotherPollPage from './pages/AnotherPollPage';
 
 const MainLayout = () => (
   <div className="w-[1200px] p-4 font-sans bg-gray-50 min-h-screen">
@@ -81,9 +83,29 @@ export default function App() {
                 </ProtectedRoute>
               }
             />
+
+            <Route 
+              path="/poll/:link"
+              element={
+                <ProtectedRoute>
+                  <PollDetailPage />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route 
+              path="/poll/vote/:link"
+              element={
+                <ProtectedRoute>
+                  <AnotherPollPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route path="/notfound" element={<NotFoundPage />} />
             {/* <Route path="/explore" element={<ProtectedRoute><ExplorePage /></ProtectedRoute>} /> */}
             {/* <Route path="/trending" element={<ProtectedRoute><TrendingPage /></ProtectedRoute>} /> */}
             <Route path="*" element={<NotFoundPage />} />
+            
           </Route>
         </Routes>
       </div>
