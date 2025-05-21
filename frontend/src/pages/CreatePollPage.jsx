@@ -86,7 +86,6 @@ export default function CreatePollPage() {
     setIsSubmitting(true);
     setError('');
 
-    // Проверка ограничений длины
     if (formData.title.length > MAX_TITLE_LENGTH) {
       setError(`Название опроса не должно превышать ${MAX_TITLE_LENGTH} символов`);
       setIsSubmitting(false);
@@ -102,8 +101,7 @@ export default function CreatePollPage() {
     try {
       const date = new Date(formData.expires_at);
       const utcISOString = date.toISOString();
-      
-      // 1. Создаем форму
+
       const formResponse = await fetch('http://localhost:80/api/forms/', {
         method: 'POST',
         headers: {
@@ -126,10 +124,9 @@ export default function CreatePollPage() {
 
       const formId = formDataResponse.form_id;
 
-      // 2. Создаем вопросы
       for (let qIndex = 0; qIndex < questions.length; qIndex++) {
         const question = questions[qIndex];
-        
+
         if (question.title.length > MAX_QUESTION_LENGTH) {
           throw new Error(`Вопрос ${qIndex + 1} превышает максимальную длину (${MAX_QUESTION_LENGTH} символов)`);
         }
@@ -154,16 +151,15 @@ export default function CreatePollPage() {
 
         const questionId = questionData.question_id;
 
-        // 3. Создаем ответы для вопроса
         for (let aIndex = 0; aIndex < question.answers.length; aIndex++) {
           const answer = question.answers[aIndex];
-          
+
           if (answer.length > MAX_ANSWER_LENGTH) {
             throw new Error(`Ответ ${aIndex + 1} в вопросе ${qIndex + 1} превышает максимальную длину (${MAX_ANSWER_LENGTH} символов)`);
           }
 
           const answerResponse = await fetch(
-            `http://localhost:80/api/forms/${formId}/questions/${questionId}/answers`, 
+            `http://localhost:80/api/forms/${formId}/questions/${questionId}/answers`,
             {
               method: 'POST',
               headers: {
@@ -197,11 +193,13 @@ export default function CreatePollPage() {
   return (
     <main className="flex flex-col lg:flex-row gap-6">
       <Sidebar />
-      
       <div className="flex-1">
         <div className="bg-white rounded-lg shadow-md p-6">
-          <h2 className="text-2xl font-bold mb-6">Создать новый опрос</h2>
-          
+          <div className="flex items-center mb-6">
+            <span className="material-symbols-outlined text-4xl text-primary-500 mr-2">add</span>
+            <h2 className="text-2xl font-bold">Создать новый опрос</h2>
+          </div>
+
           <div className="mb-4 p-3 bg-blue-50 text-blue-700 rounded-md text-sm">
             <p>Ограничения:</p>
             <ul className="list-disc pl-5 mt-1 space-y-1">
@@ -224,7 +222,6 @@ export default function CreatePollPage() {
             {/* Основная информация об опросе */}
             <div className="mb-8">
               <h3 className="text-lg font-semibold mb-4">Основная информация</h3>
-              
               <div className="space-y-4">
                 <div>
                   <div className="flex justify-between items-center mb-1">
@@ -244,6 +241,12 @@ export default function CreatePollPage() {
                     maxLength={MAX_TITLE_LENGTH}
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-primary-500 focus:border-primary-500"
                   />
+                  <div className="mt-1 h-1 w-full bg-gray-200 rounded-full">
+                    <div
+                      className="h-1 bg-primary-500 rounded-full progress-bar"
+                      style={{ width: `${(formData.title.length / MAX_TITLE_LENGTH) * 100}%` }}
+                    ></div>
+                  </div>
                 </div>
 
                 <div>
@@ -263,6 +266,12 @@ export default function CreatePollPage() {
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-primary-500 focus:border-primary-500"
                     rows="3"
                   />
+                  <div className="mt-1 h-1 w-full bg-gray-200 rounded-full">
+                    <div
+                      className="h-1 bg-primary-500 rounded-full"
+                      style={{ width: `${(formData.description.length / MAX_DESCRIPTION_LENGTH) * 100}%` }}
+                    ></div>
+                  </div>
                 </div>
 
                 <div className="flex items-center">
@@ -302,7 +311,7 @@ export default function CreatePollPage() {
                   type="button"
                   onClick={addQuestion}
                   disabled={questions.length >= MAX_QUESTIONS}
-                  className={`px-3 py-1 rounded-lg text-sm ${
+                  className={` px-3 py-1 rounded-lg text-sm ${
                     questions.length >= MAX_QUESTIONS
                       ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
                       : 'bg-primary-50 text-primary-600 hover:bg-primary-100'
@@ -344,6 +353,12 @@ export default function CreatePollPage() {
                       maxLength={MAX_QUESTION_LENGTH}
                       className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-primary-500 focus:border-primary-500"
                     />
+                    <div className="mt-1 h-1 w-full bg-gray-200 rounded-full">
+                      <div
+                        className="h-1 bg-primary-500 rounded-full"
+                        style={{ width: `${(question.title.length / MAX_QUESTION_LENGTH) * 100}%` }}
+                      ></div>
+                    </div>
                   </div>
 
                   <div>
@@ -357,7 +372,7 @@ export default function CreatePollPage() {
                         disabled={question.answers.length >= MAX_ANSWERS}
                         className={`px-3 py-1 rounded-lg text-sm ${
                           question.answers.length >= MAX_ANSWERS
-                            ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                            ? 'bg-gray-100 text-gray-600 cursor-not-allowed'
                             : 'bg-primary-50 text-primary-600 hover:bg-primary-100'
                         }`}
                       >
@@ -384,6 +399,12 @@ export default function CreatePollPage() {
                             maxLength={MAX_ANSWER_LENGTH}
                             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-primary-500 focus:border-primary-500"
                           />
+                          <div className="mt-1 h-1 w-full bg-gray-200 rounded-full">
+                            <div
+                              className="h-1 bg-primary-500 rounded-full"
+                              style={{ width: `${(answer.length / MAX_ANSWER_LENGTH) * 100}%` }}
+                            ></div>
+                          </div>
                         </div>
                         {question.answers.length > 1 && (
                           <button
@@ -405,11 +426,11 @@ export default function CreatePollPage() {
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className={`px-6 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 ${
+                className={`h-10 w-24 px-2 py-2 bg-primary-500 text-white rounded-lg hover:bg-primary-600 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 ${
                   isSubmitting ? 'opacity-70 cursor-not-allowed' : ''
                 }`}
               >
-                {isSubmitting ? 'Создание...' : 'Создать опрос'}
+                {isSubmitting ? 'Создание...' : 'Создать'}
               </button>
             </div>
           </form>

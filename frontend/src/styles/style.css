@@ -1,9 +1,16 @@
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 @import url(https://fonts.googleapis.com/css2?family=Lato&display=swap);
 @import url(https://fonts.googleapis.com/css2?family=Open+Sans&display=swap);
 @import url(https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200);
 @import url(https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css);
 
 /*! tailwindcss v3.4.11 | MIT License | https://tailwindcss.com*/
+
+
 *,
 :after,
 :before {
@@ -775,17 +782,17 @@ video {
     transition-duration: 0.3s;
 }
 #webcrumbs {
-    font-family: Open Sans !important;
-    font-size: 16px !important;
+    font-family: Open Sans;
+    font-size: 16px;
 }
 #webcrumbs :is(.bg-primary-50) {
-    color: rgba(0, 0, 0, 0.9) !important;
+    color: rgba(0, 0, 0, 0.9);
 }
 #webcrumbs :is(.bg-primary-100) {
-    color: rgba(0, 0, 0, 0.9) !important;
+    color: rgba(0, 0, 0, 0.9);
 }
 #webcrumbs :is(.bg-primary-500) {
-    color: hsla(0, 0%, 100%, 0.9) !important;
+    color: hsla(0, 0%, 100%, 0.9);
 }
 #webcrumbs .hover\:scale-105:hover {
     --tw-scale-x: 1.05;
@@ -878,4 +885,99 @@ video {
     #webcrumbs .lg\:flex-row {
         flex-direction: row;
     }
+}
+
+
+
+
+/* Стили для модального окна */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5); /* Полупрозрачный фон */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  max-width: 500px;
+  width: 90%;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Дополнительные стили для элементов внутри modal-content */
+.modal-content h2 {
+  font-size: 1.125rem; /* Соответствует text-lg */
+  font-weight: 700; /* Соответствует font-bold */
+  margin-bottom: 16px; /* Соответствует mb-4 */
+  color: #1a202c;
+}
+
+.modal-content .flex {
+  display: flex;
+  align-items: center;
+  gap: 8px; /* Соответствует space-x-2 */
+}
+
+.modal-content input {
+  width: 100%; /* Соответствует w-full */
+  padding: 8px; /* Соответствует p-2 */
+  border: 1px solid #e2e8f0; /* Соответствует border */
+  border-radius: 4px; /* Соответствует rounded */
+  background: #f7fafc; /* Соответствует bg-gray-100 */
+  color: #4a5568;
+  font-size: 0.875rem;
+}
+
+.modal-content button.bg-blue-500 {
+  padding: 8px; /* Соответствует p-2 */
+  background: rgb(59 130 246); /* Соответствует bg-blue-500 */
+  color: white; /* Соответствует text-white */
+  border-radius: 4px; /* Соответствует rounded */
+  transition: background-color 0.2s; /* Соответствует hover:bg-blue-600 */
+  min-width: 40px; /* Для видимости кнопки */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-content button.bg-blue-500:hover {
+  background: rgb(37 99 235); /* Соответствует hover:bg-blue-600 */
+}
+
+.modal-content button.bg-blue-500 svg {
+  width: 20px; /* Соответствует h-5 */
+  height: 20px; /* Соответствует w-5 */
+}
+
+.modal-content button.bg-gray-300 {
+  margin-top: 16px; /* Соответствует mt-4 */
+  padding: 8px 16px; /* Соответствует p-2 */
+  background: #d1d5db; /* Соответствует bg-gray-300 */
+  border-radius: 4px; /* Соответствует rounded */
+  color: #1a202c;
+  transition: background-color 0.2s;
+}
+
+.modal-content button.bg-gray-300:hover {
+  background: #9ca3af; /* Соответствует hover:bg-gray-400 */
+}
+
+.bg-red-100 {
+  --tw-bg-opacity: 1;
+  background-color: rgb(254 226 226 / var(--tw-bg-opacity)); /* светло-красный */
+}
+
+/* Цвет текста: text-red-800 */
+.text-red-800 {
+  --tw-text-opacity: 1;
+  color: rgb(153 27 27 / var(--tw-text-opacity)); /* насыщенный красный */
 }

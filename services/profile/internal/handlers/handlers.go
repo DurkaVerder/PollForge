@@ -14,6 +14,10 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+const (
+	NginxURL = "http://localhost:80"
+)
+
 func extractUserID(c *gin.Context) (int, error) {
 	creatorIdfl, ok := c.Get("id")
 	if !ok {
@@ -50,6 +54,11 @@ func GetProfile(c *gin.Context) {
 		c.JSON(http.StatusNotFound, "Ошибка при получении профиля")
 		return
 	}
+
+	if profile.AvatarURL != "" {
+		profile.AvatarURL = fmt.Sprintf("%s%s", NginxURL, profile.AvatarURL)
+	}
+
 	c.JSON(http.StatusOK, profile)
 
 }
