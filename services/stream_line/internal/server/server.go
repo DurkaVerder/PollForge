@@ -38,7 +38,7 @@ func (s *Server) initRoutes() {
 
 	streamLine := s.engine.Group("/api/streamline")
 
-	streamLine.Use(middleware.AuthMiddleware())
+	streamLine.Use(middleware.JWTAuth())
 	{
 		streamLine.GET("/news", s.handlers.GetStreamLine)
 	}

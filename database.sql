@@ -2,6 +2,8 @@
 
 CREATE TABLE users(
     id SERIAL PRIMARY KEY,
+    role      VARCHAR(20) DEFAULT 'user',
+    is_banned BOOLEAN DEFAULT FALSE,
     name VARCHAR(255) NOT NULL UNIQUE,
     email VARCHAR(255) NOT NULL UNIQUE,
     bio VARCHAR(255),

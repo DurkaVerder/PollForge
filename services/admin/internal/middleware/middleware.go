@@ -12,6 +12,7 @@ import (
 	"github.com/golang-jwt/jwt"
 )
 
+
 func JWTAuth() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		auth := c.GetHeader("Authorization")
@@ -50,10 +51,9 @@ func JWTAuth() gin.HandlerFunc {
 		}
 
 		if banned, ok := claims["is_banned"].(bool); ok && banned {
-            c.AbortWithStatusJSON(403, gin.H{"error": "пользователь заблокирован"})
-            return
-        }
-		
+			c.AbortWithStatusJSON(403, gin.H{"error": "пользователь заблокирован"})
+			return
+		}
 		c.Set("id", rawId)
 		c.Set("role", rawRole)
 		c.Set("is_banned", rawIsBanned)
@@ -75,9 +75,24 @@ func getToken(auth string) (*jwt.Token, error) {
 func validToken(token *jwt.Token) (bool, error) {
 	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
 		if !claims.VerifyExpiresAt(time.Now().Unix(), true) {
-			return false, errors.New("токен истёк")
+			return false, errors.New("Токен истёк")
 		}
 		return true, nil
 	}
-	return false, errors.New("токен не валиден")
+	return false, errors.New("Токен не валиден")
+}
+
+func AdminAuth() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		role, ok := c.Get("role")
+		if !ok {
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Нет роли в токене"})
+			return
+		}
+		if role != "admin" {
+			c.AbortWithStatusJSON(http.StatusForbidden, gin.H{"error": "Недостаточно прав"})
+			return
+		}
+		c.Next()
+	}
 }

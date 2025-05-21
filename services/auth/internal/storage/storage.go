@@ -144,3 +144,15 @@ func UpdateUserPassword(userID int, hashedPassword string) error {
     }
     return nil
 }
+
+func GetUserRoleAndIsBannedRequest(userId string) (string, bool, error) {
+    var role string
+    var isBanned bool
+    query := "SELECT role, is_banned FROM users WHERE id = $1"
+    err := Db.QueryRow(query, userId).Scan(&role, &isBanned)
+    if err != nil {
+        log.Printf("Ошибка при получении роли и статуса блокировки пользователя: %v", err)
+        return "", false, err
+    }
+    return role, isBanned, nil
+}
