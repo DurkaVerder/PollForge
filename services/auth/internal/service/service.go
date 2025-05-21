@@ -100,14 +100,14 @@ func registerUserInternal(request models.UserRequest) (string, error) {
 		log.Printf("%s", err.Error())
 		return "", err
 	}
-	role, isBanned, err := storage.GetUserRoleAndIsBannedRequest(userId)
+	userset, err := storage.GetUserRoleAndIsBannedRequest(userId)
 	
 	if err != nil {
 		log.Printf("Ошибка при получении роли и бана пользователя: %v", err)
 		return "", fmt.Errorf("ошибка получения роли и бана пользователя: %w", err)
 	}
 
-	token, err := GenerateJwt(userId, role, isBanned)
+	token, err := GenerateJwt(userId, userset.Role, userset.IsBanned)
 	if err != nil {
 		log.Printf("Ошибка при создании токена")
 		log.Printf("%s", err.Error())
@@ -143,17 +143,20 @@ func loginUserInternal(request models.UserRequest) (string, error) {
 		log.Printf("Не удалось отправить сообщение Kafka: %v - loginUserInternal", err)
 		return "", fmt.Errorf("ошибка отправки сообщения Kafka")
 	}
-	var role string
-	var isBanned bool
-	
-	role, isBanned, err = storage.GetUserRoleAndIsBannedRequest(userId)
+
+	userset, err:= storage.GetUserRoleAndIsBannedRequest(userId)
 
 	if err != nil {
 		log.Printf("Ошибка при получении роли и бана пользователя: %v", err)
 		return "", fmt.Errorf("ошибка получения роли и бана пользователя: %w", err)
 	}
 
-	token, err := GenerateJwt(userId, role, isBanned)
+	token, err := GenerateJwt(userId, userset.Role, userset.IsBanned)
+	if err != nil {
+		log.Printf("Ошибка при создании токена")
+		log.Printf("%s", err.Error())
+		return "", err
+	}
 	return token, err
 }
 
@@ -165,8 +168,13 @@ func resetUserInternal(req models.UserRequest) (string, error) {
 		log.Printf("Не удалось отправить сообщение Kafka: %v - resetUserInternal", err)
 		return "", fmt.Errorf("ошибка отправки сообщения Kafka")
 	}
-	role, isBanned, err := storage.GetUserRoleAndIsBannedRequest(userId)
-	token, err := GenerateCheapJwt(userId, role, isBanned)
+
+	userset, err := storage.GetUserRoleAndIsBannedRequest(userId)
+	if err != nil {
+		log.Printf("Ошибка при получении роли и бана пользователя: %v", err)
+		return "", fmt.Errorf("ошибка получения роли и бана пользователя: %w", err)
+	}
+	token, err := GenerateCheapJwt(userId, userset.Role, userset.IsBanned)
 
 	if err != nil {
 		log.Printf("Ошибка при генерации jwt для сброса пароля: %v", err)

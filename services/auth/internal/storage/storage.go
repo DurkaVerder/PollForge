@@ -145,14 +145,21 @@ func UpdateUserPassword(userID int, hashedPassword string) error {
     return nil
 }
 
-func GetUserRoleAndIsBannedRequest(userId string) (string, bool, error) {
-    var role string
-    var isBanned bool
+func GetUserRoleAndIsBannedRequest(userId string) (models.RoleAndBan, error) {
+
+    var userstr = models.RoleAndBan{Role: "", IsBanned: false}
+
     query := "SELECT role, is_banned FROM users WHERE id = $1"
-    err := Db.QueryRow(query, userId).Scan(&role, &isBanned)
+    err := Db.QueryRow(query, userId).Scan(&userstr.Role, &userstr.IsBanned)
+
+    if err == sql.ErrNoRows {
+        log.Printf("Пользователь не найден")
+        return userstr, errors.New("пользователь не найден")
+    }
+
     if err != nil {
         log.Printf("Ошибка при получении роли и статуса блокировки пользователя: %v", err)
-        return "", false, err
+        return userstr, err
     }
-    return role, isBanned, nil
+    return userstr, nil
 }
