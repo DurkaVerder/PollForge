@@ -119,3 +119,13 @@ func UpdateProfileBio(userId int, bio string) error {
 	}
 	return nil
 }
+
+func GetDifUserProfile(userId int) (*models.UserProfile, error) {
+	profile, err := storage.GetDifUserProfileRequest(userId)
+	if err != nil {
+		log.Printf("Ошибка при получении профиля пользователя: %v", err)
+		return nil, fmt.Errorf("пользователь не найден")
+	}
+
+	return profile, nil
+}

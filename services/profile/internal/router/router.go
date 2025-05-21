@@ -28,6 +28,7 @@ func SetUpRouter(r *gin.Engine) {
 	protected.Use(middleware.JWTAuth())
 	{
 		protected.GET("/", handlers.GetProfile)
+		protected.GET("/user/:id", handlers.GetDifUserProfile)
 		protected.GET("/forms", handlers.GetForms)
 		protected.PUT("/name", handlers.UpdateProfileName)
 		protected.PUT("/bio", handlers.UpdateProfileBio)

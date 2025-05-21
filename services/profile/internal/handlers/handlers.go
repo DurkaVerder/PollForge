@@ -231,3 +231,22 @@ func UpdateProfileBio(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, gin.H{"Сообщение": "Описание профиля успешно обновлено"})
 }
+
+func GetDifUserProfile(c *gin.Context) {
+
+	userIdStr := c.Param("id")
+	userId, err := strconv.Atoi(userIdStr)
+	if err != nil {
+		log.Printf("Ошибка при преобразовании id пользователя: %v", err)
+		c.JSON(http.StatusBadRequest, gin.H{"Ошибка": "Неверный id пользователя"})
+		return
+	}
+
+	profile, err := service.GetDifUserProfile(userId)
+	if err != nil {
+		log.Printf("Ошибка при получении профиля GetDifUserProfile: %v", err)
+		c.JSON(http.StatusNotFound, gin.H{"Ошибка": "Ошибка при получении профиля"})
+		return
+	}
+	c.JSON(http.StatusOK, profile)
+}
