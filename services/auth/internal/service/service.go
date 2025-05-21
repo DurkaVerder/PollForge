@@ -143,8 +143,10 @@ func loginUserInternal(request models.UserRequest) (string, error) {
 		log.Printf("Не удалось отправить сообщение Kafka: %v - loginUserInternal", err)
 		return "", fmt.Errorf("ошибка отправки сообщения Kafka")
 	}
-
-	role, isBanned, err := storage.GetUserRoleAndIsBannedRequest(userId)
+	var role string
+	var isBanned bool
+	
+	role, isBanned, err = storage.GetUserRoleAndIsBannedRequest(userId)
 
 	if err != nil {
 		log.Printf("Ошибка при получении роли и бана пользователя: %v", err)
