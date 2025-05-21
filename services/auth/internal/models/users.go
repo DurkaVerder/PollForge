@@ -49,3 +49,8 @@ type PasswordReset struct {
 	Token     string    `json:"token"`      
 	ExpiresAt time.Time `json:"expires_at"` 
 }
+
+type RoleAndBan struct {
+	Role     string `json:"role"`
+	IsBanned bool   `json:"is_banned"`
+}

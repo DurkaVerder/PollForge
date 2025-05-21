@@ -1,9 +1,9 @@
 package router
 
 import (
+	"admin/internal/handlers"
+	"admin/internal/middleware"
 	"os"
-	"profile/internal/handlers"
-	"profile/internal/middleware"
 	"time"
 
 	"github.com/gin-contrib/cors"
@@ -23,22 +23,20 @@ func SetUpRouter(r *gin.Engine) {
 	}))
 
 	r.GET("/metrics", gin.WrapH(promhttp.Handler()))
-	profile_port := os.Getenv("PORT")
-	protected := r.Group("/api/profile")
-	protected.Use(middleware.JWTAuth())
+	admin_port := os.Getenv("PORT")
+	admin := r.Group("/api/admin")
+	admin.Use(middleware.JWTAuth(), middleware.AdminAuth())
 	{
-		protected.GET("/", handlers.GetProfile)
-		protected.GET("/user/:id", handlers.GetDifUserProfile)
-		protected.GET("/forms", handlers.GetForms)
-		protected.PUT("/name", handlers.UpdateProfileName)
-		protected.PUT("/bio", handlers.UpdateProfileBio)
+		admin.GET("/users", handlers.ListUsers)
+		admin.PUT("/users/:id/ban", handlers.ToggleBanUser)
+		admin.DELETE("/users/:id", handlers.DeleteUser)
 
-		protected.DELETE("/", handlers.DeleteProfile)
-		protected.DELETE("/forms/:id", handlers.DeleteForm)
-		protected.POST("/avatar", handlers.UploadAvatar)
+		admin.DELETE("/forms/:id", handlers.DeleteForm)
+
+		admin.DELETE("/comments/:id", handlers.DeleteComment)
+
 	}
-
-	if err := r.Run(profile_port); err != nil {
+	if err := r.Run(admin_port); err != nil {
 		panic(err)
 	}
 }

@@ -45,20 +45,24 @@ func handleLogin(req models.UserRequest) (string, error) {
 func handleReset(req models.UserRequest) (string, error) {
 	return resetUserInternal(req)
 }
-func GenerateJwt(userId string) (string, error) {
+func GenerateJwt(userId string, role string, isBanned bool) (string, error) {
 
 	claims := jwt.MapClaims{
 		"id":  userId,
+		"role": role,
+		"is_banned": isBanned,
 		"exp": time.Now().Add(time.Hour * 6).Unix(),
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	return token.SignedString(jwtKey)
 }
 
-func GenerateCheapJwt(userId string) (string, error) {
+func GenerateCheapJwt(userId string, role string, isBanned bool) (string, error) {
 
 	claims := jwt.MapClaims{
 		"id":  userId,
+		"role": role,
+		"is_banned": isBanned,
 		"exp": time.Now().Add(time.Hour * 1).Unix(),
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
@@ -96,8 +100,14 @@ func registerUserInternal(request models.UserRequest) (string, error) {
 		log.Printf("%s", err.Error())
 		return "", err
 	}
+	userset, err := storage.GetUserRoleAndIsBannedRequest(userId)
+	
+	if err != nil {
+		log.Printf("Ошибка при получении роли и бана пользователя: %v", err)
+		return "", fmt.Errorf("ошибка получения роли и бана пользователя: %w", err)
+	}
 
-	token, err := GenerateJwt(userId)
+	token, err := GenerateJwt(userId, userset.Role, userset.IsBanned)
 	if err != nil {
 		log.Printf("Ошибка при создании токена")
 		log.Printf("%s", err.Error())
@@ -129,12 +139,24 @@ func loginUserInternal(request models.UserRequest) (string, error) {
 		UserID:    userId,
 	}
 
-	if err := kafka.SendMessage(kafkaMsg); err != nil {
+	if err = kafka.SendMessage(kafkaMsg); err != nil {
 		log.Printf("Не удалось отправить сообщение Kafka: %v - loginUserInternal", err)
 		return "", fmt.Errorf("ошибка отправки сообщения Kafka")
 	}
 
-	token, err := GenerateJwt(userId)
+	userset, err:= storage.GetUserRoleAndIsBannedRequest(userId)
+
+	if err != nil {
+		log.Printf("Ошибка при получении роли и бана пользователя: %v", err)
+		return "", fmt.Errorf("ошибка получения роли и бана пользователя: %w", err)
+	}
+
+	token, err := GenerateJwt(userId, userset.Role, userset.IsBanned)
+	if err != nil {
+		log.Printf("Ошибка при создании токена")
+		log.Printf("%s", err.Error())
+		return "", err
+	}
 	return token, err
 }
 
@@ -147,7 +169,12 @@ func resetUserInternal(req models.UserRequest) (string, error) {
 		return "", fmt.Errorf("ошибка отправки сообщения Kafka")
 	}
 
-	token, err := GenerateCheapJwt(userId)
+	userset, err := storage.GetUserRoleAndIsBannedRequest(userId)
+	if err != nil {
+		log.Printf("Ошибка при получении роли и бана пользователя: %v", err)
+		return "", fmt.Errorf("ошибка получения роли и бана пользователя: %w", err)
+	}
+	token, err := GenerateCheapJwt(userId, userset.Role, userset.IsBanned)
 
 	if err != nil {
 		log.Printf("Ошибка при генерации jwt для сброса пароля: %v", err)

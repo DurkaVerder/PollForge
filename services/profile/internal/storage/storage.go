@@ -109,3 +109,14 @@ func UpdateProfileBioRequest(userId int, bio string) error {
 	}
 	return nil
 }
+
+func GetDifUserProfileRequest(userId int) (*models.UserProfile, error) {
+	row := Db.QueryRow("SELECT id, name, email, COALESCE(bio, ''), COALESCE(avatar_url, '') FROM users WHERE id = $1", userId)
+	var profile models.UserProfile
+	err := row.Scan(&profile.ID, &profile.Username, &profile.Email, &profile.Bio, &profile.AvatarURL)
+	if err != nil {
+		log.Printf("Ошибка при получении профиля пользователя: %v", err)
+		return nil, err
+	}
+	return &profile, nil
+}
