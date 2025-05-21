@@ -32,6 +32,7 @@ type Form struct {
 	Link        string            `json:"link"`
 	PrivateKey  bool              `json:"private_key"`
 	ExpiresAt   time.Time         `json:"expires_at"`
+	CreatedAt   time.Time         `json:"created_at"`
 	Questions   []QuestionOutput  `json:"questions"` 
 }
 

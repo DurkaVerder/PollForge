@@ -139,7 +139,7 @@ func loginUserInternal(request models.UserRequest) (string, error) {
 		UserID:    userId,
 	}
 
-	if err := kafka.SendMessage(kafkaMsg); err != nil {
+	if err = kafka.SendMessage(kafkaMsg); err != nil {
 		log.Printf("Не удалось отправить сообщение Kafka: %v - loginUserInternal", err)
 		return "", fmt.Errorf("ошибка отправки сообщения Kafka")
 	}

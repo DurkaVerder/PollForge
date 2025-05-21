@@ -5,6 +5,7 @@ import (
 	"forms/internal/models"
 	"log"
 	"os"
+	"time"
 
 	"github.com/google/uuid"
 
@@ -42,10 +43,11 @@ func FormCheckingRequest(existId int, creatorId int, formId int) error {
 func FormCreateRequest(form models.FormRequest, creatorId int) (int, string, error) {
 
 	link := uuid.New().String()
-	query := `INSERT INTO forms (creator_id, title, description, link, private_key, expires_at) 
-			  VALUES($1, $2, $3, $4, $5, $6) RETURNING id`
+	query := `INSERT INTO forms (creator_id, title, description, link, private_key, expires_at, created_at) 
+			  VALUES($1, $2, $3, $4, $5, $6, $7) RETURNING id`
 	var formId int
-	err := Db.QueryRow(query, creatorId, form.Title, form.Description, link, form.PrivateKey, form.ExpiresAt).Scan(&formId)
+	createdAt := time.Now()
+	err := Db.QueryRow(query, creatorId, form.Title, form.Description, link, form.PrivateKey, form.ExpiresAt, createdAt).Scan(&formId)
 	if err != nil {
 		log.Printf("Ошибка при запросе создания формы: %v", err)
 		return formId, link, err
@@ -78,7 +80,7 @@ func FormUpdateRequest(updateForm models.FormRequest, creatorId int, formId int)
 func FormGetRequest(creatorId int, formId int) (models.Form, error) {
 	var form models.Form
 	query := `
-		SELECT id, title, description, link, private_key, expires_at
+		SELECT id, title, description, link, private_key, expires_at, created_at
 		FROM forms
 		WHERE id = $1 AND creator_id = $2
 		`
@@ -89,6 +91,7 @@ func FormGetRequest(creatorId int, formId int) (models.Form, error) {
 		&form.Link,
 		&form.PrivateKey,
 		&form.ExpiresAt,
+		&form.CreatedAt,
 	)
 	if err != nil {
 		return form, err
