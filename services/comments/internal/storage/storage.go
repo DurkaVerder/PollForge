@@ -46,7 +46,7 @@ func GetAllCommentsRequest(formId int) (*sql.Rows, error) {
 }
 
 func CreateCommentRequest(comment models.CommentRequest, formId int, creatorId int) error {
-	createdTime := time.Now()
+	createdTime := time.Now().Local()
 	query := `INSERT INTO comments (form_id, user_id, description, created_at) VALUES ($1, $2, $3, $4)`
 	_, err := Db.Exec(query, formId, creatorId, comment.Description, createdTime)
 	if err != nil {
