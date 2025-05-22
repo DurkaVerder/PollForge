@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { v4 as uuidv4 } from 'uuid';
 
 export default function CreatePollPage() {
   const MAX_QUESTIONS = 10;
@@ -18,7 +19,7 @@ export default function CreatePollPage() {
     private_key: false,
     expires_at: ''
   });
-  const [questions, setQuestions] = useState([{ title: '', answers: ['', ''] }]);
+  const [questions, setQuestions] = useState([{ id: uuidv4(), title: '', answers: [{ id: uuidv4(), value: '' }, { id: uuidv4(), value: '' }] }]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
   const [tooltip, setTooltip] = useState({ text: '', x: 0, y: 0 });
@@ -32,68 +33,93 @@ export default function CreatePollPage() {
     }));
   };
 
-  const handleQuestionChange = (index, value) => {
+  const handleQuestionChange = (id, value) => {
     if (value.length <= MAX_QUESTION_LENGTH) {
-      const newQuestions = [...questions];
-      newQuestions[index].title = value;
+      const newQuestions = questions.map(question => {
+        if (question.id === id) {
+          return { ...question, title: value };
+        }
+        return question;
+      });
       setQuestions(newQuestions);
     }
   };
 
-  const handleAnswerChange = (qIndex, aIndex, value) => {
+  const handleAnswerChange = (qId, aId, value) => {
     if (value.length <= MAX_ANSWER_LENGTH) {
-      const newQuestions = [...questions];
-      newQuestions[qIndex].answers[aIndex] = value;
+      const newQuestions = questions.map(question => {
+        if (question.id === qId) {
+          const newAnswers = question.answers.map(answer => {
+            if (answer.id === aId) {
+              return { ...answer, value };
+            }
+            return answer;
+          });
+          return { ...question, answers: newAnswers };
+        }
+        return question;
+      });
       setQuestions(newQuestions);
     }
   };
 
   const addQuestion = () => {
     if (questions.length < MAX_QUESTIONS) {
-      setQuestions([...questions, { title: '', answers: ['', ''] }]);
+      setQuestions([...questions, { id: uuidv4(), title: '', answers: [{ id: uuidv4(), value: '' }, { id: uuidv4(), value: '' }] }]);
     } else {
       setError(`Максимальное количество вопросов: ${MAX_QUESTIONS}`);
     }
   };
 
-  const removeQuestion = (index) => {
+  const removeQuestion = (id) => {
     if (questions.length > 1) {
-      const questionElement = document.getElementById(`question-${index}`);
+      const questionElement = document.getElementById(`question-${id}`);
       if (questionElement) {
         questionElement.style.opacity = '0';
         setTimeout(() => {
-          const newQuestions = [...questions];
-          newQuestions.splice(index, 1);
+          const newQuestions = questions.filter(question => question.id !== id);
           setQuestions(newQuestions);
         }, 500);
       }
     }
   };
 
-  const addAnswer = (qIndex) => {
-    const newQuestions = [...questions];
-    if (newQuestions[qIndex].answers.length < MAX_ANSWERS) {
-      newQuestions[qIndex].answers.push('');
-      setQuestions(newQuestions);
-    } else {
-      setError(`Максимальное количество ответов: ${MAX_ANSWERS}`);
-    }
+  const addAnswer = (qId) => {
+    const newQuestions = questions.map(question => {
+      if (question.id === qId) {
+        if (question.answers.length < MAX_ANSWERS) {
+          return { ...question, answers: [...question.answers, { id: uuidv4(), value: '' }] };
+        } else {
+          setError(`Максимальное количество ответов: ${MAX_ANSWERS}`);
+          return question;
+        }
+      }
+      return question;
+    });
+    setQuestions(newQuestions);
   };
 
-  const removeAnswer = (qIndex, aIndex) => {
-    const newQuestions = [...questions];
-    if (newQuestions[qIndex].answers.length > 2) {
-      const answerElement = document.getElementById(`answer-${qIndex}-${aIndex}`);
-      if (answerElement) {
-        answerElement.style.opacity = '0';
-        setTimeout(() => {
-          newQuestions[qIndex].answers.splice(aIndex, 1);
-          setQuestions(newQuestions);
-        }, 500);
+  const removeAnswer = (qId, aId) => {
+    const newQuestions = questions.map(question => {
+      if (question.id === qId) {
+        if (question.answers.length > 2) {
+          const answerElement = document.getElementById(`answer-${aId}`);
+          if (answerElement) {
+            answerElement.style.opacity = '0';
+            setTimeout(() => {
+              const newAnswers = question.answers.filter(answer => answer.id !== aId);
+              setQuestions(questions.map(q => q.id === qId ? { ...q, answers: newAnswers } : q));
+            }, 500);
+          }
+          return question;
+        } else {
+          setError('У вопроса должно быть как минимум два варианта ответа');
+          return question;
+        }
       }
-    } else {
-      setError('У вопроса должно быть как минимум два варианта ответа');
-    }
+      return question;
+    });
+    setQuestions(newQuestions);
   };
 
   const handleSubmit = async (e) => {
@@ -167,7 +193,7 @@ export default function CreatePollPage() {
         const questionId = questionData.question_id;
 
         for (let aIndex = 0; aIndex < question.answers.length; aIndex++) {
-          const answer = question.answers[aIndex];
+          const answer = question.answers[aIndex].value;
 
           if (answer.length > MAX_ANSWER_LENGTH) {
             throw new Error(`Ответ ${aIndex + 1} в вопросе ${qIndex + 1} превышает максимальную длину (${MAX_ANSWER_LENGTH} символов)`);
@@ -386,8 +412,8 @@ export default function CreatePollPage() {
 
               {questions.map((question, qIndex) => (
                 <div
-                  key={qIndex}
-                  id={`question-${qIndex}`}
+                  key={question.id}
+                  id={`question-${question.id}`}
                   className="mb-6 p-4 border border-gray-200 rounded-lg bg-gray-50"
                   style={{ opacity: 1, transition: 'opacity 0.5s ease' }}
                 >
@@ -396,7 +422,7 @@ export default function CreatePollPage() {
                     {questions.length > 1 && (
                       <button
                         type="button"
-                        onClick={() => removeQuestion(qIndex)}
+                        onClick={() => removeQuestion(question.id)}
                         className="text-red-500 hover:text-red-700 transition-colors"
                       >
                         <span className="material-symbols-outlined">delete</span>
@@ -411,7 +437,7 @@ export default function CreatePollPage() {
                     <input
                       type="text"
                       value={question.title}
-                      onChange={(e) => handleQuestionChange(qIndex, e.target.value)}
+                      onChange={(e) => handleQuestionChange(question.id, e.target.value)}
                       required
                       maxLength={MAX_QUESTION_LENGTH}
                       className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
@@ -445,7 +471,7 @@ export default function CreatePollPage() {
                       </label>
                       <button
                         type="button"
-                        onClick={() => addAnswer(qIndex)}
+                        onClick={() => addAnswer(question.id)}
                         disabled={question.answers.length >= MAX_ANSWERS}
                         className={`flex items-center px-3 py-2 rounded-lg text-sm transition-all ${
                           question.answers.length >= MAX_ANSWERS
@@ -460,16 +486,16 @@ export default function CreatePollPage() {
 
                     {question.answers.map((answer, aIndex) => (
                       <div
-                        key={aIndex}
-                        id={`answer-${qIndex}-${aIndex}`}
+                        key={answer.id}
+                        id={`answer-${answer.id}`}
                         className="flex items-center mb-3"
                         style={{ opacity: 1, transition: 'opacity 0.5s ease' }}
                       >
                         <div className="flex-1">
                           <input
                             type="text"
-                            value={answer}
-                            onChange={(e) => handleAnswerChange(qIndex, aIndex, e.target.value)}
+                            value={answer.value}
+                            onChange={(e) => handleAnswerChange(question.id, answer.id, e.target.value)}
                             required
                             maxLength={MAX_ANSWER_LENGTH}
                             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
@@ -485,12 +511,12 @@ export default function CreatePollPage() {
                           />
                           <div className="mt-2 flex justify-between items-center">
                             <span className="text-xs text-gray-500">
-                              {answer.length}/{MAX_ANSWER_LENGTH}
+                              {answer.value.length}/{MAX_ANSWER_LENGTH}
                             </span>
                             <div className="w-1/2 h-1 bg-gray-200 rounded-full overflow-hidden">
                               <div
                                 className="h-full bg-blue-500 transition-width duration-300"
-                                style={{ width: `${(answer.length / MAX_ANSWER_LENGTH) * 100}%` }}
+                                style={{ width: `${(answer.value.length / MAX_ANSWER_LENGTH) * 100}%` }}
                               ></div>
                             </div>
                           </div>
@@ -498,7 +524,7 @@ export default function CreatePollPage() {
                         {question.answers.length > 2 && (
                           <button
                             type="button"
-                            onClick={() => removeAnswer(qIndex, aIndex)}
+                            onClick={() => removeAnswer(question.id, answer.id)}
                             className="ml-2 text-red-500 hover:text-red-700 transition-colors"
                           >
                             <span className="material-symbols-outlined">close</span>

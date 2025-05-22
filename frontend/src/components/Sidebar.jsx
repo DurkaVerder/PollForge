@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+import { NavLink } from 'react-router-dom';
 
 export default function Sidebar() {
   return (
@@ -6,49 +6,60 @@ export default function Sidebar() {
       <nav>
         <ul className="space-y-2">
           <li>
-            <Link
+            <NavLink
               to="/"
-              className="flex items-center p-3 rounded-lg bg-primary-50 text-primary-700"
+              end
+              className={({ isActive }) => 
+                `flex items-center p-3 rounded-lg transition-colors duration-200 ${isActive ? 'bg-primary-50 text-primary-700' : 'hover:bg-gray-100'}`
+              }
             >
               <span className="material-symbols-outlined mr-3">dynamic_feed</span>
               Лента
-            </Link>
+            </NavLink>
           </li>
           <li>
-            <Link
+            <NavLink
               to="/profile"
-              className="flex items-center p-3 rounded-lg hover:bg-gray-100 transition-colors duration-200"
+              className={({ isActive }) => 
+                `flex items-center p-3 rounded-lg transition-colors duration-200 ${isActive ? 'bg-primary-50 text-primary-700' : 'hover:bg-gray-100'}`
+              }
             >
               <span className="material-symbols-outlined mr-3">person</span>
               Мой профиль
-            </Link>
+            </NavLink>
           </li>
           <li>
-            <Link
+            <NavLink
               to="/my-polls"
-              className="flex items-center p-3 rounded-lg hover:bg-gray-100 transition-colors duration-200"
+              className={({ isActive }) => 
+                `flex items-center p-3 rounded-lg transition-colors duration-200 ${isActive ? 'bg-primary-50 text-primary-700' : 'hover:bg-gray-100'}`
+              }
             >
               <span className="material-symbols-outlined mr-3">poll</span>
               Мои опросы
-            </Link>
+            </NavLink>
           </li>
           <li>
-            <Link
+            <NavLink
               to="/explore"
-              className="flex items-center p-3 rounded-lg hover:bg-gray-100 transition-colors duration-200"
+              className={({ isActive }) => 
+                `flex items-center p-3 rounded-lg transition-colors duration-200 ${isActive ? 'bg-primary-50 text-primary-700' : 'hover:bg-gray-100'}`
+              }
             >
               <span className="material-symbols-outlined mr-3">explore</span>
               Обзор
-            </Link>
+            </NavLink>
           </li>
           <li>
-            <Link
+            <NavLink
               to="/trending"
-              className="flex items-center p-3 rounded-lg hover:bg-gray-100 transition-colors duration-200"
+              className={({ isActive }) => 
+                `flex items-center p-3 rounded-lg transition-colors duration-200 ${isActive ? 'bg-primary-50 text-primary-700' : 'hover:bg-gray-100'}`
+              }
             >
               <span className="material-symbols-outlined mr-3">trending_up</span>
               Популярное
-            </Link>
+            </NavLink>
           </li>
         </ul>
       </nav>

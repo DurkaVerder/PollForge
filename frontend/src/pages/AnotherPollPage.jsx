@@ -264,7 +264,14 @@ export default function HomePage() {
   }
 
   if (error || !poll) {
-    return <div className="text-red-500 text-center">Ошибка: {error || 'Опрос не найден'}</div>;
+    
+    return (
+    <div className="w-full mx-auto flex flex-col lg:flex-row gap-6">
+      <Sidebar />
+      <div className="bg-white rounded-xl shadow-lg p-6 transform hover:shadow-xl transition-all duration-300 w-full mx-auto ">
+    <div className="text-red-500 text-center">Опрос не найден или он завершён</div>
+    </div>
+    </div>);
   }
 
   return (
