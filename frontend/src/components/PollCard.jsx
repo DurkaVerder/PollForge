@@ -143,7 +143,12 @@ export default function PollCard({ poll }) {
 
   const handleAvatarClick = () => {
     if (localPoll.creator_id) {
+      if (localPoll.creator_id === parseInt(localStorage.getItem('userId'))) {
+        navigate('/profile');
+      }
+      else {
       navigate(`/profile/${localPoll.creator_id}`);
+    }
     }
   };
 
