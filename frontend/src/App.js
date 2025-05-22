@@ -1,5 +1,7 @@
 import { BrowserRouter as Router, Routes, Route, Outlet } from 'react-router-dom';
 import './styles/style.css';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import Header from './components/Header';
 import Footer from './components/Footer';
 import LoginPage from './pages/LoginPage';
@@ -127,6 +129,7 @@ export default function App() {
             
           </Route>
         </Routes>
+         <ToastContainer position="top-right" autoClose={2000} />
       </div>
     </Router>
   );

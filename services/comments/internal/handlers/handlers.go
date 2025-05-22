@@ -58,7 +58,8 @@ func GetComments(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"Ошибка": "Ошибка получения комментариев"})
 		return
 	}
-	c.JSON(http.StatusOK, comments)
+	c.JSON(http.StatusOK, gin.H{"comments": comments,
+		"length": len(comments)})
 }
 
 func CreateComment(c *gin.Context) {

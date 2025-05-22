@@ -11,6 +11,7 @@ type DB interface {
 	GetFormsByOtherUserIDWithCountLikesAndComments(userID string) ([]models.FormFromDB, error)
 	GetQuestionsByFormsID(formIDs []int) ([]models.QuestionFromDB, error)
 	GetAnswersByQuestionsID(questionIDs []int, userID string) ([]models.AnswerFromDB, error)
+	GetFormsByOtherUserIDWithCountLikesAndCommentsByLink(userID, pollLink string) ([]models.FormFromDB, error)
 }
 
 type MergedData struct {
@@ -205,4 +206,39 @@ func (s *Service) getQuestionsIds(questions []models.QuestionFromDB) []int {
 		ids[i] = question.ID
 	}
 	return ids
+}
+
+func (s *Service) GetPollByLink(userID, pollLink string) (*models.StreamLineResponse, error) {
+	forms, err := s.db.GetFormsByOtherUserIDWithCountLikesAndCommentsByLink(userID, pollLink)
+	if err != nil {
+		s.logger.Println("Error getting forms:", err)
+		return nil, err
+	}
+	if len(forms) == 0 {
+		s.logger.Println("No forms found")
+		return nil, nil
+	}
+	formsIDs := s.getFormsIds(forms)
+	questions, err := s.db.GetQuestionsByFormsID(formsIDs)
+	if err != nil {
+		s.logger.Println("Error getting questions:", err)
+		return nil, err
+	}
+
+	questionIDs := s.getQuestionsIds(questions)
+	answers, err := s.db.GetAnswersByQuestionsID(questionIDs, userID)
+	if err != nil {
+		s.logger.Println("Error getting answers:", err)
+		return nil, err
+	}
+
+	mergedData := MergedData{
+		Forms:     forms,
+		Questions: questions,
+		Answers:   answers,
+	}
+
+	polls := s.CreatePolls(mergedData)
+
+	return &models.StreamLineResponse{Polls: polls}, nil
 }

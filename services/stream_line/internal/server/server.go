@@ -41,6 +41,7 @@ func (s *Server) initRoutes() {
 	streamLine.Use(middleware.JWTAuth())
 	{
 		streamLine.GET("/news", s.handlers.GetStreamLine)
+		streamLine.GET("/poll/:link", s.handlers.GetPollByLink)
 	}
 
 }

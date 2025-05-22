@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 export default function CreatePollPage() {
   const MAX_QUESTIONS = 10;
@@ -16,11 +18,10 @@ export default function CreatePollPage() {
     private_key: false,
     expires_at: ''
   });
-  const [questions, setQuestions] = useState([
-    { title: '', answers: [''] }
-  ]);
+  const [questions, setQuestions] = useState([{ title: '', answers: ['', ''] }]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
+  const [tooltip, setTooltip] = useState({ text: '', x: 0, y: 0 });
   const navigate = useNavigate();
 
   const handleFormChange = (e) => {
@@ -49,7 +50,7 @@ export default function CreatePollPage() {
 
   const addQuestion = () => {
     if (questions.length < MAX_QUESTIONS) {
-      setQuestions([...questions, { title: '', answers: [''] }]);
+      setQuestions([...questions, { title: '', answers: ['', ''] }]);
     } else {
       setError(`Максимальное количество вопросов: ${MAX_QUESTIONS}`);
     }
@@ -57,9 +58,15 @@ export default function CreatePollPage() {
 
   const removeQuestion = (index) => {
     if (questions.length > 1) {
-      const newQuestions = [...questions];
-      newQuestions.splice(index, 1);
-      setQuestions(newQuestions);
+      const questionElement = document.getElementById(`question-${index}`);
+      if (questionElement) {
+        questionElement.style.opacity = '0';
+        setTimeout(() => {
+          const newQuestions = [...questions];
+          newQuestions.splice(index, 1);
+          setQuestions(newQuestions);
+        }, 500);
+      }
     }
   };
 
@@ -75,9 +82,17 @@ export default function CreatePollPage() {
 
   const removeAnswer = (qIndex, aIndex) => {
     const newQuestions = [...questions];
-    if (newQuestions[qIndex].answers.length > 1) {
-      newQuestions[qIndex].answers.splice(aIndex, 1);
-      setQuestions(newQuestions);
+    if (newQuestions[qIndex].answers.length > 2) {
+      const answerElement = document.getElementById(`answer-${qIndex}-${aIndex}`);
+      if (answerElement) {
+        answerElement.style.opacity = '0';
+        setTimeout(() => {
+          newQuestions[qIndex].answers.splice(aIndex, 1);
+          setQuestions(newQuestions);
+        }, 500);
+      }
+    } else {
+      setError('У вопроса должно быть как минимум два варианта ответа');
     }
   };
 
@@ -181,6 +196,16 @@ export default function CreatePollPage() {
         }
       }
 
+      toast.success('Опрос успешно создан!', {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+      });
+
       navigate('/my-polls');
     } catch (err) {
       setError(err.message);
@@ -191,18 +216,18 @@ export default function CreatePollPage() {
   };
 
   return (
-    <main className="flex flex-col lg:flex-row gap-6">
+    <main className="flex flex-col lg:flex-row gap-6 min-h-screen bg-gray-100 p-6">
       <Sidebar />
       <div className="flex-1">
-        <div className="bg-white rounded-lg shadow-md p-6">
-          <div className="flex items-center mb-6">
-            <span className="material-symbols-outlined text-4xl text-primary-500 mr-2">add</span>
-            <h2 className="text-2xl font-bold">Создать новый опрос</h2>
+        <div className="bg-white rounded-xl shadow-lg p-8 max-w-4xl mx-auto">
+          <div className="flex items-center mb-8">
+            <span className="material-symbols-outlined text-4xl text-blue-500 mr-3">add_circle</span>
+            <h2 className="text-3xl font-bold text-gray-800">Создать новый опрос</h2>
           </div>
 
-          <div className="mb-4 p-3 bg-blue-50 text-blue-700 rounded-md text-sm">
-            <p>Ограничения:</p>
-            <ul className="list-disc pl-5 mt-1 space-y-1">
+          <div className="mb-6 p-4 bg-blue-50 text-blue-700 rounded-lg text-sm">
+            <p className="font-semibold">Ограничения:</p>
+            <ul className="list-disc pl-5 mt-2 space-y-1">
               <li>Максимум {MAX_QUESTIONS} вопросов</li>
               <li>Максимум {MAX_ANSWERS} ответов на каждый вопрос</li>
               <li>Название опроса: до {MAX_TITLE_LENGTH} символов</li>
@@ -213,25 +238,28 @@ export default function CreatePollPage() {
           </div>
 
           {error && (
-            <div className="mb-4 p-3 bg-red-50 text-red-600 rounded-md">
-              {error}
+            <div className="mb-6 p-4 bg-red-100 text-red-700 rounded-lg flex items-center justify-between fade-in">
+              <div className="flex items-center">
+                <span className="material-symbols-outlined mr-2">error</span>
+                <span>{error}</span>
+              </div>
+              <button
+                onClick={() => setError('')}
+                className="text-red-500 hover:text-red-700 transition-colors"
+              >
+                <span className="material-symbols-outlined">close</span>
+              </button>
             </div>
           )}
 
           <form onSubmit={handleSubmit}>
-            {/* Основная информация об опросе */}
-            <div className="mb-8">
-              <h3 className="text-lg font-semibold mb-4">Основная информация</h3>
-              <div className="space-y-4">
+            <div className="mb-10">
+              <h3 className="text-xl font-semibold text-gray-800 mb-4">Основная информация</h3>
+              <div className="space-y-6">
                 <div>
-                  <div className="flex justify-between items-center mb-1">
-                    <label className="block text-sm font-medium text-gray-700">
-                      Название опроса
-                    </label>
-                    <span className="text-xs text-gray-500">
-                      {formData.title.length}/{MAX_TITLE_LENGTH}
-                    </span>
-                  </div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Название опроса
+                  </label>
                   <input
                     type="text"
                     name="title"
@@ -239,38 +267,61 @@ export default function CreatePollPage() {
                     onChange={handleFormChange}
                     required
                     maxLength={MAX_TITLE_LENGTH}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-primary-500 focus:border-primary-500"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                    onFocus={(e) => {
+                      const rect = e.target.getBoundingClientRect();
+                      setTooltip({
+                        text: `Максимальная длина: ${MAX_TITLE_LENGTH} символов`,
+                        x: rect.left,
+                        y: rect.bottom + 5
+                      });
+                    }}
+                    onBlur={() => setTooltip({ text: '', x: 0, y: 0 })}
                   />
-                  <div className="mt-1 h-1 w-full bg-gray-200 rounded-full">
-                    <div
-                      className="h-1 bg-primary-500 rounded-full progress-bar"
-                      style={{ width: `${(formData.title.length / MAX_TITLE_LENGTH) * 100}%` }}
-                    ></div>
+                  <div className="mt-2 flex justify-between items-center">
+                    <span className="text-xs text-gray-500">
+                      {formData.title.length}/{MAX_TITLE_LENGTH}
+                    </span>
+                    <div className="w-1/2 h-1 bg-gray-200 rounded-full overflow-hidden">
+                      <div
+                        className="h-full bg-blue-500 transition-width duration-300"
+                        style={{ width: `${(formData.title.length / MAX_TITLE_LENGTH) * 100}%` }}
+                      ></div>
+                    </div>
                   </div>
                 </div>
 
                 <div>
-                  <div className="flex justify-between items-center mb-1">
-                    <label className="block text-sm font-medium text-gray-700">
-                      Описание
-                    </label>
-                    <span className="text-xs text-gray-500">
-                      {formData.description.length}/{MAX_DESCRIPTION_LENGTH}
-                    </span>
-                  </div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Описание
+                  </label>
                   <textarea
                     name="description"
                     value={formData.description}
                     onChange={handleFormChange}
                     maxLength={MAX_DESCRIPTION_LENGTH}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-primary-500 focus:border-primary-500"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                     rows="3"
+                    onFocus={(e) => {
+                      const rect = e.target.getBoundingClientRect();
+                      setTooltip({
+                        text: `Максимальная длина: ${MAX_DESCRIPTION_LENGTH} символов`,
+                        x: rect.left,
+                        y: rect.bottom + 5
+                      });
+                    }}
+                    onBlur={() => setTooltip({ text: '', x: 0, y: 0 })}
                   />
-                  <div className="mt-1 h-1 w-full bg-gray-200 rounded-full">
-                    <div
-                      className="h-1 bg-primary-500 rounded-full"
-                      style={{ width: `${(formData.description.length / MAX_DESCRIPTION_LENGTH) * 100}%` }}
-                    ></div>
+                  <div className="mt-2 flex justify-between items-center">
+                    <span className="text-xs text-gray-500">
+                      {formData.description.length}/{MAX_DESCRIPTION_LENGTH}
+                    </span>
+                    <div className="w-1/2 h-1 bg-gray-200 rounded-full overflow-hidden">
+                      <div
+                        className="h-full bg-blue-500 transition-width duration-300"
+                        style={{ width: `${(formData.description.length / MAX_DESCRIPTION_LENGTH) * 100}%` }}
+                      ></div>
+                    </div>
                   </div>
                 </div>
 
@@ -281,11 +332,12 @@ export default function CreatePollPage() {
                     name="private_key"
                     checked={formData.private_key}
                     onChange={handleFormChange}
-                    className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
+                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded transition-transform"
                   />
-                  <label htmlFor="private_key" className="ml-2 block text-sm text-gray-700">
+                  <label htmlFor="private_key" className="ml-2 text-sm text-gray-700">
                     Приватный опрос
                   </label>
+                  <span className="ml-2 text-gray-500" title="Приватный опрос доступен только по ссылке">ℹ️</span>
                 </div>
 
                 <div>
@@ -297,67 +349,92 @@ export default function CreatePollPage() {
                     name="expires_at"
                     value={formData.expires_at}
                     onChange={handleFormChange}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-primary-500 focus:border-primary-500"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                    onFocus={(e) => {
+                      const rect = e.target.getBoundingClientRect();
+                      setTooltip({
+                        text: "Опрос будет автоматически закрыт после этой даты",
+                        x: rect.left,
+                        y: rect.bottom + 5
+                      });
+                    }}
+                    onBlur={() => setTooltip({ text: '', x: 0, y: 0 })}
                   />
                 </div>
               </div>
             </div>
 
-            {/* Вопросы */}
-            <div className="mb-8">
+            <div className="mb-10">
               <div className="flex justify-between items-center mb-4">
-                <h3 className="text-lg font-semibold">Вопросы ({questions.length}/{MAX_QUESTIONS})</h3>
+                <h3 className="text-xl font-semibold text-gray-800">
+                  Вопросы ({questions.length}/{MAX_QUESTIONS})
+                </h3>
                 <button
                   type="button"
                   onClick={addQuestion}
                   disabled={questions.length >= MAX_QUESTIONS}
-                  className={` px-3 py-1 rounded-lg text-sm ${
+                  className={`flex items-center px-3 py-2 rounded-lg text-sm transition-all ${
                     questions.length >= MAX_QUESTIONS
                       ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                      : 'bg-primary-50 text-primary-600 hover:bg-primary-100'
+                      : 'bg-blue-100 text-blue-700 hover:bg-blue-200 hover:scale-105'
                   }`}
                 >
-                  + Добавить вопрос
+                  <span className="material-symbols-outlined mr-1">add</span>
+                  Добавить вопрос
                 </button>
               </div>
 
               {questions.map((question, qIndex) => (
-                <div key={qIndex} className="mb-6 p-4 border border-gray-200 rounded-lg">
+                <div
+                  key={qIndex}
+                  id={`question-${qIndex}`}
+                  className="mb-6 p-4 border border-gray-200 rounded-lg bg-gray-50"
+                  style={{ opacity: 1, transition: 'opacity 0.5s ease' }}
+                >
                   <div className="flex justify-between items-center mb-3">
-                    <h4 className="font-medium">Вопрос {qIndex + 1}</h4>
+                    <h4 className="text-lg font-medium text-gray-800">Вопрос {qIndex + 1}</h4>
                     {questions.length > 1 && (
                       <button
                         type="button"
                         onClick={() => removeQuestion(qIndex)}
-                        className="text-red-500 text-sm hover:text-red-700"
+                        className="text-red-500 hover:text-red-700 transition-colors"
                       >
-                        Удалить вопрос
+                        <span className="material-symbols-outlined">delete</span>
                       </button>
                     )}
                   </div>
 
                   <div className="mb-4">
-                    <div className="flex justify-between items-center mb-1">
-                      <label className="block text-sm font-medium text-gray-700">
-                        Текст вопроса
-                      </label>
-                      <span className="text-xs text-gray-500">
-                        {question.title.length}/{MAX_QUESTION_LENGTH}
-                      </span>
-                    </div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Текст вопроса
+                    </label>
                     <input
                       type="text"
                       value={question.title}
                       onChange={(e) => handleQuestionChange(qIndex, e.target.value)}
                       required
                       maxLength={MAX_QUESTION_LENGTH}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-primary-500 focus:border-primary-500"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                      onFocus={(e) => {
+                        const rect = e.target.getBoundingClientRect();
+                        setTooltip({
+                          text: `Максимальная длина: ${MAX_QUESTION_LENGTH} символов`,
+                          x: rect.left,
+                          y: rect.bottom + 5
+                        });
+                      }}
+                      onBlur={() => setTooltip({ text: '', x: 0, y: 0 })}
                     />
-                    <div className="mt-1 h-1 w-full bg-gray-200 rounded-full">
-                      <div
-                        className="h-1 bg-primary-500 rounded-full"
-                        style={{ width: `${(question.title.length / MAX_QUESTION_LENGTH) * 100}%` }}
-                      ></div>
+                    <div className="mt-2 flex justify-between items-center">
+                      <span className="text-xs text-gray-500">
+                        {question.title.length}/{MAX_QUESTION_LENGTH}
+                      </span>
+                      <div className="w-1/2 h-1 bg-gray-200 rounded-full overflow-hidden">
+                        <div
+                          className="h-full bg-blue-500 transition-width duration-300"
+                          style={{ width: `${(question.title.length / MAX_QUESTION_LENGTH) * 100}%` }}
+                        ></div>
+                      </div>
                     </div>
                   </div>
 
@@ -370,49 +447,61 @@ export default function CreatePollPage() {
                         type="button"
                         onClick={() => addAnswer(qIndex)}
                         disabled={question.answers.length >= MAX_ANSWERS}
-                        className={`px-3 py-1 rounded-lg text-sm ${
+                        className={`flex items-center px-3 py-2 rounded-lg text-sm transition-all ${
                           question.answers.length >= MAX_ANSWERS
-                            ? 'bg-gray-100 text-gray-600 cursor-not-allowed'
-                            : 'bg-primary-50 text-primary-600 hover:bg-primary-100'
+                            ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                            : 'bg-blue-100 text-blue-700 hover:bg-blue-200 hover:scale-105'
                         }`}
                       >
-                        + Добавить ответ
+                        <span className="material-symbols-outlined mr-1">add</span>
+                        Добавить ответ
                       </button>
                     </div>
 
                     {question.answers.map((answer, aIndex) => (
-                      <div key={aIndex} className="flex items-center mb-2">
+                      <div
+                        key={aIndex}
+                        id={`answer-${qIndex}-${aIndex}`}
+                        className="flex items-center mb-3"
+                        style={{ opacity: 1, transition: 'opacity 0.5s ease' }}
+                      >
                         <div className="flex-1">
-                          <div className="flex justify-between items-center mb-1">
-                            <span className="text-xs text-gray-500">
-                              Ответ {aIndex + 1}
-                            </span>
-                            <span className="text-xs text-gray-500">
-                              {answer.length}/{MAX_ANSWER_LENGTH}
-                            </span>
-                          </div>
                           <input
                             type="text"
                             value={answer}
                             onChange={(e) => handleAnswerChange(qIndex, aIndex, e.target.value)}
                             required
                             maxLength={MAX_ANSWER_LENGTH}
-                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-primary-500 focus:border-primary-500"
+                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                            onFocus={(e) => {
+                              const rect = e.target.getBoundingClientRect();
+                              setTooltip({
+                                text: `Максимальная длина: ${MAX_ANSWER_LENGTH} символов`,
+                                x: rect.left,
+                                y: rect.bottom + 5
+                              });
+                            }}
+                            onBlur={() => setTooltip({ text: '', x: 0, y: 0 })}
                           />
-                          <div className="mt-1 h-1 w-full bg-gray-200 rounded-full">
-                            <div
-                              className="h-1 bg-primary-500 rounded-full"
-                              style={{ width: `${(answer.length / MAX_ANSWER_LENGTH) * 100}%` }}
-                            ></div>
+                          <div className="mt-2 flex justify-between items-center">
+                            <span className="text-xs text-gray-500">
+                              {answer.length}/{MAX_ANSWER_LENGTH}
+                            </span>
+                            <div className="w-1/2 h-1 bg-gray-200 rounded-full overflow-hidden">
+                              <div
+                                className="h-full bg-blue-500 transition-width duration-300"
+                                style={{ width: `${(answer.length / MAX_ANSWER_LENGTH) * 100}%` }}
+                              ></div>
+                            </div>
                           </div>
                         </div>
-                        {question.answers.length > 1 && (
+                        {question.answers.length > 2 && (
                           <button
                             type="button"
                             onClick={() => removeAnswer(qIndex, aIndex)}
-                            className="ml-2 text-red-500 hover:text-red-700"
+                            className="ml-2 text-red-500 hover:text-red-700 transition-colors"
                           >
-                            ×
+                            <span className="material-symbols-outlined">close</span>
                           </button>
                         )}
                       </div>
@@ -426,14 +515,29 @@ export default function CreatePollPage() {
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className={`h-10 w-24 px-2 py-2 bg-primary-500 text-white rounded-lg hover:bg-primary-600 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 ${
+                className={`flex items-center justify-center h-12 w-32 px-4 py-2 bg-primary-500 text-white rounded-lg hover:bg-primary-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all ${
                   isSubmitting ? 'opacity-70 cursor-not-allowed' : ''
                 }`}
               >
-                {isSubmitting ? 'Создание...' : 'Создать'}
+                {isSubmitting ? (
+                  <span className="animate-spin material-symbols-outlined">refresh</span>
+                ) : (
+                  'Создать'
+                )}
               </button>
             </div>
           </form>
+
+          <ToastContainer />
+
+          {tooltip.text && (
+            <div
+              className="tooltip"
+              style={{ top: tooltip.y, left: tooltip.x }}
+            >
+              {tooltip.text}
+            </div>
+          )}
         </div>
       </div>
     </main>

@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
-
 const SharePollModal = ({ pollLink, isOpen, onClose }) => {
   const [isCopied, setIsCopied] = useState(false);
 
@@ -21,19 +20,25 @@ const SharePollModal = ({ pollLink, isOpen, onClose }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-        <h2 className="text-lg font-bold mb-4">Поделиться опросом</h2>
-        <div className="flex items-center space-x-2">
+    <div
+      className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+      onClick={onClose}
+    >
+      <div
+        className="bg-white rounded-xl p-6 max-w-md w-full shadow-xl"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <h2 className="text-xl font-bold text-gray-900 mb-4">Поделиться опросом</h2>
+        <div className="flex items-center space-x-3 mb-4">
           <input
             type="text"
             value={pollLink}
             readOnly
-            className="w-full p-2 border rounded bg-gray-100"
+            className="flex-1 p-2 border rounded-lg bg-gray-100 text-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           />
           <button
             onClick={handleCopy}
-            className="p-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+            className="p-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors duration-200"
             title={isCopied ? 'Скопировано!' : 'Копировать'}
           >
             {isCopied ? (
@@ -58,12 +63,11 @@ const SharePollModal = ({ pollLink, isOpen, onClose }) => {
         </div>
         <button
           onClick={onClose}
-          className="mt-4 p-3 w-30 bg-primary-500 rounded-lg hover:bg-primary-600"
+          className="w-full bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors duration-200"
         >
           Закрыть
         </button>
       </div>
-      <ToastContainer position="top-right" autoClose={2000} />
     </div>
   );
 };

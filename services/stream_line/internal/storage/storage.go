@@ -11,6 +11,7 @@ const (
 	GetOtherFormsQuery = `SELECT f.id, f.title, f.description, f.creator_id, f.link, COALESCE(l.count, 0) AS count, EXISTS(SELECT * FROM likes_forms WHERE user_id = $1 AND form_id = f.id) AS is_liked, (SELECT COUNT(id) FROM comments c WHERE c.form_id = f.id) AS count_votes, f.created_at, f.expires_at FROM forms f LEFT JOIN likes l ON l.form_id = f.id WHERE f.expires_at > NOW() AND f.private_key = false`
 	GetQuestionQuery   = `SELECT id, title, form_id, number_order FROM questions WHERE form_id = ANY($1)`
 	GetAnswerQuery     = `SELECT a.id, a.title, a.question_id, a.number_order, a.count, EXISTS(SELECT * FROM answers_chosen WHERE user_id = $2 AND answer_id = a.id) AS is_selected FROM answers a WHERE a.question_id = ANY($1)`
+	GetFormsQuery      = `SELECT f.id, f.title, f.description, f.creator_id, f.link, COALESCE(l.count, 0) AS count, EXISTS(SELECT * FROM likes_forms WHERE user_id = $1 AND form_id = f.id) AS is_liked, (SELECT COUNT(id) FROM comments c WHERE c.form_id = f.id) AS count_votes, f.created_at, f.expires_at FROM forms f LEFT JOIN likes l ON l.form_id = f.id WHERE f.expires_at > NOW() AND f.private_key = false AND f.link = $2`
 )
 
 type Postgres struct {
@@ -78,4 +79,23 @@ func (p *Postgres) GetAnswersByQuestionsID(questionIDs []int, userID string) ([]
 	}
 
 	return answers, nil
+}
+
+func (p *Postgres) GetFormsByOtherUserIDWithCountLikesAndCommentsByLink(userID, pollLink string) ([]models.FormFromDB, error) {
+	rows, err := p.db.Query(GetFormsQuery, userID, pollLink)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var forms []models.FormFromDB
+	for rows.Next() {
+		var form models.FormFromDB
+		if err := rows.Scan(&form.ID, &form.Title, &form.Description, &form.CreatorID, &form.Link, &form.Like.Count, &form.Like.IsLiked, &form.CountComments, &form.CreatedAt, &form.ExpiresAt); err != nil {
+			return nil, err
+		}
+		forms = append(forms, form)
+	}
+
+	return forms, nil
 }
