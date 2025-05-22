@@ -46,9 +46,8 @@ func FormCreateRequest(form models.FormRequest, creatorId int) (int, string, err
 	query := `INSERT INTO forms (creator_id, theme_id, title, description, link, private_key, expires_at, created_at) 
 			  VALUES($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id`
 	var formId int
-	var theme_id int = 1
 	createdAt := time.Now().Local()
-	err := Db.QueryRow(query, creatorId, theme_id, form.Title, form.Description, link, form.PrivateKey, form.ExpiresAt, createdAt).Scan(&formId)
+	err := Db.QueryRow(query, creatorId, form.ThemeId, form.Title, form.Description, link, form.PrivateKey, form.ExpiresAt, createdAt).Scan(&formId)
 	if err != nil {
 		log.Printf("Ошибка при запросе создания формы: %v", err)
 		return formId, link, err
@@ -293,7 +292,7 @@ func QuestionsWithAnswersGet(formId, creatorId int) ([]models.QuestionOutput, er
 func GetFormByLinkRequest(link string) (models.Form, error) {
 	var form models.Form
 	query := `
-		SELECT id, theme_id, creator_id, title, description, link, private_key, expires_at
+		SELECT id, theme_id, creator_id, title, description, link, private_key, expires_at, created_at
 		FROM forms
 		WHERE link = $1
 		`
@@ -306,6 +305,7 @@ func GetFormByLinkRequest(link string) (models.Form, error) {
 		&form.Link,
 		&form.PrivateKey,
 		&form.ExpiresAt,
+		&form.CreatedAt,
 	)
 	if err != nil {
 		return form, err
