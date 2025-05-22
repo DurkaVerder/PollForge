@@ -3,12 +3,8 @@ import { useNavigate, useParams } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
 
 export default function EditPollPage() {
-  const MAX_QUESTIONS = 10;
-  const MAX_ANSWERS = 12;
   const MAX_TITLE_LENGTH = 100;
   const MAX_DESCRIPTION_LENGTH = 300;
-  const MAX_QUESTION_LENGTH = 200;
-  const MAX_ANSWER_LENGTH = 100;
 
   const { id } = useParams();
   const [formData, setFormData] = useState({
@@ -38,7 +34,6 @@ export default function EditPollPage() {
 
         const data = await response.json();
 
-        // Format the expires_at date for the datetime-local input
         const expiresAt = data.expires_at 
           ? new Date(data.expires_at).toISOString().slice(0, 16)
           : '';
@@ -50,7 +45,6 @@ export default function EditPollPage() {
           expires_at: expiresAt
         });
 
-        // Process questions and answers from the single response
         const processedQuestions = data.questions.map(question => ({
           id: question.id,
           title: question.title,
@@ -80,113 +74,6 @@ export default function EditPollPage() {
     }));
   };
 
-  const handleQuestionChange = (index, value) => {
-    if (value.length <= MAX_QUESTION_LENGTH) {
-      const newQuestions = [...questions];
-      newQuestions[index].title = value;
-      setQuestions(newQuestions);
-    }
-  };
-
-  const handleAnswerChange = (qIndex, aIndex, value) => {
-    if (value.length <= MAX_ANSWER_LENGTH) {
-      const newQuestions = [...questions];
-      newQuestions[qIndex].answers[aIndex].title = value;
-      setQuestions(newQuestions);
-    }
-  };
-
-  const addQuestion = () => {
-    if (questions.length < MAX_QUESTIONS) {
-      setQuestions([...questions, { title: '', answers: [{ title: '' }] }]);
-    } else {
-      setError(`Максимальное количество вопросов: ${MAX_QUESTIONS}`);
-    }
-  };
-
-  const removeQuestion = async (index) => {
-    if (questions[index].id) {
-      // Existing question - delete from server
-      try {
-        const response = await fetch(
-          `http://localhost:80/api/forms/${id}/questions/${questions[index].id}`,
-          {
-            method: 'DELETE',
-            headers: {
-              'Authorization': 'Bearer ' + localStorage.getItem('authToken'),
-            },
-          }
-        );
-
-        if (!response.ok) {
-          throw new Error('Failed to delete question');
-        }
-
-        const newQuestions = [...questions];
-        newQuestions.splice(index, 1);
-        setQuestions(newQuestions);
-      } catch (err) {
-        setError(err.message);
-        console.error('Delete question error:', err);
-      }
-    } else {
-      // New question - just remove from state
-      if (questions.length > 1) {
-        const newQuestions = [...questions];
-        newQuestions.splice(index, 1);
-        setQuestions(newQuestions);
-      }
-    }
-  };
-
-  const addAnswer = (qIndex) => {
-    const newQuestions = [...questions];
-    if (newQuestions[qIndex].answers.length < MAX_ANSWERS) {
-      newQuestions[qIndex].answers.push({ title: '' });
-      setQuestions(newQuestions);
-    } else {
-      setError(`Максимальное количество ответов: ${MAX_ANSWERS}`);
-    }
-  };
-
-  const removeAnswer = async (qIndex, aIndex) => {
-    const question = questions[qIndex];
-    const answer = question.answers[aIndex];
-
-    if (answer.id) {
-      // Existing answer - delete from server
-      try {
-        const response = await fetch(
-          `http://localhost:80/api/forms/${id}/questions/${question.id}/answers/${answer.id}`,
-          {
-            method: 'DELETE',
-            headers: {
-              'Authorization': 'Bearer ' + localStorage.getItem('authToken'),
-            },
-          }
-        );
-
-        if (!response.ok) {
-          throw new Error('Failed to delete answer');
-        }
-
-        const newQuestions = [...questions];
-        newQuestions[qIndex].answers.splice(aIndex, 1);
-        setQuestions(newQuestions);
-      } catch (err) {
-        setError(err.message);
-        console.error('Delete answer error:', err);
-      }
-    } else {
-      // New answer - just remove from state
-      if (question.answers.length > 1) {
-        const newQuestions = [...questions];
-        newQuestions[qIndex].answers.splice(aIndex, 1);
-        setQuestions(newQuestions);
-      }
-    }
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
@@ -205,7 +92,6 @@ export default function EditPollPage() {
     }
 
     try {
-      // Update form data
       const date = formData.expires_at ? new Date(formData.expires_at) : null;
       const utcISOString = date ? date.toISOString() : null;
 
@@ -226,115 +112,6 @@ export default function EditPollPage() {
       if (!formResponse.ok) {
         const errorData = await formResponse.json();
         throw new Error(errorData.message || 'Ошибка при обновлении формы');
-      }
-
-      // Process questions and answers
-      for (let qIndex = 0; qIndex < questions.length; qIndex++) {
-        const question = questions[qIndex];
-
-        if (question.title.length > MAX_QUESTION_LENGTH) {
-          throw new Error(`Вопрос ${qIndex + 1} превышает максимальную длину (${MAX_QUESTION_LENGTH} символов)`);
-        }
-
-        if (question.id) {
-          // Update existing question
-          const questionResponse = await fetch(
-            `http://localhost:80/api/forms/${id}/questions/${question.id}`,
-            {
-              method: 'PUT',
-              headers: {
-                'Authorization': 'Bearer ' + localStorage.getItem('authToken'),
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({
-                title: question.title,
-                number_order: qIndex + 1
-              })
-            }
-          );
-
-          if (!questionResponse.ok) {
-            const errorData = await questionResponse.json();
-            throw new Error(errorData.message || 'Ошибка при обновлении вопроса');
-          }
-        } else {
-          // Create new question
-          const questionResponse = await fetch(
-            `http://localhost:80/api/forms/${id}/questions`,
-            {
-              method: 'POST',
-              headers: {
-                'Authorization': 'Bearer ' + localStorage.getItem('authToken'),
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({
-                title: question.title,
-                number_order: qIndex + 1
-              })
-            }
-          );
-
-          if (!questionResponse.ok) {
-            const errorData = await questionResponse.json();
-            throw new Error(errorData.message || 'Ошибка при создании вопроса');
-          }
-
-          const questionData = await questionResponse.json();
-          question.id = questionData.question_id;
-        }
-
-        // Process answers for this question
-        for (let aIndex = 0; aIndex < question.answers.length; aIndex++) {
-          const answer = question.answers[aIndex];
-
-          if (answer.title.length > MAX_ANSWER_LENGTH) {
-            throw new Error(`Ответ ${aIndex + 1} в вопросе ${qIndex + 1} превышает максимальную длину (${MAX_ANSWER_LENGTH} символов)`);
-          }
-
-          if (answer.id) {
-            // Update existing answer
-            const answerResponse = await fetch(
-              `http://localhost:80/api/forms/${id}/questions/${question.id}/answers/${answer.id}`,
-              {
-                method: 'PUT',
-                headers: {
-                  'Authorization': 'Bearer ' + localStorage.getItem('authToken'),
-                  'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                  title: answer.title,
-                  number_order: aIndex + 1
-                })
-              }
-            );
-
-            if (!answerResponse.ok) {
-              const errorData = await answerResponse.json();
-              throw new Error(errorData.message || 'Ошибка при обновлении ответа');
-            }
-          } else {
-            // Create new answer
-            const answerResponse = await fetch(
-              `http://localhost:80/api/forms/${id}/questions/${question.id}/answers`,
-              {
-                method: 'POST',
-                headers: {
-                  'Authorization': 'Bearer ' + localStorage.getItem('authToken'),
-                  'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                  title: answer.title,
-                  number_order: aIndex + 1
-                })
-              }
-            );
-
-            if (!answerResponse.ok) {
-              const errorData = await answerResponse.json();
-              throw new Error(errorData.message || 'Ошибка при создании ответа');
-            }
-          }
-        }
       }
 
       navigate('/my-polls');
@@ -373,12 +150,8 @@ export default function EditPollPage() {
           <div className="mb-4 p-3 bg-blue-50 text-blue-700 rounded-md text-sm">
             <p>Ограничения:</p>
             <ul className="list-disc pl-5 mt-1 space-y-1">
-              <li>Максимум {MAX_QUESTIONS} вопросов</li>
-              <li>Максимум {MAX_ANSWERS} ответов на каждый вопрос</li>
               <li>Название опроса: до {MAX_TITLE_LENGTH} символов</li>
               <li>Описание: до {MAX_DESCRIPTION_LENGTH} символов</li>
-              <li>Вопрос: до {MAX_QUESTION_LENGTH} символов</li>
-              <li>Ответ: до {MAX_ANSWER_LENGTH} символов</li>
             </ul>
           </div>
 
@@ -389,7 +162,6 @@ export default function EditPollPage() {
           )}
 
           <form onSubmit={handleSubmit}>
-            {/* Основная информация об опросе */}
             <div className="mb-8">
               <h3 className="text-lg font-semibold mb-4">Основная информация</h3>
               <div className="space-y-4">
@@ -473,114 +245,20 @@ export default function EditPollPage() {
               </div>
             </div>
 
-            {/* Вопросы */}
             <div className="mb-8">
-              <div className="flex justify-between items-center mb-4">
-                <h3 className="text-lg font-semibold">Вопросы ({questions.length}/{MAX_QUESTIONS})</h3>
-                <button
-                  type="button"
-                  onClick={addQuestion}
-                  disabled={questions.length >= MAX_QUESTIONS}
-                  className={` px-3 py-1 rounded-lg text-sm ${
-                    questions.length >= MAX_QUESTIONS
-                      ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                      : 'bg-primary-50 text-primary-600 hover:bg-primary-100'
-                  }`}
-                >
-                  + Добавить вопрос
-                </button>
-              </div>
-
+              <h3 className="text-lg font-semibold mb-4">Вопросы</h3>
               {questions.map((question, qIndex) => (
-                <div key={question.id || `new-${qIndex}`} className="mb-6 p-4 border border-gray-200 rounded-lg">
-                  <div className="flex justify-between items-center mb-3">
-                    <h4 className="font-medium">Вопрос {qIndex + 1}</h4>
-                    <button
-                      type="button"
-                      onClick={() => removeQuestion(qIndex)}
-                      className="text-red-500 text-sm hover:text-red-700"
-                    >
-                      Удалить вопрос
-                    </button>
-                  </div>
+                <div key={question.id} className="mb-6 p-4 border border-gray-200 rounded-lg">
+                  <h4 className="font-medium mb-3">Вопрос {qIndex + 1}</h4>
+                  <p className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-100">{question.title}</p>
 
-                  <div className="mb-4">
-                    <div className="flex justify-between items-center mb-1">
-                      <label className="block text-sm font-medium text-gray-700">
-                        Текст вопроса
-                      </label>
-                      <span className="text-xs text-gray-500">
-                        {question.title.length}/{MAX_QUESTION_LENGTH}
-                      </span>
-                    </div>
-                    <input
-                      type="text"
-                      value={question.title}
-                      onChange={(e) => handleQuestionChange(qIndex, e.target.value)}
-                      required
-                      maxLength={MAX_QUESTION_LENGTH}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-primary-500 focus:border-primary-500"
-                    />
-                    <div className="mt-1 h-1 w-full bg-gray-200 rounded-full">
-                      <div
-                        className="h-1 bg-primary-500 rounded-full"
-                        style={{ width: `${(question.title.length / MAX_QUESTION_LENGTH) * 100}%` }}
-                      ></div>
-                    </div>
-                  </div>
-
-                  <div>
-                    <div className="flex justify-between items-center mb-3">
-                      <label className="block text-sm font-medium text-gray-700">
-                        Варианты ответов ({question.answers.length}/{MAX_ANSWERS})
-                      </label>
-                      <button
-                        type="button"
-                        onClick={() => addAnswer(qIndex)}
-                        disabled={question.answers.length >= MAX_ANSWERS}
-                        className={`px-3 py-1 rounded-lg text-sm ${
-                          question.answers.length >= MAX_ANSWERS
-                            ? 'bg-gray-100 text-gray-600 cursor-not-allowed'
-                            : 'bg-primary-50 text-primary-600 hover:bg-primary-100'
-                        }`}
-                      >
-                        + Добавить ответ
-                      </button>
-                    </div>
-
+                  <div className="mt-4">
+                    <label className="block text-sm font-medium text-gray-700 mb-3">
+                      Варианты ответов
+                    </label>
                     {question.answers.map((answer, aIndex) => (
-                      <div key={answer.id || `new-${aIndex}`} className="flex items-center mb-2">
-                        <div className="flex-1">
-                          <div className="flex justify-between items-center mb-1">
-                            <span className="text-xs text-gray-500">
-                              Ответ {aIndex + 1}
-                            </span>
-                            <span className="text-xs text-gray-500">
-                              {answer.title.length}/{MAX_ANSWER_LENGTH}
-                            </span>
-                          </div>
-                          <input
-                            type="text"
-                            value={answer.title}
-                            onChange={(e) => handleAnswerChange(qIndex, aIndex, e.target.value)}
-                            required
-                            maxLength={MAX_ANSWER_LENGTH}
-                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-primary-500 focus:border-primary-500"
-                          />
-                          <div className="mt-1 h-1 w-full bg-gray-200 rounded-full">
-                            <div
-                              className="h-1 bg-primary-500 rounded-full"
-                              style={{ width: `${(answer.title.length / MAX_ANSWER_LENGTH) * 100}%` }}
-                            ></div>
-                          </div>
-                        </div>
-                        <button
-                          type="button"
-                          onClick={() => removeAnswer(qIndex, aIndex)}
-                          className="ml-2 text-red-500 hover:text-red-700"
-                        >
-                          ×
-                        </button>
+                      <div key={answer.id} className="mb-2">
+                        <p className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-100">{answer.title}</p>
                       </div>
                     ))}
                   </div>

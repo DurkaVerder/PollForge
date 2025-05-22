@@ -9,6 +9,7 @@ import (
 
 type Service interface {
 	GetStreamLines(userID string) (*models.StreamLineResponse, error)
+	GetPollByLink(userID, pollLink string) (*models.StreamLineResponse, error)
 }
 
 type StreamLineHandler struct {
@@ -41,4 +42,27 @@ func (h *StreamLineHandler) GetStreamLine(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusOK, polls)
+}
+
+func (h *StreamLineHandler) GetPollByLink(ctx *gin.Context) {
+	id, exist := ctx.Get("userID")
+	if !exist {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "user_id not found in context"})
+		return
+	}
+
+	userID, ok := id.(string)
+	if !ok {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "user_id is not a string"})
+		return
+	}
+
+	pollLink := ctx.Param("link")
+	poll, err := h.s.GetPollByLink(userID, pollLink)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, poll)
 }

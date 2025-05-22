@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
 import SharePollModal from '../components/SharePollModal';
 import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 export default function MyPollsPage() {
   const [polls, setPolls] = useState([]);
@@ -12,10 +13,16 @@ export default function MyPollsPage() {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [currentPollLink, setCurrentPollLink] = useState('');
   const [pollToDelete, setPollToDelete] = useState(null);
+  const [sortOption, setSortOption] = useState('date_desc');
+  const [sortedPolls, setSortedPolls] = useState([]);
 
   useEffect(() => {
     fetchPolls();
   }, []);
+
+  useEffect(() => {
+    sortPolls();
+  }, [polls, sortOption]);
 
   const fetchPolls = async () => {
     try {
@@ -98,25 +105,45 @@ export default function MyPollsPage() {
     }
   };
 
+  const sortPolls = () => {
+    let sorted = [...polls];
+    switch (sortOption) {
+      case 'date_desc':
+        sorted.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+        break;
+      case 'date_asc':
+        sorted.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+        break;
+      case 'status_active':
+        sorted = sorted.filter(poll => getPollStatus(poll.expires_at) === 'active');
+        break;
+      case 'status_expired':
+        sorted = sorted.filter(poll => getPollStatus(poll.expires_at) === 'expired');
+        break;
+      default:
+        break;
+    }
+    setSortedPolls(sorted);
+  };
+
   if (!polls) {
     return (
       <div className="flex flex-col lg:flex-row gap-6">
         <Sidebar />
         <div className="bg-white rounded-lg shadow-md p-8 text-center w-full">
-            <div className="mx-auto w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mb-4">
-              <span className="material-symbols-outlined text-gray-400 text-4xl">poll</span>
-            </div>
-            <h3 className="text-lg font-medium text-gray-900 mb-2">У вас пока нет опросов</h3>
-            <p className="text-gray-500 mb-6">Создайте свой первый опрос и начните собирать мнения</p>
-            <Link 
-              to="/create-poll" 
-              className="inline-flex items-center px-4 py-2 bg-primary-500 text-white rounded-lg hover:bg-primary-600"
-            >
-              Создать опрос
-            </Link>
+          <div className="mx-auto w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+            <span className="material-symbols-outlined text-gray-400 text-4xl">poll</span>
           </div>
-          
+          <h3 className="text-lg font-medium text-gray-900 mb-2">У вас пока нет опросов</h3>
+          <p className="text-gray-500 mb-6">Создайте свой первый опрос и начните собирать мнения</p>
+          <Link 
+            to="/create-poll" 
+            className="inline-flex items-center px-4 py-2 bg-primary-500 text-white rounded-lg hover:bg-primary-600"
+          >
+            Создать опрос
+          </Link>
         </div>
+      </div>
     );
   }
 
@@ -127,12 +154,24 @@ export default function MyPollsPage() {
       <div className="flex-1">
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-2xl font-bold">Мои опросы</h2>
-          <Link 
-            to="/create-poll" 
-            className="bg-primary-500 hover:bg-primary-600 text-white px-4 py-2 rounded-lg transition-colors"
-          >
-            Создать новый опрос
-          </Link>
+          <div className="flex items-center space-x-4">
+            <select
+              value={sortOption}
+              onChange={(e) => setSortOption(e.target.value)}
+              className="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="date_desc">Новые</option>
+              <option value="date_asc">Старые</option>
+              <option value="status_active">Активные</option>
+              <option value="status_expired">Завершенные</option>
+            </select>
+            <Link 
+              to="/create-poll" 
+              className="bg-primary-500 hover:bg-primary-600 text-white px-4 py-2 rounded-lg transition-colors"
+            >
+              Создать новый опрос
+            </Link>
+          </div>
         </div>
 
         {loading ? (
@@ -152,7 +191,7 @@ export default function MyPollsPage() {
               </div>
             </div>
           </div>
-        ) : polls.length === 0 ? (
+        ) : sortedPolls.length === 0 ? (
           <div className="bg-white rounded-lg shadow-md p-8 text-center">
             <div className="mx-auto w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mb-4">
               <span className="material-symbols-outlined text-gray-400 text-4xl">poll</span>
@@ -168,10 +207,14 @@ export default function MyPollsPage() {
           </div>
         ) : (
           <div className="space-y-6">
-            {polls.map(poll => {
+            {sortedPolls.map((poll, index) => {
               const status = getPollStatus(poll.expires_at);
               return (
-                <div key={poll.id} className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow">
+                <div
+                  key={poll.id}
+                  className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow fade-in"
+                  style={{ animationDelay: `${index * 0.1}s` }}
+                >
                   <div className="flex justify-between items-start mb-4">
                     <div>
                       <h3 className="text-xl font-semibold">{poll.title}</h3>
@@ -216,12 +259,11 @@ export default function MyPollsPage() {
                     <div className="flex space-x-3">
                       <button 
                         onClick={() => openShareModal(poll.link)}
-                        className="text-gray-500 hover:text-gray-700"
+                        className="text-gray-500 hover:text-gray-700 transition-colors"
                         title="Поделиться"
                       >
                         <span className="material-symbols-outlined">share</span>
                       </button>
-                      
                     </div>
                   </div>
                 </div>
@@ -240,7 +282,7 @@ export default function MyPollsPage() {
 
       {/* Модальное окно подтверждения удаления */}
       {isDeleteModalOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 modal-fade-in">
           <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
             <div className="flex justify-between items-start mb-4">
               <h3 className="text-xl font-semibold">Удаление опроса</h3>

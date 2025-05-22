@@ -43,6 +43,7 @@ export default function LoginPage() {
 
       // Сохраняем токен (например, в localStorage)
       localStorage.setItem('authToken', data.token);
+      localStorage.setItem('userId', data.id);
       // Перенаправляем пользователя
       navigate('/');
     } catch (err) {
