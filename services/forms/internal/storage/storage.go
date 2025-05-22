@@ -292,7 +292,7 @@ func QuestionsWithAnswersGet(formId, creatorId int) ([]models.QuestionOutput, er
 func GetFormByLinkRequest(link string) (models.Form, error) {
 	var form models.Form
 	query := `
-		SELECT id, theme_id, creator_id, title, description, link, private_key, expires_at
+		SELECT id, theme_id, creator_id, title, description, link, private_key, expires_at, created_at
 		FROM forms
 		WHERE link = $1
 		`
@@ -305,6 +305,7 @@ func GetFormByLinkRequest(link string) (models.Form, error) {
 		&form.Link,
 		&form.PrivateKey,
 		&form.ExpiresAt,
+		&form.CreatedAt,
 	)
 	if err != nil {
 		return form, err
