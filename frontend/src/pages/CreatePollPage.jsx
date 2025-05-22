@@ -9,7 +9,7 @@ export default function CreatePollPage() {
   const MAX_QUESTIONS = 10;
   const MAX_ANSWERS = 12;
   const MAX_TITLE_LENGTH = 100;
-  const MAX_DESCRIPTION_LENGTH = 300;
+  const MAX_DESCRIPTION_LENGTH = 250;
   const MAX_QUESTION_LENGTH = 200;
   const MAX_ANSWER_LENGTH = 100;
 
@@ -151,6 +151,7 @@ export default function CreatePollPage() {
         },
         body: JSON.stringify({
           title: formData.title,
+          theme_id: 1,
           description: formData.description,
           private_key: formData.private_key,
           expires_at: utcISOString || null
@@ -242,7 +243,7 @@ export default function CreatePollPage() {
   };
 
   return (
-    <main className="flex flex-col lg:flex-row gap-6 min-h-screen bg-gray-100 p-6">
+    <main className="flex flex-col lg:flex-row gap-6 min-h-screen">
       <Sidebar />
       <div className="flex-1">
         <div className="bg-white rounded-xl shadow-lg p-8 max-w-4xl mx-auto">

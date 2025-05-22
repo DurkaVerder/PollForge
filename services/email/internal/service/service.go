@@ -10,7 +10,7 @@ import (
 )
 
 const (
-	countWorker = 5
+	countWorker = 5	
 
 	userRegisteredEvent = "user_registered"
 

@@ -125,14 +125,14 @@ func UpdateForm(c *gin.Context) {
 	formId, err := extractFormID(c)
 	if err != nil {
 		log.Printf("Ошибка при извлечении id формы %v", err)
-		c.JSON(http.StatusBadRequest, gin.H{"Ошибка": "Неверный id формы"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Неверный id формы"})
 		return
 	}
 
 	creatorId, err := extractUserID(c)
 	if err != nil {
 		log.Printf("Не удалось извлечь id пользователя: %v", err)
-		c.JSON(http.StatusBadRequest, gin.H{"Ошибка": "id пользователя не найден"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "id пользователя не найден"})
 		return
 	}
 
@@ -141,21 +141,21 @@ func UpdateForm(c *gin.Context) {
 	err = c.ShouldBindJSON(&updateForm)
 
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"Ошибка": "Неправильный формат данных"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Неправильный формат данных"})
 		return
 	}
 
 	err = service.FormCheck(creatorId, formId)
 	if err != nil {
 		log.Printf("Ошибка при проверке на существование формы: %v", err)
-		c.JSON(http.StatusNotFound, gin.H{"Ошибка": "Форма не найдена"})
+		c.JSON(http.StatusNotFound, gin.H{"error": "Форма не найдена"})
 		return
 	}
 
 	err = service.FormUpdate(updateForm, creatorId, formId)
 	if err != nil {
 		log.Printf("Ошибка при обновлении данных формы: %v", err)
-		c.JSON(http.StatusInternalServerError, gin.H{"Ошибка": "Ошибка обновления данных"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Ошибка обновления данных"})
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"Сообщение": "Форма успешно обновлена"})
@@ -484,4 +484,15 @@ func GetFormByLink(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, form)
+}
+
+
+func GetThemes(c *gin.Context) {
+
+	themes, err := service.GetThemes()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "ошибка получения тем"})
+		return
+	}
+	c.JSON(http.StatusOK, themes)
 }

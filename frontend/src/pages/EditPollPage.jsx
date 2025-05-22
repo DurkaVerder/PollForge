@@ -4,7 +4,7 @@ import Sidebar from '../components/Sidebar';
 
 export default function EditPollPage() {
   const MAX_TITLE_LENGTH = 100;
-  const MAX_DESCRIPTION_LENGTH = 300;
+  const MAX_DESCRIPTION_LENGTH = 250;
 
   const { id } = useParams();
   const [formData, setFormData] = useState({
@@ -105,7 +105,8 @@ export default function EditPollPage() {
           title: formData.title,
           description: formData.description,
           private_key: formData.private_key,
-          expires_at: utcISOString
+          expires_at: utcISOString,
+          theme_id: 1,
         })
       });
 

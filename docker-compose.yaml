@@ -209,7 +209,7 @@ services:
       dockerfile: Dockerfile
     container_name: email
     environment:
-      - FRONTEND_URL=https://pollforge.ru
+      - FRONTEND_URL=http://localhost:3000
       - KAFKA_BROKER=kafka:9092
       - DB_URL=postgres://postgres:durka@postgres:5432/pollforge-database?sslmode=disable
       - SMTP_EMAIL=hotelbooking02@mail.ru

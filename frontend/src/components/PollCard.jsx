@@ -18,7 +18,6 @@ export default function PollCard({ poll }) {
   const [usersInfo, setUsersInfo] = useState({});
   const [isLoadingComments, setIsLoadingComments] = useState(false);
 
-
   useEffect(() => {
     const fetchCreator = async () => {
       try {
@@ -46,7 +45,6 @@ export default function PollCard({ poll }) {
   const fetchComments = async () => {
     setIsLoadingComments(true);
     try {
-      // Загрузка комментариев
       const response = await fetch(`${API_BASE_URL}/comments/forms/${localPoll.id}/comments`, {
         headers: { Authorization: 'Bearer ' + localStorage.getItem('authToken') },
       });
@@ -55,7 +53,6 @@ export default function PollCard({ poll }) {
       const commentsData = data.comments || [];
       setComments(commentsData);
 
-      // Загрузка информации о пользователях
       const usersData = {};
       for (const comment of commentsData) {
         if (!usersData[comment.user_id]) {
@@ -98,6 +95,11 @@ export default function PollCard({ poll }) {
       if (!response.ok) throw new Error('Failed to add comment');
       await fetchComments();
       setNewComment('');
+      // Обновляем счетчик комментариев
+      setLocalPoll(prev => ({
+        ...prev,
+        count_comments: prev.count_comments + 1
+      }));
     } catch (error) {
       console.error('Error adding comment:', error);
     }
@@ -136,6 +138,11 @@ export default function PollCard({ poll }) {
       });
       if (!response.ok) throw new Error('Failed to delete comment');
       await fetchComments();
+      // Обновляем счетчик комментариев
+      setLocalPoll(prev => ({
+        ...prev,
+        count_comments: prev.count_comments - 1
+      }));
     } catch (error) {
       console.error('Error deleting comment:', error);
     }
@@ -145,10 +152,36 @@ export default function PollCard({ poll }) {
     if (localPoll.creator_id) {
       if (localPoll.creator_id === parseInt(localStorage.getItem('userId'))) {
         navigate('/profile');
+      } else {
+        navigate(`/profile/${localPoll.creator_id}`);
       }
-      else {
-      navigate(`/profile/${localPoll.creator_id}`);
     }
+  };
+
+  const handleLike = async () => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/like/forms/${localPoll.id}`, {
+        method: 'POST',
+        headers: {
+          Authorization: 'Bearer ' + localStorage.getItem('authToken'),
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          is_liked: !localPoll.likes.is_liked
+        }),
+      });
+
+      if (!response.ok) throw new Error('Ошибка при отправке лайка');
+
+      setLocalPoll(prev => ({
+        ...prev,
+        likes: {
+          count: prev.likes.is_liked ? prev.likes.count - 1 : prev.likes.count + 1,
+          is_liked: !prev.likes.is_liked
+        }
+      }));
+    } catch (error) {
+      console.error('Ошибка при лайке:', error);
     }
   };
 
@@ -236,10 +269,7 @@ export default function PollCard({ poll }) {
     <div className="bg-white rounded-xl shadow-lg p-6 transform hover:shadow-xl transition-all duration-300 w-full mx-auto">
       <div className="flex items-center mb-4 space-x-2">
         <span className="bg-blue-100 text-blue-800 text-xs font-medium px-3 py-1 rounded-full">
-          Программирование
-        </span>
-        <span className="bg-green-100 text-green-800 text-xs font-medium px-3 py-1 rounded-full">
-          Технологии
+          {localPoll.theme}
         </span>
       </div>
 
@@ -329,8 +359,10 @@ export default function PollCard({ poll }) {
           {localPoll.count_comments} комментариев
         </button>
         <div className="flex items-center space-x-4">
-          
-          <button className="flex items-center text-primary-600 hover:text-primary-800 transition-colors duration-200">
+          <button 
+            className="flex items-center text-primary-600 hover:text-primary-800 transition-colors duration-200"
+            onClick={handleLike}
+          >
             <span className="material-symbols-outlined mr-2">
               {localPoll.likes.is_liked ? 'favorite' : 'favorite_border'}
             </span>
