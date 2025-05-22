@@ -65,7 +65,6 @@ func (s *Service) GetStreamLines(userID string) (*models.StreamLineResponse, err
 		return nil, err
 	}
 
-
 	mergedData := MergedData{
 		Forms:     forms,
 		Questions: questions,
@@ -92,6 +91,7 @@ func (s *Service) CreatePolls(data MergedData) []models.Polls {
 		poll.ID = formWithQuestions.form.ID
 		poll.Title = formWithQuestions.form.Title
 		poll.Description = formWithQuestions.form.Description
+		poll.CreatorID = formWithQuestions.form.CreatorID
 		poll.Link = formWithQuestions.form.Link
 		poll.Likes.Count = formWithQuestions.form.Like.Count
 		poll.Likes.IsLiked = formWithQuestions.form.Like.IsLiked

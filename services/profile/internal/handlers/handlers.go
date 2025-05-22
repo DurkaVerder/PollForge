@@ -257,5 +257,10 @@ func GetDifUserProfile(c *gin.Context) {
 		c.JSON(http.StatusNotFound, gin.H{"Ошибка": "Ошибка при получении профиля"})
 		return
 	}
+
+	if profile.AvatarURL != "" {
+		profile.AvatarURL = fmt.Sprintf("%s%s", NginxURL, profile.AvatarURL)
+	}
+
 	c.JSON(http.StatusOK, profile)
 }

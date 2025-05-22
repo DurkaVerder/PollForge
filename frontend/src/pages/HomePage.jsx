@@ -31,8 +31,7 @@ export default function HomePage() {
       } catch (err) {
         console.error('Error fetching polls:', err);
         setError(err.message);
-        // Для демонстрации используем fallback данные при ошибке
-        setPolls(getFallbackPolls());
+        
       } finally {
         setLoading(false);
       }
@@ -41,41 +40,8 @@ export default function HomePage() {
     fetchPolls();
   }, []);
 
-  // Функция с fallback данными на случай ошибки запроса
-  const getFallbackPolls = () => {
-    return [
-      {
-        "id": 1,
-        "title": "Любимый язык программирования",
-        "description": "Выберите ваш любимый и ненавистный язык программирования",
-        "link": "524d0bad-3ee6-4608-b082-cb56f18cc72c",
-        "likes": {
-          "count": 0,
-          "is_liked": false
-        },
-        "count_comments": 0,
-        "questions": [
-          {
-            "id": 1,
-            "title": "Какой язык программирования вы предпочитаете",
-            "total_count_votes": 0,
-            "answers": [
-              {
-                "id": 1,
-                "title": "Python",
-                "percent": 0,
-                "count_votes": 0,
-                "is_selected": false
-              },
-              // ... остальные данные из вашего JSON
-            ]
-          }
-        ],
-        "created_at": "2025-05-18 12:50:46",
-        "expires_at": "2025-06-30 23:59:59"
-      }
-    ];
-  };
+
+ 
 
   return (
     <main className="">
@@ -123,12 +89,13 @@ export default function HomePage() {
                 </div>
                 <div className="ml-3">
                   <p className="text-sm text-red-700">
-                    Ошибка загрузки данных: {error}. Показаны демонстрационные данные.
+                    Опросов нет. Попробуйте позже или создайте свой первый опрос.
                   </p>
                 </div>
               </div>
             </div>
-          ) : null}
+          ) : null
+          }
 
           <PollFeed polls={polls} />
         </div>

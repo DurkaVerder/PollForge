@@ -1,11 +1,47 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import defaultAvatar from '../static/img/default-avatar.png';
 
 // Базовый URL API
 const API_BASE_URL = 'http://localhost:80/api';
 
 export default function PollCard({ poll }) {
+  const navigate = useNavigate();
   const [localPoll, setLocalPoll] = useState(poll);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [creator, setCreator] = useState(null);
+  const [isLoadingCreator, setIsLoadingCreator] = useState(true);
+
+  useEffect(() => {
+    const fetchCreator = async () => {
+      try {
+        const response = await fetch(`${API_BASE_URL}/profile/user/${localPoll.creator_id}`, {
+          headers: {
+            'Authorization': 'Bearer ' + localStorage.getItem('authToken'),
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to fetch creator');
+        }
+
+        const data = await response.json();
+        setCreator(data);
+      } catch (error) {
+        console.error('Error fetching creator:', error);
+      } finally {
+        setIsLoadingCreator(false);
+      }
+    };
+
+    fetchCreator();
+  }, [localPoll.creator_id]);
+
+  const handleAvatarClick = () => {
+    if (localPoll.creator_id) {
+      navigate(`/profile/${localPoll.creator_id}`);
+    }
+  };
 
   const handleVote = async (questionId, answerId, isSelected) => {
     setIsSubmitting(true);
@@ -116,14 +152,33 @@ export default function PollCard({ poll }) {
 
       <div className="flex justify-between items-start mb-4">
         <div className="flex items-center">
-          <img
-            src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3MzkyNDZ8MHwxfHNlYXJjaHwyfHx1c2VyfGVufDB8fHx8MTc0NjcxNTkzNXww&ixlib=rb-4.1.0&q=80&w=1080"
-            alt="Аватар пользователя"
-            className="h-10 w-10 rounded-full mr-3"
-          />
+          {isLoadingCreator ? (
+            <div className="h-10 w-10 rounded-full bg-gray-200 animate-pulse mr-3"></div>
+          ) : (
+            <button 
+              onClick={handleAvatarClick}
+              className="mr-3 focus:outline-none"
+            >
+              <img
+                src={creator?.avatar_url || defaultAvatar}
+                alt="Аватар пользователя"
+                className="h-10 w-10 rounded-full object-cover hover:ring-2 hover:ring-primary-500 transition-all duration-200"
+                onError={(e) => {
+                  e.target.src = 'https://images.unsplash.com/photo-1633332755192-727a05c4013d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3MzkyNDZ8MHwxfHNlYXJjaHwxfHx1c2VyfGVufDB8fHx8MTc0NjcxNTkzNXww&ixlib=rb-4.1.0&q=80&w=1080';
+                }}
+              />
+            </button>
+          )}
           <div>
-            <h3 className="font-semibold">Анонимный пользователь</h3>
-            <p className="text-sm text-gray-500">{new Date(localPoll.created_at).toLocaleDateString('ru-RU')}</p>
+            <button 
+              onClick={handleAvatarClick}
+              className="font-semibold hover:text-primary-600 focus:outline-none text-left"
+            >
+              {isLoadingCreator ? 'Загрузка...' : creator?.name || 'Анонимный пользователь'}
+            </button>
+            <p className="text-sm text-gray-500">
+              {new Date(localPoll.created_at).toLocaleDateString('ru-RU')}
+            </p>
           </div>
         </div>
         <button className="text-gray-400 hover:text-gray-600">

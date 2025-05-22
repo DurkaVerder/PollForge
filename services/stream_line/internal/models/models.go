@@ -14,6 +14,7 @@ type Polls struct {
 	Likes         Like       `json:"likes"`
 	CountComments int        `json:"count_comments"`
 	Questions     []Question `json:"questions"`
+	CreatorID     int        `json:"creator_id"`
 	CreatedAt     string     `json:"created_at"`
 	ExpiresAt     string     `json:"expires_at"`
 }
@@ -49,6 +50,7 @@ type FormFromDB struct {
 	Link          string
 	Like          LikeFromDB
 	CountComments int
+	CreatorID     int
 	CreatedAt     time.Time
 	ExpiresAt     time.Time
 }
