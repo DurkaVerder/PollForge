@@ -16,7 +16,6 @@ import EditProfilePage from './pages/EditProfilePage';
 import PollDetailPage from './pages/PollDetailPage';
 import AnotherPollPage from './pages/AnotherPollPage';
 import EditPollPage from './pages/EditPollPage';
-import AnotherUserProfile from './components/AnotherUserProfile';
 import AnotherProfilePage from './pages/AnotherProfilePage';
 
 const MainLayout = () => (
