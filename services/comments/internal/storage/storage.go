@@ -32,7 +32,7 @@ func ConnectToDb() error {
 }
 
 func GetAllCommentsRequest(formId int) (*sql.Rows, error) {
-	query := `SELECT comments.id, comments.form_id, u.name, comments.description, comments.created_at, comments.edited_at FROM comments
+	query := `SELECT comments.id, comments.form_id, u.id, u.name, comments.description, comments.created_at, comments.edited_at FROM comments
     JOIN users AS u ON comments.user_id = u.id 
 	WHERE form_id = $1 ORDER BY created_at`
 
