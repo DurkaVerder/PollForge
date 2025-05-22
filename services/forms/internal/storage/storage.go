@@ -80,13 +80,13 @@ func FormUpdateRequest(updateForm models.FormRequest, creatorId int, formId int)
 func FormGetRequest(creatorId int, formId int) (models.Form, error) {
 	var form models.Form
 	query := `
-		SELECT id, theme_id, title, description, link, private_key, expires_at, created_at
-		FROM forms
-		WHERE id = $1 AND creator_id = $2
+		SELECT f.id, t.name, f.title, f.description, f.link, f.private_key, f.expires_at, f.created_at
+		FROM forms f LEFT JOIN themes t ON f.theme_id = t.id
+		WHERE forms.id = $1 AND forms.creator_id = $2
 		`
 	err := Db.QueryRow(query, formId, creatorId).Scan(
 		&form.Id,
-		&form.ThemeId,
+		&form.ThemeName,
 		&form.Title,
 		&form.Description,
 		&form.Link,
@@ -292,13 +292,13 @@ func QuestionsWithAnswersGet(formId, creatorId int) ([]models.QuestionOutput, er
 func GetFormByLinkRequest(link string) (models.Form, error) {
 	var form models.Form
 	query := `
-		SELECT id, theme_id, creator_id, title, description, link, private_key, expires_at, created_at
-		FROM forms
+		SELECT f.id, t.name, f.creator_id, f.title, f.description, f.link, f.private_key, f.expires_at, f.created_at
+		FROM forms f LEFT JOIN themes t ON f.theme_id = t.id
 		WHERE link = $1
 		`
 	err := Db.QueryRow(query, link).Scan(
 		&form.Id,
-		&form.ThemeId,
+		&form.ThemeName,
 		&form.CreatorId,
 		&form.Title,
 		&form.Description,

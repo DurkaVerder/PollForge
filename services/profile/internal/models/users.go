@@ -26,7 +26,7 @@ type UserProfile struct {
 type Form struct {
 	Id          int       `json:"id"`
 	CreatorId   int       `json:"creator_id"`
-	ThemeId     int       `json:"theme_id"`
+	ThemeName string    `json:"theme"`
 	Title       string    `json:"title"`
 	Description string    `json:"description"`
 	Link      string    `json:"link"`
