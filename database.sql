@@ -22,6 +22,7 @@ CREATE TABLE password_resets (
 
 CREATE TABLE forms(
     id SERIAL PRIMARY KEY,
+    theme_id INT NOT NULL,  
     creator_id INT NOT NULL,
     title VARCHAR(255) NOT NULL,
     description VARCHAR(255),
@@ -96,6 +97,13 @@ CREATE TABLE answered_polls (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE,
     FOREIGN KEY (form_id) REFERENCES forms (id) ON DELETE CASCADE
+);
+
+CREATE TABLE themes(
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    description VARCHAR(255),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE INDEX idx_users_id_name ON users (id, name);

@@ -37,6 +37,7 @@ export default function Header() {
 
   const handleLogout = useCallback(() => {
     localStorage.removeItem('authToken');
+    localStorage.removeItem('userId');
     navigate('/login');
   }, [navigate]);
 
