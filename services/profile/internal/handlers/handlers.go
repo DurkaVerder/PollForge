@@ -169,7 +169,8 @@ func UploadAvatar(c *gin.Context) {
 		return
 	}
 
-	if !strings.HasSuffix(strings.ToLower(file.Filename), ".jpg") && !strings.HasSuffix(strings.ToLower(file.Filename), ".png") {
+	if !strings.HasSuffix(strings.ToLower(file.Filename), ".jpg") && !strings.HasSuffix(strings.ToLower(file.Filename), ".png") && !strings.HasSuffix(strings.ToLower(file.Filename), ".jpeg") {
+		log.Printf("Ошибка: неподдерживаемый формат файла: %s", file.Filename)
 		c.JSON(http.StatusBadRequest, gin.H{"Ошибка": "Поддерживаются только JPG и PNG"})
 		return
 	}
@@ -189,7 +190,7 @@ func UploadAvatar(c *gin.Context) {
 	}
 
 	mimeType := http.DetectContentType(buffer)
-	if mimeType != "image/jpeg" && mimeType != "image/png" {
+	if mimeType != "image/jpg" && mimeType != "image/png" && mimeType != "image/jpeg" {
 		c.JSON(http.StatusBadRequest, gin.H{"Ошибка": "Поддерживаются только JPG и PNG"})
 		return
 	}
