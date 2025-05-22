@@ -43,11 +43,12 @@ func FormCheckingRequest(existId int, creatorId int, formId int) error {
 func FormCreateRequest(form models.FormRequest, creatorId int) (int, string, error) {
 
 	link := uuid.New().String()
-	query := `INSERT INTO forms (creator_id, title, description, link, private_key, expires_at, created_at) 
-			  VALUES($1, $2, $3, $4, $5, $6, $7) RETURNING id`
+	query := `INSERT INTO forms (creator_id, theme_id, title, description, link, private_key, expires_at, created_at) 
+			  VALUES($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id`
 	var formId int
+	var theme_id int = 1
 	createdAt := time.Now().Local()
-	err := Db.QueryRow(query, creatorId, form.Title, form.Description, link, form.PrivateKey, form.ExpiresAt, createdAt).Scan(&formId)
+	err := Db.QueryRow(query, creatorId, theme_id, form.Title, form.Description, link, form.PrivateKey, form.ExpiresAt, createdAt).Scan(&formId)
 	if err != nil {
 		log.Printf("Ошибка при запросе создания формы: %v", err)
 		return formId, link, err
@@ -68,8 +69,8 @@ func FormDeleteRequest(formId int, creatorId int) error {
 
 func FormUpdateRequest(updateForm models.FormRequest, creatorId int, formId int) error {
 
-	query := "UPDATE forms SET title = $1, description = $2, private_key = $3, expires_at = $4 WHERE id = $5 AND creator_id = $6"
-	_, err := Db.Exec(query, updateForm.Title, updateForm.Description, updateForm.PrivateKey, updateForm.ExpiresAt, formId, creatorId)
+	query := "UPDATE forms SET title = $1, description = $2, private_key = $3, expires_at = $4, theme_id = $5 WHERE id = $6 AND creator_id = $7"
+	_, err := Db.Exec(query, updateForm.Title, updateForm.Description, updateForm.PrivateKey, updateForm.ExpiresAt, updateForm.ThemeId, formId, creatorId)
 	if err != nil {
 		log.Printf("Ошибка при запросе обновления формы: %v", err)
 		return err
@@ -80,12 +81,13 @@ func FormUpdateRequest(updateForm models.FormRequest, creatorId int, formId int)
 func FormGetRequest(creatorId int, formId int) (models.Form, error) {
 	var form models.Form
 	query := `
-		SELECT id, title, description, link, private_key, expires_at, created_at
+		SELECT id, theme_id, title, description, link, private_key, expires_at, created_at
 		FROM forms
 		WHERE id = $1 AND creator_id = $2
 		`
 	err := Db.QueryRow(query, formId, creatorId).Scan(
 		&form.Id,
+		&form.ThemeId,
 		&form.Title,
 		&form.Description,
 		&form.Link,
@@ -113,6 +115,7 @@ func QuestionCreateRequest(question models.QuestionRequest, creatorId int, formI
 	query := `INSERT INTO questions (form_id, creator_id, title, number_order, required) 
 			  VALUES($1, $2, $3, $4, $5) RETURNING id`
 
+	
 	var questionId int
 	err := Db.QueryRow(query, formId, creatorId, question.Title, question.NumberOrder, question.Required).Scan(&questionId)
 	if err != nil {
@@ -290,12 +293,13 @@ func QuestionsWithAnswersGet(formId, creatorId int) ([]models.QuestionOutput, er
 func GetFormByLinkRequest(link string) (models.Form, error) {
 	var form models.Form
 	query := `
-		SELECT id, creator_id, title, description, link, private_key, expires_at
+		SELECT id, theme_id, creator_id, title, description, link, private_key, expires_at
 		FROM forms
 		WHERE link = $1
 		`
 	err := Db.QueryRow(query, link).Scan(
 		&form.Id,
+		&form.ThemeId,
 		&form.CreatorId,
 		&form.Title,
 		&form.Description,

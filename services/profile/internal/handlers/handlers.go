@@ -63,14 +63,14 @@ func GetProfile(c *gin.Context) {
 
 }
 func GetForms(c *gin.Context) {
-	id, err := extractUserID(c)
+	userId, err := extractUserID(c)
 	if err != nil {
 		log.Printf("Ошибка при получении id пользователя: %v", err)
 		c.JSON(http.StatusUnauthorized, "id пользователя не найден")
 		return
 	}
 
-	forms, err := service.GetUserForms(id)
+	forms, err := service.GetUserForms(userId)
 	if err != nil {
 		log.Printf("Ошибка при получении форм: %v", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"Ошибка": "Ошибка при получении форм"})
