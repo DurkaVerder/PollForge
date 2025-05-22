@@ -37,7 +37,9 @@ func GetUserForms(userId int) ([]models.Form, error) {
 			&form.Description,
 			&form.Link,
 			&form.PrivateKey,
-			&form.ExpiresAt)
+			&form.ExpiresAt,
+			&form.CreatedAt,
+		)
 		if err != nil {
 			log.Print("Данных нет")
 			return nil, err
