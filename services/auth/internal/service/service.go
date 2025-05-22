@@ -51,7 +51,7 @@ func GenerateJwt(userId string, role string, isBanned bool) (string, error) {
 		"id":  userId,
 		"role": role,
 		"is_banned": isBanned,
-		"exp": time.Now().Add(time.Hour * 6).Unix(),
+		"exp": time.Now().Local().Add(time.Hour * 6).Unix(),
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	return token.SignedString(jwtKey)
@@ -63,7 +63,7 @@ func GenerateCheapJwt(userId string, role string, isBanned bool) (string, error)
 		"id":  userId,
 		"role": role,
 		"is_banned": isBanned,
-		"exp": time.Now().Add(time.Hour * 1).Unix(),
+		"exp": time.Now().Local().Add(time.Hour * 1).Unix(),
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	return token.SignedString(jwtKey)
@@ -181,7 +181,7 @@ func resetUserInternal(req models.UserRequest) (string, error) {
 		return "", err
 	}
 
-	expiresAt := time.Now().Add(1 * time.Hour)
+	expiresAt := time.Now().Local().Add(1 * time.Hour)
 
 	// создаём запись в бд для сброса пароля
 	if err := storage.CreatePasswordReset(userId, token, expiresAt); err != nil {
@@ -207,7 +207,7 @@ func ConfirmPasswordReset(token, newPassword string) error {
 		return fmt.Errorf("токен не найден: %w", err)
 	}
 
-	if time.Now().After(pr.ExpiresAt) {
+	if time.Now().Local().After(pr.ExpiresAt) {
 
 		err = storage.DeletePasswordReset(pr.ID)
 		if err != nil {

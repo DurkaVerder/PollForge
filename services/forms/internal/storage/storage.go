@@ -46,7 +46,7 @@ func FormCreateRequest(form models.FormRequest, creatorId int) (int, string, err
 	query := `INSERT INTO forms (creator_id, title, description, link, private_key, expires_at, created_at) 
 			  VALUES($1, $2, $3, $4, $5, $6, $7) RETURNING id`
 	var formId int
-	createdAt := time.Now()
+	createdAt := time.Now().Local()
 	err := Db.QueryRow(query, creatorId, form.Title, form.Description, link, form.PrivateKey, form.ExpiresAt, createdAt).Scan(&formId)
 	if err != nil {
 		log.Printf("Ошибка при запросе создания формы: %v", err)

@@ -3,6 +3,7 @@ package handlers
 import (
 	"auth/internal/models"
 	"auth/internal/service"
+	"auth/internal/storage"
 	"log"
 	"net/http"
 
@@ -25,8 +26,15 @@ func UserLogging(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"Ошибка": err.Error()})
 		return
 	}
+	userId, err := storage.CheckingLoggingData(request)
+	if err != nil {
+		log.Printf("Ошибка при сопоставлении пароля и почты - loginUserInternal")
+		log.Printf("%s", err.Error())
+		return
+	}
 
 	c.JSON(http.StatusAccepted, gin.H{
+		"id":      userId,
 		"message": "Пользователь вошёл",
 		"token":   token,
 	})
