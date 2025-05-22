@@ -73,7 +73,7 @@ func GetForms(c *gin.Context) {
 	forms, err := service.GetUserForms(userId)
 	if err != nil {
 		log.Printf("Ошибка при получении форм: %v", err)
-		c.JSON(http.StatusInternalServerError, gin.H{"Ошибка": "Ошибка при получении форм"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Ошибка при получении форм"})
 		return
 	}
 
@@ -84,14 +84,14 @@ func DeleteForm(c *gin.Context) {
 	formId, err := extractFormID(c)
 	if err != nil {
 		log.Printf("Ошибка при извлечении id формы %v", err)
-		c.JSON(http.StatusBadRequest, gin.H{"Ошибка": "Неверный id формы"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Неверный id формы"})
 		return
 	}
 
 	creatorId, err := extractUserID(c)
 	if err != nil {
 		log.Printf("Не удалось извлечь id пользователя: %v", err)
-		c.JSON(http.StatusBadRequest, gin.H{"Ошибка": "id пользователя не найден"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "id пользователя не найден"})
 		return
 	}
 
@@ -99,7 +99,7 @@ func DeleteForm(c *gin.Context) {
 	err = service.FormCheck(creatorId, formId)
 	if err != nil {
 		log.Printf("Ошибка при проверке на существование формы: %v", err)
-		c.JSON(http.StatusNotFound, gin.H{"Ошибка": "Форма не найдена"})
+		c.JSON(http.StatusNotFound, gin.H{"error": "Форма не найдена"})
 		return
 	}
 
@@ -107,77 +107,77 @@ func DeleteForm(c *gin.Context) {
 	_, err = service.FormDelete(formId, creatorId)
 	if err != nil {
 		log.Printf("Ошибка при удалении формы: %v", err)
-		c.JSON(http.StatusInternalServerError, gin.H{"Ошибка": "Не удалось удалить форму"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Не удалось удалить форму"})
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"Сообщение": "Форма успешно удалена"})
+	c.JSON(http.StatusOK, gin.H{"message": "Форма успешно удалена"})
 }
 
 func UpdateProfileName(c *gin.Context) {
 	id, err := extractUserID(c)
 	if err != nil {
 		log.Printf("Ошибка при получении id пользователя: %v", err)
-		c.JSON(http.StatusUnauthorized, gin.H{"Ошибка": "id пользователя не найден"})
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "id пользователя не найден"})
 		return
 	}
 
 	var profile models.UserProfile
 	if err := c.ShouldBindJSON(&profile); err != nil {
 		log.Printf("Ошибка при получении данных профиля: %v", err)
-		c.JSON(http.StatusBadRequest, gin.H{"Ошибка": "Ошибка при получении данных профиля"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Ошибка при получении данных профиля"})
 		return
 	}
 
 	err = service.UpdateProfileName(id, profile)
 	if err != nil {
 		log.Printf("Ошибка при обновлении профиля: %v", err)
-		c.JSON(http.StatusInternalServerError, gin.H{"Ошибка": "Ошибка при обновлении профиля"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Ошибка при обновлении профиля"})
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"Сообщение": "Профиль успешно обновлён"})
+	c.JSON(http.StatusOK, gin.H{"message": "Профиль успешно обновлён"})
 }
 
 func DeleteProfile(c *gin.Context) {
 	id, err := extractUserID(c)
 	if err != nil {
 		log.Printf("Ошибка при получении id пользователя: %v", err)
-		c.JSON(http.StatusUnauthorized, gin.H{"Ошибка": "id пользователя не найден"})
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "id пользователя не найден"})
 		return
 	}
 
 	err = service.DeleteProfile(id)
 	if err != nil {
 		log.Printf("Ошибка при удалении профиля: %v", err)
-		c.JSON(http.StatusInternalServerError, gin.H{"Ошибка": "Ошибка при удалении профиля"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Ошибка при удалении профиля"})
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"Сообщение": "Профиль успешно удалён"})
+	c.JSON(http.StatusOK, gin.H{"message": "Профиль успешно удалён"})
 }
 
 func UploadAvatar(c *gin.Context) {
 	id, err := extractUserID(c)
 	if err != nil {
 		log.Printf("Ошибка при получении id пользователя: %v", err)
-		c.JSON(http.StatusUnauthorized, gin.H{"Ошибка": "id пользователя не найден"})
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "id пользователя не найден"})
 		return
 	}
 
 	file, err := c.FormFile("avatar")
 	if err != nil {
 		log.Printf("Ошибка при получении файла: %v", err)
-		c.JSON(http.StatusBadRequest, gin.H{"Ошибка": "Ошибка при получении файла"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Ошибка при получении файла"})
 		return
 	}
 
 	if !strings.HasSuffix(strings.ToLower(file.Filename), ".jpg") && !strings.HasSuffix(strings.ToLower(file.Filename), ".png") && !strings.HasSuffix(strings.ToLower(file.Filename), ".jpeg") {
 		log.Printf("Ошибка: неподдерживаемый формат файла: %s", file.Filename)
-		c.JSON(http.StatusBadRequest, gin.H{"Ошибка": "Поддерживаются только JPG и PNG"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Поддерживаются только JPG и PNG"})
 		return
 	}
 	openedFile, err := file.Open()
 	if err != nil {
 		log.Printf("Ошибка при открытии файла: %v", err)
-		c.JSON(http.StatusInternalServerError, gin.H{"Ошибка": "Ошибка при обработке файла"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Ошибка при обработке файла"})
 		return
 	}
 	defer openedFile.Close()
@@ -185,13 +185,13 @@ func UploadAvatar(c *gin.Context) {
 	buffer := make([]byte, 512)
 	if _, err := openedFile.Read(buffer); err != nil {
 		log.Printf("Ошибка при чтении файла: %v", err)
-		c.JSON(http.StatusInternalServerError, gin.H{"Ошибка": "Ошибка при обработке файла"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Ошибка при обработке файла"})
 		return
 	}
 
 	mimeType := http.DetectContentType(buffer)
 	if mimeType != "image/jpg" && mimeType != "image/png" && mimeType != "image/jpeg" {
-		c.JSON(http.StatusBadRequest, gin.H{"Ошибка": "Поддерживаются только JPG и PNG"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Поддерживаются только JPG и PNG"})
 		return
 	}
 	ext := filepath.Ext(file.Filename)
@@ -200,7 +200,7 @@ func UploadAvatar(c *gin.Context) {
 
 	if err := c.SaveUploadedFile(file, filePath); err != nil {
 		log.Printf("Ошибка при сохранении файла: %v", err)
-		c.JSON(http.StatusInternalServerError, gin.H{"Ошибка": "Ошибка при сохранении файла"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Ошибка при сохранении файла"})
 		return
 	}
 	avatarURL := fmt.Sprintf("/avatars/%s", filename)
@@ -208,12 +208,12 @@ func UploadAvatar(c *gin.Context) {
 	err = service.UploadAvatar(id, avatarURL)
 	if err != nil {
 		log.Printf("Ошибка при загрузке аватара: %v", err)
-		c.JSON(http.StatusInternalServerError, gin.H{"Ошибка": "Ошибка при загрузке аватара"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Ошибка при загрузке аватара"})
 		return
 	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"Сообщение":  "Аватар успешно загружен",
+		"message":  "Аватар успешно загружен",
 		"avatar_url": avatarURL,
 	})
 }
@@ -222,24 +222,24 @@ func UpdateProfileBio(c *gin.Context) {
 	id, err := extractUserID(c)
 	if err != nil {
 		log.Printf("Ошибка при получении id пользователя: %v", err)
-		c.JSON(http.StatusUnauthorized, gin.H{"Ошибка": "id пользователя не найден"})
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "id пользователя не найден"})
 		return
 	}
 
 	var profile models.UserProfile
 	if err := c.ShouldBindJSON(&profile); err != nil {
 		log.Printf("Ошибка при получении данных профиля: %v", err)
-		c.JSON(http.StatusBadRequest, gin.H{"Ошибка": "Ошибка при получении данных профиля"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Ошибка при получении данных профиля"})
 		return
 	}
 
 	err = service.UpdateProfileBio(id, profile.Bio)
 	if err != nil {
 		log.Printf("Ошибка при обновлении профиля: %v", err)
-		c.JSON(http.StatusInternalServerError, gin.H{"Ошибка": "Ошибка при обновлении профиля"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Ошибка при обновлении профиля"})
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"Сообщение": "Описание профиля успешно обновлено"})
+	c.JSON(http.StatusOK, gin.H{"message": "Описание профиля успешно обновлено"})
 }
 
 func GetDifUserProfile(c *gin.Context) {
@@ -248,14 +248,14 @@ func GetDifUserProfile(c *gin.Context) {
 	userId, err := strconv.Atoi(userIdStr)
 	if err != nil {
 		log.Printf("Ошибка при преобразовании id пользователя: %v", err)
-		c.JSON(http.StatusBadRequest, gin.H{"Ошибка": "Неверный id пользователя"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Неверный id пользователя"})
 		return
 	}
 
 	profile, err := service.GetDifUserProfile(userId)
 	if err != nil {
 		log.Printf("Ошибка при получении профиля GetDifUserProfile: %v", err)
-		c.JSON(http.StatusNotFound, gin.H{"Ошибка": "Ошибка при получении профиля"})
+		c.JSON(http.StatusNotFound, gin.H{"error": "Ошибка при получении профиля"})
 		return
 	}
 
