@@ -51,7 +51,7 @@ func GenerateJwt(userId string, role string, isBanned bool) (string, error) {
 		"id":  userId,
 		"role": role,
 		"is_banned": isBanned,
-		"exp": time.Now().Local().Add(time.Hour * 6).Unix(),
+		"exp": time.Now().Local().Add(time.Hour * 24).Unix(),
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	return token.SignedString(jwtKey)
