@@ -54,7 +54,7 @@ func JWTAuth() gin.HandlerFunc {
             return
         }
 		
-		c.Set("id", rawId)
+		c.Set("userID", rawId)
 		c.Set("role", rawRole)
 		c.Set("is_banned", rawIsBanned)
 		c.Next()

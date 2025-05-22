@@ -15,6 +15,9 @@ import ProtectedRoute from './components/ProtectedRoute';
 import EditProfilePage from './pages/EditProfilePage';
 import PollDetailPage from './pages/PollDetailPage';
 import AnotherPollPage from './pages/AnotherPollPage';
+import EditPollPage from './pages/EditPollPage';
+import AnotherUserProfile from './components/AnotherUserProfile';
+import AnotherProfilePage from './pages/AnotherProfilePage';
 
 const MainLayout = () => (
   <div className="w-[1200px] p-4 font-sans bg-gray-50 min-h-screen">
@@ -59,6 +62,14 @@ export default function App() {
                 </ProtectedRoute>
               }
             />
+             <Route
+              path="/profile/:id"
+              element={
+                <ProtectedRoute>
+                  <AnotherProfilePage />
+                </ProtectedRoute>
+              }
+            />
             <Route
               path="/create-poll"
               element={
@@ -98,6 +109,15 @@ export default function App() {
               element={
                 <ProtectedRoute>
                   <AnotherPollPage />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route 
+              path="/poll/edit/:id"
+              element={
+                <ProtectedRoute>
+                  <EditPollPage />
                 </ProtectedRoute>
               }
             />

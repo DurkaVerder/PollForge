@@ -2,41 +2,42 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
 import SharePollModal from '../components/SharePollModal';
-import 'react-toastify/dist/ReactToastify.css';
-
+import { toast } from 'react-toastify';
 
 export default function MyPollsPage() {
   const [polls, setPolls] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [currentPollLink, setCurrentPollLink] = useState('');
+  const [pollToDelete, setPollToDelete] = useState(null);
 
   useEffect(() => {
-    const fetchPolls = async () => {
-      try {
-        const response = await fetch('http://localhost:80/api/profile/forms', {
-          headers: {
-            'Authorization': 'Bearer ' + localStorage.getItem('authToken')
-          }
-        });
-
-        if (!response.ok) {
-          throw new Error('Ошибка загрузки опросов');
-        }
-
-        const data = await response.json();
-        setPolls(data.forms);
-      } catch (err) {
-        setError(err.message);
-        console.error('Fetch polls error:', err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchPolls();
   }, []);
+
+  const fetchPolls = async () => {
+    try {
+      const response = await fetch('http://localhost:80/api/profile/forms', {
+        headers: {
+          'Authorization': 'Bearer ' + localStorage.getItem('authToken')
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error('Ошибка загрузки опросов');
+      }
+
+      const data = await response.json();
+      setPolls(data.forms);
+    } catch (err) {
+      setError(err.message);
+      console.error('Fetch polls error:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const formatDate = (dateString) => {
     const options = { 
@@ -56,16 +57,71 @@ export default function MyPollsPage() {
 
   const openShareModal = (pollLink) => {
     setCurrentPollLink(`http://localhost:3000/poll/vote/${pollLink}`);
-    setIsModalOpen(true);
+    setIsShareModalOpen(true);
   };
 
   const closeShareModal = () => {
-    setIsModalOpen(false);
+    setIsShareModalOpen(false);
     setCurrentPollLink('');
   };
 
+  const openDeleteModal = (pollId) => {
+    setPollToDelete(pollId);
+    setIsDeleteModalOpen(true);
+  };
+
+  const closeDeleteModal = () => {
+    setIsDeleteModalOpen(false);
+    setPollToDelete(null);
+  };
+
+  const handleDeletePoll = async () => {
+    try {
+      const response = await fetch(`http://localhost:80/api/forms/${pollToDelete}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': 'Bearer ' + localStorage.getItem('authToken')
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error('Ошибка при удалении опроса');
+      }
+
+      setPolls(polls.filter(poll => poll.id !== pollToDelete));
+      toast.success('Опрос успешно удален');
+    } catch (err) {
+      console.error('Delete poll error:', err);
+      toast.error(err.message);
+    } finally {
+      closeDeleteModal();
+    }
+  };
+
+  if (!polls) {
+    return (
+      <div className="flex flex-col lg:flex-row gap-6">
+        <Sidebar />
+        <div className="bg-white rounded-lg shadow-md p-8 text-center w-full">
+            <div className="mx-auto w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+              <span className="material-symbols-outlined text-gray-400 text-4xl">poll</span>
+            </div>
+            <h3 className="text-lg font-medium text-gray-900 mb-2">У вас пока нет опросов</h3>
+            <p className="text-gray-500 mb-6">Создайте свой первый опрос и начните собирать мнения</p>
+            <Link 
+              to="/create-poll" 
+              className="inline-flex items-center px-4 py-2 bg-primary-500 text-white rounded-lg hover:bg-primary-600"
+            >
+              Создать опрос
+            </Link>
+          </div>
+          
+        </div>
+    );
+  }
+
   return (
-    <main className="flex flex-col lg:flex-row gap-6 ">
+    <main className="flex flex-col lg:flex-row gap-6">
       <Sidebar />
       
       <div className="flex-1">
@@ -128,8 +184,12 @@ export default function MyPollsPage() {
                         }`}
                         title={status === 'active' ? 'Активен' : 'Завершен'}
                       ></div>
-                      <button className="p-2 text-gray-400 hover:text-gray-600">
-                        <span className="material-symbols-outlined">more_vert</span>
+                      <button 
+                        onClick={() => openDeleteModal(poll.id)}
+                        className="p-2 text-gray-400 hover:text-red-500 transition-colors"
+                        title="Удалить опрос"
+                      >
+                        <span className="material-symbols-outlined">delete</span>
                       </button>
                     </div>
                   </div>
@@ -161,9 +221,7 @@ export default function MyPollsPage() {
                       >
                         <span className="material-symbols-outlined">share</span>
                       </button>
-                      <button className="text-gray-500 hover:text-gray-700">
-                        <span className="material-symbols-outlined">bar_chart</span>
-                      </button>
+                      
                     </div>
                   </div>
                 </div>
@@ -173,11 +231,44 @@ export default function MyPollsPage() {
         )}
       </div>
 
+      {/* Модальное окно для шаринга */}
       <SharePollModal 
         pollLink={currentPollLink} 
-        isOpen={isModalOpen} 
+        isOpen={isShareModalOpen} 
         onClose={closeShareModal} 
       />
+
+      {/* Модальное окно подтверждения удаления */}
+      {isDeleteModalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
+            <div className="flex justify-between items-start mb-4">
+              <h3 className="text-xl font-semibold">Удаление опроса</h3>
+              <button 
+                onClick={closeDeleteModal}
+                className="text-gray-400 hover:text-gray-500"
+              >
+                <span className="material-symbols-outlined">close</span>
+              </button>
+            </div>
+            <p className="mb-6">Вы уверены, что хотите удалить этот опрос? Это действие нельзя отменить.</p>
+            <div className="flex justify-end space-x-3">
+              <button
+                onClick={closeDeleteModal}
+                className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+              >
+                Отмена
+              </button>
+              <button
+                onClick={handleDeletePoll}
+                className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
+              >
+                Удалить
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </main>
   );
 }
