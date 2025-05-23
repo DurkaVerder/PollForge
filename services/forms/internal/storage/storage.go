@@ -82,7 +82,7 @@ func FormGetRequest(creatorId int, formId int) (models.Form, error) {
 	query := `
 		SELECT f.id, t.name, f.title, f.description, f.link, f.private_key, f.expires_at, f.created_at
 		FROM forms AS f LEFT JOIN themes AS t ON f.theme_id = t.id
-		WHERE forms.id = $1 AND forms.creator_id = $2
+		WHERE f.id = $1 AND f.creator_id = $2
 		`
 	err := Db.QueryRow(query, formId, creatorId).Scan(
 		&form.Id,
