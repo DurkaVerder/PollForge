@@ -9,16 +9,21 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
-type Server struct {
-	ws *websocket.WebSocket
-
-	engine *gin.Engine
+type Handler interface {
+	HandlerProfileStats(c *gin.Context)
 }
 
-func NewServer(ws *websocket.WebSocket, engine *gin.Engine) *Server {
+type Server struct {
+	ws      *websocket.WebSocket
+	handler Handler
+	engine  *gin.Engine
+}
+
+func NewServer(ws *websocket.WebSocket, engine *gin.Engine, handler Handler) *Server {
 	return &Server{
-		ws:     ws,
-		engine: engine,
+		ws:      ws,
+		handler: handler,
+		engine:  engine,
 	}
 }
 
@@ -34,6 +39,11 @@ func (s *Server) initRoutes() {
 	}))
 
 	s.engine.GET("/metrics", gin.WrapH(promhttp.Handler()))
+
+	stats := s.engine.Group("/api/stats")
+	{
+		stats.GET("/profile", s.handler.HandlerProfileStats)
+	}
 
 	s.engine.GET("/ws", s.ws.HandleConnection)
 }
