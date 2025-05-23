@@ -40,7 +40,7 @@ func GetUserProfileRequest(userId int) (*models.UserProfile, error) {
 }
 
 func GetUserFormsRequest(userId int) (*sql.Rows, error) {
-	rows, err := Db.Query("SELECT f.id, f.creator_id, t.name, f.title, f.description, f.link, f.private_key, f.expires_at, f.created_at FROM forms f LEFT JOIN themes t ON f.theme_id = t.id WHERE creator_id = $1", userId)
+	rows, err := Db.Query("SELECT f.id, f.creator_id, t.name, f.title, f.description, f.link, f.private_key, f.expires_at, f.created_at FROM forms AS f LEFT JOIN themes AS t ON f.theme_id = t.id WHERE creator_id = $1", userId)
 	if err != nil {
 		log.Printf("Ошибка при получении форм пользователя: %v", err)
 		return nil, err

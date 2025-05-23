@@ -25,7 +25,6 @@ func extractUserID(c *gin.Context) (int, error) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Неправильный тип id"})
 		return 0, fmt.Errorf("неправильный тип id: %v", creatorIdfl)
 	}
-	log.Printf("id пользователя: %v", creatorId)
 	return strconv.Atoi(creatorId)
 }
 

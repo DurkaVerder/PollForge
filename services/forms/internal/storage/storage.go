@@ -81,7 +81,7 @@ func FormGetRequest(creatorId int, formId int) (models.Form, error) {
 	var form models.Form
 	query := `
 		SELECT f.id, t.name, f.title, f.description, f.link, f.private_key, f.expires_at, f.created_at
-		FROM forms f LEFT JOIN themes t ON f.theme_id = t.id
+		FROM forms AS f LEFT JOIN themes AS t ON f.theme_id = t.id
 		WHERE forms.id = $1 AND forms.creator_id = $2
 		`
 	err := Db.QueryRow(query, formId, creatorId).Scan(
@@ -293,7 +293,7 @@ func GetFormByLinkRequest(link string) (models.Form, error) {
 	var form models.Form
 	query := `
 		SELECT f.id, t.name, f.creator_id, f.title, f.description, f.link, f.private_key, f.expires_at, f.created_at
-		FROM forms f LEFT JOIN themes t ON f.theme_id = t.id
+		FROM forms AS f LEFT JOIN themes AS t ON f.theme_id = t.id
 		WHERE link = $1
 		`
 	err := Db.QueryRow(query, link).Scan(
