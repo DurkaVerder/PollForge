@@ -1,25 +1,122 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
+import Select from 'react-select';
 
 export default function EditPollPage() {
   const MAX_TITLE_LENGTH = 100;
-  const MAX_DESCRIPTION_LENGTH = 300;
+  const MAX_DESCRIPTION_LENGTH = 250;
 
   const { id } = useParams();
   const [formData, setFormData] = useState({
     title: '',
     description: '',
     private_key: false,
-    expires_at: ''
+    expires_at: '',
+    theme_id: 1
   });
   const [questions, setQuestions] = useState([]);
+  const [themes, setThemes] = useState([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [isLoadingThemes, setIsLoadingThemes] = useState(true);
   const [error, setError] = useState('');
   const navigate = useNavigate();
 
+  const customStyles = {
+  control: (provided, state) => ({
+    ...provided,
+    borderColor: state.isFocused ? '#3b82f6' : '#d1d5db', // blue-500 при фокусе, gray-300 по умолчанию
+    borderWidth: '1px',
+    borderRadius: '0.5rem', // rounded-lg
+    padding: '0.5rem', // py-2 px-4
+    backgroundColor: '#fff', // bg-white
+    boxShadow: state.isFocused ? '0 0 0 2px rgba(59, 130, 246, 0.5)' : 'none', // focus:ring-2 focus:ring-blue-500
+    '&:hover': {
+      borderColor: '#3b82f6', // hover:border-blue-500
+    },
+    transition: 'all 0.3s ease', // transition-all
+    fontSize: '0.875rem', // text-sm
+    fontWeight: 500, // font-medium
+    minHeight: '2.5rem', // h-10
+  }),
+  menu: (provided) => ({
+    ...provided,
+    borderRadius: '0.5rem', // rounded-lg
+    backgroundColor: '#fff', // bg-white
+    boxShadow: '0 10px 15px rgba(0, 0, 0, 0.1)', // shadow-lg
+    marginTop: '0.25rem', // mt-1
+    zIndex: 10,
+  }),
+  option: (provided, state) => ({
+    ...provided,
+    backgroundColor: state.isFocused ? '#eff6ff' : '#fff', // bg-blue-50 при наведении, иначе bg-white
+    color: state.isSelected ? '#8b5cf6' : '#1f2937', // purple-500 для выбранной, text-gray-800 для остальных
+    padding: '0.5rem 1rem', // py-2 px-4
+    fontSize: '0.875rem', // text-sm
+    cursor: 'pointer',
+    transition: 'background-color 0.2s ease',
+    whiteSpace: 'normal', // для переноса длинных описаний
+    '&:hover': {
+      backgroundColor: '#dbeafe', // hover:bg-blue-100
+    },
+  }),
+  singleValue: (provided) => ({
+    ...provided,
+    color: '#8b5cf6', // purple-500 для выбранной темы
+    fontSize: '0.875rem', // text-sm
+    whiteSpace: 'normal', // для переноса текста
+    maxWidth: '100%', // чтобы текст не обрезался
+  }),
+  placeholder: (provided) => ({
+    ...provided,
+    color: '#9ca3af', // text-gray-400
+    fontSize: '0.875rem', // text-sm
+  }),
+  dropdownIndicator: (provided, state) => ({
+    ...provided,
+    color: state.isFocused ? '#3b82f6' : '#6b7280', // blue-500 или gray-500
+    '&:hover': {
+      color: '#3b82f6', // hover:text-blue-500
+    },
+  }),
+  clearIndicator: (provided) => ({
+    ...provided,
+    color: '#6b7280', // gray-500
+    '&:hover': {
+      color: '#ef4444', // hover:text-red-500
+    },
+  }),
+  input: (provided) => ({
+    ...provided,
+    color: '#1f2937', // text-gray-800
+    fontSize: '0.875rem', // text-sm
+  }),
+};
+
   useEffect(() => {
+    const fetchThemes = async () => {
+      try {
+        const response = await fetch('http://localhost:80/api/forms/themes', {
+          headers: {
+            'Authorization': 'Bearer ' + localStorage.getItem('authToken'),
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to fetch themes');
+        }
+
+        const data = await response.json();
+        setThemes(data);
+        setIsLoadingThemes(false);
+      } catch (err) {
+        setError(err.message);
+        console.error('Fetch themes error:', err);
+        setIsLoadingThemes(false);
+      }
+    };
+
     const fetchFormData = async () => {
       try {
         const response = await fetch(`http://localhost:80/api/forms/${id}`, {
@@ -42,7 +139,8 @@ export default function EditPollPage() {
           title: data.title,
           description: data.description,
           private_key: data.private_key,
-          expires_at: expiresAt
+          expires_at: expiresAt,
+          theme_id: data.theme_id || 1
         });
 
         const processedQuestions = data.questions.map(question => ({
@@ -63,6 +161,7 @@ export default function EditPollPage() {
       }
     };
 
+    fetchThemes();
     fetchFormData();
   }, [id]);
 
@@ -71,6 +170,14 @@ export default function EditPollPage() {
     setFormData(prev => ({
       ...prev,
       [name]: type === 'checkbox' ? checked : value
+    }));
+  };
+
+  const handleThemeChange = (e) => {
+    const themeId = parseInt(e.target.value);
+    setFormData(prev => ({
+      ...prev,
+      theme_id: themeId
     }));
   };
 
@@ -105,7 +212,8 @@ export default function EditPollPage() {
           title: formData.title,
           description: formData.description,
           private_key: formData.private_key,
-          expires_at: utcISOString
+          expires_at: utcISOString,
+          theme_id: formData.theme_id,
         })
       });
 
@@ -123,7 +231,7 @@ export default function EditPollPage() {
     }
   };
 
-  if (isLoading) {
+  if (isLoading || isLoadingThemes) {
     return (
       <main className="flex flex-col lg:flex-row gap-6">
         <Sidebar />
@@ -214,6 +322,53 @@ export default function EditPollPage() {
                       style={{ width: `${(formData.description.length / MAX_DESCRIPTION_LENGTH) * 100}%` }}
                     ></div>
                   </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Тема опроса
+                  </label>
+                  <Select
+                    name="theme_id"
+                    value={
+                      themes.length > 0
+                        ? themes
+                            .map(theme => ({
+                              value: theme.id,
+                              label: `${theme.name} - ${theme.description.slice(0, 50)}${theme.description.length > 50 ? '...' : ''}`,
+                            }))
+                            .find(option => option.value === formData.theme_id) || null
+                        : null
+                    }
+                    onChange={(selectedOption) =>
+                      handleThemeChange({ target: { value: selectedOption ? selectedOption.value : 1 } })
+                    }
+                    options={themes.map(theme => ({
+                      value: theme.id,
+                      label: `${theme.name} - ${theme.description.slice(0, 50)}${theme.description.length > 50 ? '...' : ''}`,
+                    }))}
+                    className="w-full"
+                    classNamePrefix="select"
+                    styles={customStyles}
+                    placeholder="Выберите тему"
+                    isSearchable={true}
+                    isDisabled={themes.length === 0}
+                    getOptionLabel={(option) => option.label}
+                    getOptionValue={(option) => option.value}
+                    formatOptionLabel={(option) =>
+                      option.label ? (
+                        <div className="flex flex-col">
+                          <span className="font-medium">{option.label.split(' - ')[0]}</span>
+                          <span className="text-xs text-gray-500">{option.label.split(' - ')[1] || 'Нет описания'}</span>
+                        </div>
+                      ) : (
+                        <div className="flex flex-col">
+                          <span className="font-medium">Без названия</span>
+                          <span className="text-xs text-gray-500">Нет описания</span>
+                        </div>
+                      )
+                    }
+                  />
                 </div>
 
                 <div className="flex items-center">

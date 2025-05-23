@@ -42,6 +42,8 @@ func SetUpRouter(r *gin.Engine) {
 		protected.POST("/:id/questions/:question_id/answers", handlers.CreateAnswer)
 		protected.PUT("/:id/questions/:question_id/answers/:answer_id", handlers.UpdateAnswer)
 		protected.DELETE("/:id/questions/:question_id/answers/:answer_id", handlers.DeleteAnswer)
+
+		protected.GET("/themes", handlers.GetThemes)
 	}
 	if err := r.Run(forms_port); err != nil {
 		panic(err)

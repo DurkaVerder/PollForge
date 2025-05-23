@@ -11,10 +11,7 @@ export default function Footer() {
           <i className="fa-brands fa-telegram text-lg"></i>
         </a>
         <a href="#" className="text-gray-500 hover:text-primary-600 transition-colors duration-300">
-          <i className="fa-brands fa-facebook text-lg"></i>
-        </a>
-        <a href="#" className="text-gray-500 hover:text-primary-600 transition-colors duration-300">
-          <i className="fa-brands fa-instagram text-lg"></i>
+          <i className="fa-brands fa-vk text-lg"></i>
         </a>
         <a href="https://github.com/DurkaVerder/PollForge" className="text-gray-500 hover:text-primary-600 transition-colors duration-300">
           <i className="fa-brands fa-github text-lg"></i>

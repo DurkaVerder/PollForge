@@ -312,3 +312,26 @@ func GetFormByLinkRequest(link string) (models.Form, error) {
 	}
 	return form, nil
 }
+
+
+func GetThemesRequest() ([]models.Theme, error) {
+	var themes []models.Theme
+	query := "SELECT id, name, description FROM themes"
+	rows, err := Db.Query(query)
+	if err != nil {
+		log.Printf("Ошибка при запросе получения тем: %v", err)
+		return themes, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var theme models.Theme
+		err := rows.Scan(&theme.Id, &theme.Name, &theme.Description)
+		if err != nil {
+			log.Printf("Ошибка при сканировании темы: %v", err)
+			return themes, err
+		}
+		themes = append(themes, theme)
+	}
+	return themes, nil
+}

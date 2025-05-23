@@ -96,7 +96,7 @@ export default function AnotherUserProfile( {id}) {
         </div>
         <div className="flex-1">
           <h2 className="text-2xl font-bold">{profile.name}</h2>
-          <p className="text-gray-500">{profile.email}</p>
+          <p className="text-gray-500">{profile.name}</p>
           <p className="mt-2">
             {profile.bio || 'Пользователь пока не добавил информацию о себе'}
           </p>

@@ -281,11 +281,8 @@ export default function HomePage() {
         <div className="bg-white rounded-xl shadow-lg p-6 transform hover:shadow-xl transition-all duration-300 w-full mx-auto">
           <div className="flex items-center mb-4 space-x-2">
             <span className="bg-blue-100 text-blue-800 text-xs font-medium px-3 py-1 rounded-full">
-              Программирование
-            </span>
-            <span className="bg-green-100 text-green-800 text-xs font-medium px-3 py-1 rounded-full">
-              Технологии
-            </span>
+                {poll.theme}
+        </span>
           </div>
 
           <div className="flex justify-between items-start mb-6">

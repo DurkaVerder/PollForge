@@ -19,6 +19,8 @@ import PollDetailPage from './pages/PollDetailPage';
 import AnotherPollPage from './pages/AnotherPollPage';
 import EditPollPage from './pages/EditPollPage';
 import AnotherProfilePage from './pages/AnotherProfilePage';
+import { ForgotPasswordPage } from './pages/ForgotPasswordPage';
+import { ResetPasswordPage } from './pages/ForgotPasswordPage';
 
 const MainLayout = () => (
   <div className="w-[1200px] p-4 font-sans bg-gray-50 min-h-screen">
@@ -43,6 +45,8 @@ export default function App() {
           <Route element={<AuthLayout />}>
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
+            <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+            <Route path="/reset_password" element={<ResetPasswordPage />} />
           </Route>
 
           {/* Защищённые маршруты с Header и Footer */}
