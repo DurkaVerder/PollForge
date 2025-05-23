@@ -91,6 +91,7 @@ func (s *Service) CreatePolls(data MergedData) []models.Polls {
 		var poll models.Polls
 		poll.ID = formWithQuestions.form.ID
 		poll.Title = formWithQuestions.form.Title
+		poll.Theme = formWithQuestions.form.Theme
 		poll.Description = formWithQuestions.form.Description
 		poll.CreatorID = formWithQuestions.form.CreatorID
 		poll.Link = formWithQuestions.form.Link

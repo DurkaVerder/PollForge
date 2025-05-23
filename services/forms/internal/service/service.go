@@ -153,3 +153,13 @@ func GetFormByLink(link string) (models.Form, error) {
 
 	return form, nil
 }
+
+
+func GetThemes() ([]models.Theme, error) {
+	themes, err := storage.GetThemesRequest()
+	if err != nil {
+		log.Printf("Ошибка при получении тем: %v", err)
+		return themes, err
+	}
+	return themes, nil
+}

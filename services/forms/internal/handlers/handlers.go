@@ -485,3 +485,14 @@ func GetFormByLink(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, form)
 }
+
+
+func GetThemes(c *gin.Context) {
+
+	themes, err := service.GetThemes()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "ошибка получения тем"})
+		return
+	}
+	c.JSON(http.StatusOK, themes)
+}

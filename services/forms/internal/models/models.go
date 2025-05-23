@@ -52,3 +52,9 @@ type Answer struct {
 	NumberOrder int    `json:"number_order"`
 	Count       int    `json:"count"`
 }
+
+type Theme struct {
+	Id          int    `json:"id"`
+	Name        string `json:"name"`
+	Description string `json:"description"`
+}

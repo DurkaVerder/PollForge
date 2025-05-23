@@ -94,8 +94,8 @@ export default function MyPollsPage() {
       if (!response.ok) {
         throw new Error('Ошибка при удалении опроса');
       }
-
       setPolls(polls.filter(poll => poll.id !== pollToDelete));
+      
       toast.success('Опрос успешно удален');
     } catch (err) {
       console.error('Delete poll error:', err);
@@ -106,6 +106,9 @@ export default function MyPollsPage() {
   };
 
   const sortPolls = () => {
+    if (!polls) {
+      return
+    }
     let sorted = [...polls];
     switch (sortOption) {
       case 'date_desc':
@@ -240,7 +243,7 @@ export default function MyPollsPage() {
                   <div className="flex flex-wrap gap-4 mb-4">
                     <div className="text-sm">
                       <div className="text-gray-500">Дата создания</div>
-                      <div>{formatDate(poll.created_at || new Date().toISOString())}</div>
+                      <div>{formatDate(poll.created_at)}</div>
                     </div>
                     <div className="text-sm">
                       <div className="text-gray-500">Завершается</div>
