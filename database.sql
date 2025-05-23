@@ -110,9 +110,9 @@ INSERT INTO users (role, name, email, password)
 VALUES (
   'admin', 
   'superadmin', 
-  'admin@example.com', 
-  '$2a$10$EixZaYVK1fsbw1ZfbX3OXe.Pu6q2/o6HqZV0K6L/BCGgDCbXJbad.'
-)
+  'admin@admin.com', 
+  '$2a$10$f7vfjoANnUmUnoy.Vrda/O7dzHUyZLvnK5AEedePRisvuMOwLvNe2'
+);
 
 CREATE INDEX idx_users_id_name ON users (id, name);
 

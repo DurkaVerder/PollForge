@@ -38,7 +38,7 @@ const SharePollModal = ({ pollLink, isOpen, onClose }) => {
           />
           <button
             onClick={handleCopy}
-            className="p-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors duration-200"
+            className="p-2 bg-primary-500 text-white rounded-lg hover:bg-primary-600 transition-colors duration-200"
             title={isCopied ? 'Скопировано!' : 'Копировать'}
           >
             {isCopied ? (
@@ -63,7 +63,7 @@ const SharePollModal = ({ pollLink, isOpen, onClose }) => {
         </div>
         <button
           onClick={onClose}
-          className="w-full bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors duration-200"
+          className="w-full bg-primary-500 text-white px-4 py-2 rounded-lg hover:bg-primary-600 transition-colors duration-200"
         >
           Закрыть
         </button>
