@@ -89,13 +89,7 @@ export default function Header() {
                     <span className="material-symbols-outlined mr-2 align-middle">person</span>
                     Профиль
                   </Link>
-                  <Link
-                    to="/settings"
-                    className="block px-4 py-2 hover:bg-gray-100 transition-colors duration-200"
-                  >
-                    <span className="material-symbols-outlined mr-2 align-middle">settings</span>
-                    Настройки
-                  </Link>
+                  
                   <button
                     onClick={handleLogout}
                     className="w-full text-left px-4 py-2 hover:bg-gray-100 transition-colors duration-200 text-red-500 flex items-center"

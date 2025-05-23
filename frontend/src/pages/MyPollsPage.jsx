@@ -144,7 +144,7 @@ export default function MyPollsPage() {
 
   if (!polls || polls.length === 0) {
     return (
-      <div className="flex flex-col lg:flex-row gap-6 p-6">
+      <div className="flex flex-col lg:flex-row gap-6 ">
         <Sidebar />
         <div className="bg-white rounded-2xl shadow-lg p-10 text-center w-full transform transition-all duration-300 hover:shadow-xl">
           <div className="mx-auto w-24 h-24 bg-gradient-to-br from-blue-100 to-blue-200 rounded-full flex items-center justify-center mb-6 animate-pulse">
@@ -164,7 +164,7 @@ export default function MyPollsPage() {
   }
 
   return (
-    <main className="flex flex-col lg:flex-row gap-6 p-6 bg-gray-50 min-h-screen">
+    <main className="flex flex-col lg:flex-row gap-6  bg-gray-50 min-h-screen">
       <Sidebar />
       
       <div className="flex-1">

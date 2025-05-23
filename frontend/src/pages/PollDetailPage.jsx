@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate  } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
 export default function PollDetailPage() {
+  const navigate = useNavigate();
   const { link } = useParams();
   const [poll, setPoll] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -313,6 +314,16 @@ export default function PollDetailPage() {
                       </span>
                     </li>
                   </ul>
+
+                  <div className="mt-6 flex justify-end">
+                    <button
+                      onClick={() => navigate(`/poll/graphics/${poll.id}`)}
+                      className="flex items-center px-5 py-2.5 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-xl hover:from-blue-600 hover:to-blue-700 transition-all duration-300"
+                    >
+                      <span className="material-symbols-outlined mr-2">bar_chart</span>
+                      Подробная статистика в реальном времени
+                    </button>
+                  </div>
                 </div>
                 
                 <div className="bg-white p-4 rounded-xl shadow-sm">

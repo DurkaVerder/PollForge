@@ -33,7 +33,7 @@ func UserLogging(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusAccepted, gin.H{
+	c.JSON(http.StatusOK, gin.H{
 		"id":      userId,
 		"message": "Пользователь вошёл",
 		"token":   token,
@@ -54,7 +54,7 @@ func UserRegistration(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, err.Error())
 		return
 	}
-	c.JSON(http.StatusAccepted, gin.H{
+	c.JSON(http.StatusOK, gin.H{
 		"message": "Пользователь создан",
 	})
 }

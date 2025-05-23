@@ -39,28 +39,7 @@ export default function Sidebar() {
               Мои опросы
             </NavLink>
           </li>
-          <li>
-            <NavLink
-              to="/explore"
-              className={({ isActive }) => 
-                `flex items-center p-3 rounded-lg transition-colors duration-200 ${isActive ? 'bg-primary-50 text-primary-700' : 'hover:bg-gray-100'}`
-              }
-            >
-              <span className="material-symbols-outlined mr-3">explore</span>
-              Обзор
-            </NavLink>
-          </li>
-          <li>
-            <NavLink
-              to="/trending"
-              className={({ isActive }) => 
-                `flex items-center p-3 rounded-lg transition-colors duration-200 ${isActive ? 'bg-primary-50 text-primary-700' : 'hover:bg-gray-100'}`
-              }
-            >
-              <span className="material-symbols-outlined mr-3">trending_up</span>
-              Популярное
-            </NavLink>
-          </li>
+          
         </ul>
       </nav>
     </aside>

@@ -21,6 +21,7 @@ import EditPollPage from './pages/EditPollPage';
 import AnotherProfilePage from './pages/AnotherProfilePage';
 import { ForgotPasswordPage } from './pages/ForgotPasswordPage';
 import { ResetPasswordPage } from './pages/ForgotPasswordPage';
+import PollStatsPage from './pages/GraphicsPage';
 
 const MainLayout = () => (
   <div className="w-[1200px] p-4 font-sans bg-gray-50 min-h-screen">
@@ -123,6 +124,16 @@ export default function App() {
               element={
                 <ProtectedRoute>
                   <EditPollPage />
+                </ProtectedRoute>
+              }
+            />
+
+
+            <Route 
+              path="/poll/graphics/:formId"
+              element={
+                <ProtectedRoute>
+                  <PollStatsPage />
                 </ProtectedRoute>
               }
             />

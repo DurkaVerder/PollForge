@@ -42,7 +42,7 @@ func (s *Server) initRoutes() {
 
 	stats := s.engine.Group("/api/stats")
 	{
-		stats.GET("/profile", s.handler.HandlerProfileStats)
+		stats.GET("/profile/:user_id", s.handler.HandlerProfileStats)
 	}
 
 	s.engine.GET("/ws", s.ws.HandleConnection)

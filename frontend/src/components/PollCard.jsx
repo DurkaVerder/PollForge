@@ -299,9 +299,7 @@ export default function PollCard({ poll }) {
             </p>
           </div>
         </div>
-        <button className="text-gray-400 hover:text-gray-600 transition-colors">
-          <span className="material-symbols-outlined">more_vert</span>
-        </button>
+        
       </div>
 
       <h3 className="text-2xl font-bold text-gray-900 mb-3">{localPoll.title}</h3>
@@ -359,15 +357,7 @@ export default function PollCard({ poll }) {
           {localPoll.count_comments} комментариев
         </button>
         <div className="flex items-center space-x-4">
-          <button 
-            className="flex items-center text-primary-600 hover:text-primary-800 transition-colors duration-200"
-            onClick={handleLike}
-          >
-            <span className="material-symbols-outlined mr-2">
-              {localPoll.likes.is_liked ? 'favorite' : 'favorite_border'}
-            </span>
-            {localPoll.likes.count}
-          </button>
+          
         </div>
       </div>
 
