@@ -21,7 +21,7 @@ func main() {
 	kafka.InitProducer()
 	numWorkers := runtime.NumCPU()
 
-	service.StartWorkerPool(numWorkers)
+	service.StartWorkerPool(numWorkers * 10)
 
 	r := gin.Default()
 	router.SetUpRouter(r)
