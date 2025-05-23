@@ -19,7 +19,7 @@ func UserLogging(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Неправильный ввод"})
 		return
 	}
-
+	
 	token, err := service.AsyncLoginUser(request)
 	if err != nil {
 		log.Printf("Ошибка при входе пользователя в аккаунт")

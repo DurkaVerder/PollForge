@@ -17,5 +17,5 @@ func NewHandler(s *service.Service) *Handler {
 }
 
 func (h *Handler) HandlerProfileStats(c *gin.Context) {
-
+	 
 }
