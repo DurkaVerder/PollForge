@@ -27,8 +27,9 @@ func main() {
 	defer postgres.Close()
 
 	answersChannel := make(chan models.Vote, 100)
+	likesChannel := make(chan models.Like, 100)
 
-	voteService := service.NewService(postgres, answersChannel)
+	voteService := service.NewService(postgres, answersChannel, likesChannel)
 
 	voteService.Start(countWorkers)
 

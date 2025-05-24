@@ -299,7 +299,7 @@ export default function PollCard({ poll }) {
             </p>
           </div>
         </div>
-        
+
       </div>
 
       <h3 className="text-2xl font-bold text-gray-900 mb-3">{localPoll.title}</h3>
@@ -357,7 +357,6 @@ export default function PollCard({ poll }) {
           {localPoll.count_comments} комментариев
         </button>
         <div className="flex items-center space-x-4">
-          
         </div>
       </div>
 
