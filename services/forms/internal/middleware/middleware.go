@@ -29,12 +29,34 @@ func JWTAuth() gin.HandlerFunc {
 			return
 		}
 		claims := token.Claims.(jwt.MapClaims)
+
 		rawId, ok := claims["id"]
 		if !ok {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Нет id в токене"})
 			return
 		}
+
+		rawRole, ok := claims["role"]
+		if !ok {
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Нет роли в токене"})
+			return
+		}
+
+		rawIsBanned, ok := claims["is_banned"]
+
+		if !ok {
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Нет параметра доступа в токене"})
+			return
+		}
+
+		if banned, ok := claims["is_banned"].(bool); ok && banned {
+            c.AbortWithStatusJSON(403, gin.H{"error": "пользователь заблокирован"})
+            return
+        }
+		
 		c.Set("id", rawId)
+		c.Set("role", rawRole)
+		c.Set("is_banned", rawIsBanned)
 		c.Next()
 	}
 }
@@ -52,7 +74,7 @@ func getToken(auth string) (*jwt.Token, error) {
 
 func validToken(token *jwt.Token) (bool, error) {
 	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
-		if !claims.VerifyExpiresAt(time.Now().Unix(), true) {
+		if !claims.VerifyExpiresAt(time.Now().Local().Unix(), true) {
 			return false, errors.New("токен истёк")
 		}
 		return true, nil

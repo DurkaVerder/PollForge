@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"log"
 	"os"
+	"time"
 
 	_ "github.com/lib/pq"
 )
@@ -31,9 +32,9 @@ func ConnectToDb() error {
 }
 
 func GetAllCommentsRequest(formId int) (*sql.Rows, error) {
-	query := `SELECT u.name, comments.description, comments.created_at FROM comments
+	query := `SELECT comments.id, comments.form_id, u.id, u.name, comments.description, comments.created_at, comments.edited_at FROM comments
     JOIN users AS u ON comments.user_id = u.id 
-	WHERE form_id = $1 ORDER BY created_at DESC`
+	WHERE form_id = $1 ORDER BY created_at`
 
 	rows, err := Db.Query(query, formId)
 
@@ -45,9 +46,9 @@ func GetAllCommentsRequest(formId int) (*sql.Rows, error) {
 }
 
 func CreateCommentRequest(comment models.CommentRequest, formId int, creatorId int) error {
-
+	createdTime := time.Now().Local()
 	query := `INSERT INTO comments (form_id, user_id, description, created_at) VALUES ($1, $2, $3, $4)`
-	_, err := Db.Exec(query, formId, creatorId, comment.Description, comment.CreatedAt)
+	_, err := Db.Exec(query, formId, creatorId, comment.Description, createdTime)
 	if err != nil {
 		log.Printf("Ошибка при запросе создания комментария: %v", err)
 		return err
@@ -56,7 +57,7 @@ func CreateCommentRequest(comment models.CommentRequest, formId int, creatorId i
 }
 
 func UpdateCommentRequest(comment models.Comment, commentId int, formId int, creatorId int) error {
-	query := `UPDATE comments SET description = $1 WHERE form_id = $2 AND id = $3 AND user_id = $4`
+	query := `UPDATE comments SET description = $1, edited_at = NOW() WHERE form_id = $2 AND id = $3 AND user_id = $4`
 	_, err := Db.Exec(query, comment.Description, formId, commentId, creatorId)
 	if err != nil {
 		log.Printf("Ошибка при запросе обновления комментария: %v", err)

@@ -11,6 +11,7 @@ import (
 const (
 	QueryGetQuestions = "SELECT id, title FROM questions WHERE form_id = $1 ORDER BY number_order"
 	QueryGetAnswers   = "SELECT a.id, a.title, a.question_id, a.count FROM answers a JOIN questions q ON a.question_id = q.id WHERE q.form_id = $1 ORDER BY q.number_order, a.number_order"
+	
 )
 
 type Postgres struct {

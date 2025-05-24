@@ -3,16 +3,20 @@ package service
 import (
 	en "email/internal/email_notifier"
 	"email/internal/models"
+	"fmt"
 	"log"
+	"os"
 	"sync"
 )
 
 const (
-	countWorker = 5
+	countWorker = 5	
 
 	userRegisteredEvent = "user_registered"
 
 	userLoginEvent      = "user_login"
+
+	userPasswordEvent 	= "user_reset"
 
 )
 
@@ -63,7 +67,7 @@ func (s *Service) worker(msg <-chan models.MessageKafka) {
 			continue
 		}
 
-		emailMsg := s.createEmail(email, m.EventType)
+		emailMsg := s.createEmail(email, m.EventType, m.Token)
 
 		err = s.emailNotifier.SendEmail(emailMsg.To, emailMsg.Subject, emailMsg.Body)
 		if err != nil {
@@ -81,28 +85,33 @@ func (s *Service) getEmailByUserID(userID string) (string, error) {
 	return email, nil
 }
 
-func (s *Service) selectEmailTemplate(eventType string) (string, string) {
-	var subject, body string
-	switch eventType {
-	case userRegisteredEvent:
+func (s *Service) selectEmailTemplate(eventType, token string) (subject, body string) {
+    switch eventType {
+    case userRegisteredEvent:
+        subject = "Добро пожаловать в наш сервис!"
+        body = "Спасибо за регистрацию! Мы рады видеть вас."
 
-		subject = "Добро пожаловать в наш сервис!"
-		body = "Спасибо за регистрацию! Мы рады видеть вас в нашем сервисе."
-	case userLoginEvent:
-		subject = "Уведомление о входе в систему!"
-		body = "Вы успешно вошли в систему. Если это были не вы, пожалуйста, измените пароль."
+    case userLoginEvent:
+        subject = "Уведомление о входе в систему"
+        body = "Вы успешно вошли. Если это были не вы — срочно смените пароль!"
 
-	default:
-		subject = "Уведомление"
-		body = "У вас новое уведомление."
-	}
+    case userPasswordEvent:
+        subject = "Сброс пароля"
+        base := os.Getenv("FRONTEND_URL") 
+        link := fmt.Sprintf("%s/reset_password?token=%s", base, token)
+        body = fmt.Sprintf("Чтобы сбросить пароль, перейдите по ссылке:\n\n%s\n\nЕсли вы не запрашивали сброс — проигнорируйте это письмо.", link)
 
-	return subject, body
+    default:
+        subject = "У вас новое уведомление"
+        body    = "Пожалуйста, проверьте ваш аккаунт."
+    }
+
+    return subject, body
 }
 
-func (s *Service) createEmail(email, eventType string) Email {
+func (s *Service) createEmail(email, eventType string, token string) Email {
 
-	subject, body := s.selectEmailTemplate(eventType)
+	subject, body := s.selectEmailTemplate(eventType, token)
 
 	return Email{
 		To:      email,
@@ -110,3 +119,4 @@ func (s *Service) createEmail(email, eventType string) Email {
 		Body:    body,
 	}
 }
+

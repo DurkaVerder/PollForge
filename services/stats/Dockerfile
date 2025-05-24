@@ -25,6 +25,4 @@ WORKDIR /root/
 
 COPY --from=builder /app/app .
 
-RUN ls -l
-
 CMD ["./app"]
