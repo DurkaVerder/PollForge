@@ -23,6 +23,7 @@ func NewHandler(s Service) *Handler {
 }
 
 func (h *Handler) HandlerProfileStats(c *gin.Context) {
+
 	userID := c.Param("user_id")
 
 	request, err := h.s.GetProfileStats(userID)

@@ -31,7 +31,7 @@ var jobQueue chan Job
 
 // Запуск пула воркеров
 func StartWorkerPool(numWorkers int) {
-	jobQueue = make(chan Job, 100)
+	jobQueue = make(chan Job, 1000)
 
 	for i := 0; i < numWorkers; i++ {
 		go worker(i, jobQueue)

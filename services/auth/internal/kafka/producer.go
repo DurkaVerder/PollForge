@@ -7,7 +7,6 @@ import (
 	"log"
 	"os"
 
-
 	"github.com/segmentio/kafka-go"
 )
 
@@ -16,9 +15,9 @@ var MsgChan chan models.MessageKafka
 
 func InitProducer() {
 	writer = kafka.NewWriter(kafka.WriterConfig{
-		Brokers:      []string{os.Getenv("KAFKA_BROKER")},
-		Topic:        `notify.topic`,
-		Balancer:     &kafka.LeastBytes{},
+		Brokers:  []string{os.Getenv("KAFKA_BROKER")},
+		Topic:    `notify.topic`,
+		Balancer: &kafka.LeastBytes{},
 	})
 
 	ch := make(chan models.MessageKafka, 1000)
