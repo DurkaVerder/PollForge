@@ -130,9 +130,7 @@ export default function AnotherUserProfile({ id }) {
                 <p className="text-gray-500 text-sm mb-3">{theme.description}</p>
                 <div className="mt-auto flex justify-between items-center">
                   <span className="text-sm text-primary-600">{theme.count_votes} голосов всего</span>
-                  <span className="material-symbols-outlined text-primary-600">
-                    chevron_right
-                  </span>
+                  
                 </div>
               </button>
             ))}
@@ -204,10 +202,7 @@ export default function AnotherUserProfile({ id }) {
                 </svg>
               </div>
               <div className="flex justify-center mt-4">
-                <button className="text-primary-600 hover:text-primary-700 font-medium hover:underline transition-all duration-300 flex items-center">
-                  Посмотреть подробную аналитику
-                  <span className="material-symbols-outlined ml-1">arrow_forward</span>
-                </button>
+                
               </div>
             </div>
           </div>

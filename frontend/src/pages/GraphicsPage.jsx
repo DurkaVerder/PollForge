@@ -249,7 +249,7 @@ export default function PollStatsPage() {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold text-center mb-8">Реальная статистика опроса</h1>
+      <h1 className="text-3xl font-bold text-center mb-8">Статистика опроса</h1>
       <div className="flex justify-center space-x-4 mb-6">
         {['count', 'time', 'distribution'].map((tab) => (
           <button

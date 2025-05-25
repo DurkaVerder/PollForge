@@ -7,7 +7,7 @@ export default function Sidebar() {
         <ul className="space-y-2">
           <li>
             <NavLink
-              to="/"
+              to="/stream-line"
               end
               className={({ isActive }) => 
                 `flex items-center p-3 rounded-lg transition-colors duration-200 ${isActive ? 'bg-primary-50 text-primary-700' : 'hover:bg-gray-100'}`

@@ -44,7 +44,7 @@ export default function Header() {
   return (
     <header className="bg-white rounded-lg shadow-md p-4 mb-6 flex items-center justify-between sticky top-0 z-10">
       <Link
-        to="/"
+        to="/stream-line"
         className="text-2xl font-bold text-primary-600 hover:text-primary-700 transition-colors duration-300"
       >
         PollForge

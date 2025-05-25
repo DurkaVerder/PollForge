@@ -45,7 +45,7 @@ export default function LoginPage() {
       localStorage.setItem('authToken', data.token);
       localStorage.setItem('userId', data.id);
       // Перенаправляем пользователя
-      navigate('/');
+      navigate('/stream-line');
     } catch (err) {
       setError(err.message);
       console.error('Login error:', err);
