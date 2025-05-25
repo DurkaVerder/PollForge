@@ -5,7 +5,7 @@ export default function NotFoundPage() {
   const navigate = useNavigate();
 
   const handleClick = () => {
-    navigate('/');
+    navigate('/stream-line');
   };
 
   return (

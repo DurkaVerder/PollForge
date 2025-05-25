@@ -27,6 +27,7 @@ CREATE TABLE forms(
     title VARCHAR(255) NOT NULL,
     description VARCHAR(255),
     link VARCHAR(255) NOT NULL,
+    count_likes INT DEFAULT 0,
     private_key BOOLEAN DEFAULT FALSE,
     expires_at TIMESTAMP NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
@@ -74,17 +75,11 @@ CREATE TABLE comments(
     FOREIGN KEY (form_id) REFERENCES forms (id) ON DELETE CASCADE
 );
 
-CREATE TABLE likes(
-    id SERIAL PRIMARY KEY,
-    form_id INT,
-    count INT DEFAULT 0,
-    FOREIGN KEY (form_id) REFERENCES forms (id) ON DELETE CASCADE
-);
-
 CREATE TABLE likes_forms (
-    id SERIAL PRIMARY KEY,
+    
     form_id INT NOT NULL,
     user_id INT NOT NULL,
+    PRIMARY KEY (form_id, user_id),
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (form_id) REFERENCES forms (id) ON DELETE CASCADE,
     FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
@@ -125,8 +120,6 @@ CREATE INDEX idx_questions_id_form_id ON questions (id, form_id);
 CREATE INDEX idx_answers_id_question_id ON answers (id, question_id);
 
 CREATE INDEX idx_comments_id_user_id_form_id ON comments (id, user_id, form_id);
-
-CREATE INDEX idx_likes_id_form_id ON likes (id, form_id);
 
 CREATE INDEX idx_answered_polls_id_user_id_form_id ON answered_polls (id, user_id, form_id);
 

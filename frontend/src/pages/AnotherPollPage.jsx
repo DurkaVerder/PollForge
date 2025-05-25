@@ -311,9 +311,7 @@ export default function HomePage() {
                 </p>
               </div>
             </div>
-            <button className="text-gray-400 hover:text-gray-600 transition-colors">
-              <span className="material-symbols-outlined">more_vert</span>
-            </button>
+          
           </div>
 
           <h3 className="text-2xl font-bold text-gray-900 mb-3">{poll.title}</h3>
@@ -371,12 +369,7 @@ export default function HomePage() {
               {poll.count_comments} комментариев
             </button>
             <div className="flex items-center space-x-4">
-              <button className="flex items-center text-primary-600 hover:text-primary-800 transition-colors duration-200">
-                <span className="material-symbols-outlined mr-2">
-                  {poll.likes.is_liked ? 'favorite' : 'favorite_border'}
-                </span>
-                {poll.likes.count}
-              </button>
+              
             </div>
           </div>
 

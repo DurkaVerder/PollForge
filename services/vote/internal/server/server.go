@@ -46,6 +46,7 @@ func (s *Server) initRoutes() {
 	vote := s.engine.Group("/api/vote")
 	vote.Use(Authorization())
 	vote.POST("/input", s.handlers.HandlerVote)
+	vote.POST("/like", s.handlers.HandlerVote)
 }
 
 func (s *Server) Start(port string) {

@@ -10,3 +10,14 @@ type Vote struct {
 	IsUpVote bool
 	UserID   int
 }
+
+type LikeRequest struct {
+	ID       int  `json:"id"`
+	IsUpLike bool `json:"is_up_like"`
+}
+
+type Like struct {
+	ID       int
+	UserID   int
+	IsUpLike bool
+}

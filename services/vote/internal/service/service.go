@@ -9,19 +9,24 @@ import (
 type Storage interface {
 	UpdateCountAnswerUp(answerId, userID int) error
 	UpdateCountAnswerDown(answerId, userID int) error
+
+	UpdateCountLikeUp(formID, userID int) error
+	UpdateCountLikeDown(formID, userID int) error
 }
 
 type Service struct {
 	wg             *sync.WaitGroup
 	storage        Storage
 	answersChannel chan models.Vote
+	likesChannel   chan models.Like
 }
 
-func NewService(storage Storage, answerChannel chan models.Vote) *Service {
+func NewService(storage Storage, answerChannel chan models.Vote, likesChannel chan models.Like) *Service {
 	return &Service{
 		wg:             &sync.WaitGroup{},
 		storage:        storage,
 		answersChannel: answerChannel,
+		likesChannel:   likesChannel,
 	}
 }
 
@@ -52,10 +57,36 @@ func (s *Service) Start(countWorker int) {
 	for i := 0; i < countWorker; i++ {
 		s.wg.Add(1)
 		go s.ProcessVote()
+		s.wg.Add(1)
+		go s.ProcessLike()
 	}
 }
 
 func (s *Service) Close() {
 	close(s.answersChannel)
+	close(s.likesChannel)
 	s.wg.Wait()
+}
+
+func (s *Service) AddLikeRequestToChannel(like models.Like) {
+	s.likesChannel <- like
+}
+
+func (s *Service) UpdateCountLike(like models.Like) error {
+	if like.IsUpLike {
+		return s.storage.UpdateCountLikeUp(like.ID, like.UserID)
+	} else {
+		return s.storage.UpdateCountLikeDown(like.ID, like.UserID)
+	}
+}
+
+func (s *Service) ProcessLike() {
+	defer s.wg.Done()
+	for like := range s.likesChannel {
+		if err := s.UpdateCountLike(like); err != nil {
+			log.Printf("ProcessLike: Ошибка при обновлении количества Like: %v\n", err)
+			continue
+		}
+		log.Printf("ProcessLike: Успешно обновлено количество Like для формы ID %d, пользователь ID %d\n", like.ID, like.UserID)
+	}
 }
