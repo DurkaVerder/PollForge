@@ -3,16 +3,14 @@ package service
 import (
 	"auth/internal/models"
 	"errors"
-	"log"
-
 )
 
 // Типы заданий
 type JobType string
 
 const (
-	JobRegister JobType = "register"
-	JobLogin    JobType = "login"
+	JobRegister      JobType = "register"
+	JobLogin         JobType = "login"
 	JobResetPassword JobType = "reset"
 )
 
@@ -31,19 +29,18 @@ var jobQueue chan Job
 
 // Запуск пула воркеров
 func StartWorkerPool(numWorkers int) {
-	jobQueue = make(chan Job, 1000)
+	jobQueue = make(chan Job, 10000)
 
 	for i := 0; i < numWorkers; i++ {
 		go worker(i, jobQueue)
 	}
-	log.Printf("Запущен пул из %d воркеров", numWorkers)
+
 }
+
 // Обработка заданий
 func worker(id int, jobs <-chan Job) {
 	for job := range jobs {
 
-		log.Printf("Worker %d: обрабатывает задачу %s", id, job.Type)
-		
 		var token string
 		var err error
 
@@ -62,7 +59,6 @@ func worker(id int, jobs <-chan Job) {
 	}
 }
 
-
 func AsyncRegisterUser(request models.UserRequest) (string, error) {
 	resultChan := make(chan JobResult)
 	jobQueue <- Job{Type: JobRegister, Request: request, Result: resultChan}
@@ -78,8 +74,8 @@ func AsyncLoginUser(request models.UserRequest) (string, error) {
 }
 
 func AsyncResetPassword(request models.UserRequest) (string, error) {
-    resultChan := make(chan JobResult)
-    jobQueue <- Job{Type: JobResetPassword, Request: request, Result: resultChan}
-    res := <-resultChan
-    return res.Token, res.Error
+	resultChan := make(chan JobResult)
+	jobQueue <- Job{Type: JobResetPassword, Request: request, Result: resultChan}
+	res := <-resultChan
+	return res.Token, res.Error
 }
