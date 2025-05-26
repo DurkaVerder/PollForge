@@ -3,6 +3,7 @@ package main
 import (
 	"net/http"
 	"os"
+	"stats/internal/handler"
 	"stats/internal/server"
 	"stats/internal/service"
 	"stats/internal/storage"
@@ -26,6 +27,8 @@ func main() {
 
 	svc := service.NewService(postgres)
 
+	hand := handler.NewHandler(svc)
+
 	upgrader := websocket.Upgrader{
 		CheckOrigin: func(r *http.Request) bool {
 			return true
@@ -36,7 +39,7 @@ func main() {
 
 	engine := gin.Default()
 
-	srv := server.NewServer(websocket, engine)
+	srv := server.NewServer(websocket, engine, hand)
 
 	srv.Start(os.Getenv("PORT"))
 

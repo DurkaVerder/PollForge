@@ -2,6 +2,25 @@ version: '3.9'
 
 services:
 
+  nginx:
+    image: nginx:latest
+    container_name: nginx
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+    networks:
+      - pollforge-network
+    depends_on:
+      - auth-service
+      - stream-line-service
+      - forms-service
+      - profile-service
+      - stats-service
+      - email-service
+      - vote-service
+      - comments-service
+
   prometheus:
     image: prom/prometheus:latest
     container_name: prometheus
@@ -19,9 +38,9 @@ services:
       - stream-line-service
       - forms-service
       - profile-service
-      - question-service
       - stats-service
       - email-service
+      - vote-service
       - comments-service
 
   grafana:
@@ -144,17 +163,19 @@ services:
       - PORT=:8080
     ports:
       - "8084:8080"
+    volumes:
+      - avatar_data:/uploads/avatars
     depends_on:
       postgres: 
           condition: service_healthy
     networks:
       - pollforge-network
 
-  question-service:
+  vote-service:
     build:
-      context: ./services/question
+      context: ./services/vote
       dockerfile: Dockerfile
-    container_name: question
+    container_name: vote
     environment:
       - DB_URL=postgres://postgres:durka@postgres:5432/pollforge-database?sslmode=disable
       - PORT=:8080
@@ -188,6 +209,7 @@ services:
       dockerfile: Dockerfile
     container_name: email
     environment:
+      - FRONTEND_URL=http://localhost:3000
       - KAFKA_BROKER=kafka:9092
       - DB_URL=postgres://postgres:durka@postgres:5432/pollforge-database?sslmode=disable
       - SMTP_EMAIL=hotelbooking02@mail.ru
@@ -222,6 +244,7 @@ services:
       - pollforge-network
       
 volumes:
+  avatar_data:
   postgres_data:
   grafana-storage:
   kafka-data:

@@ -11,6 +11,7 @@ import (
 )
 
 var writer *kafka.Writer
+var MsgChan chan models.MessageKafka
 
 func InitProducer() {
 	writer = kafka.NewWriter(kafka.WriterConfig{
@@ -18,22 +19,29 @@ func InitProducer() {
 		Topic:    `notify.topic`,
 		Balancer: &kafka.LeastBytes{},
 	})
+
+	ch := make(chan models.MessageKafka, 10000)
+	MsgChan = ch
+	go func() {
+		for msg := range ch {
+			data, err := json.Marshal(msg)
+			if err != nil {
+				log.Printf("Ошибка маршалинга json: %v", err)
+				continue
+			}
+			if err := writer.WriteMessages(context.Background(), kafka.Message{Value: data}); err != nil {
+				log.Printf("Ошибка при отправке kafka-сообщения: %v", err)
+			}
+		}
+	}()
+
 }
 
 func SendMessage(msg models.MessageKafka) error {
-	ctx := context.Background()
-
-	data, err := json.Marshal(msg)
-	if err != nil {
-		return err
+	select {
+	case MsgChan <- msg:
+	default:
+		log.Println("MsgChan is full, dropping message")
 	}
-	err = writer.WriteMessages(ctx, kafka.Message{
-		Value: data,
-	})
-	if err != nil {
-		log.Printf("Ошибка при отправке Kafka-сообщения: %v", err)
-		return err
-	}
-	log.Printf("Kafka-сообщение отправлено: %s", string(data))
 	return nil
 }

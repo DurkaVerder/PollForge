@@ -4,8 +4,10 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
+	"os"
 	"profile/internal/models"
 	"profile/internal/storage"
+	"strings"
 )
 
 func GetUserProfile(userId int) (*models.UserProfile, error) {
@@ -29,11 +31,15 @@ func GetUserForms(userId int) ([]models.Form, error) {
 	for rows.Next() {
 		var form models.Form
 		err := rows.Scan(&form.Id,
+			&form.CreatorId,
+			&form.ThemeName,
 			&form.Title,
 			&form.Description,
 			&form.Link,
 			&form.PrivateKey,
-			&form.ExpiresAt)
+			&form.ExpiresAt,
+			&form.CreatedAt,
+		)
 		if err != nil {
 			log.Print("Данных нет")
 			return nil, err
@@ -44,9 +50,7 @@ func GetUserForms(userId int) ([]models.Form, error) {
 	return forms, nil
 }
 
-
-
-func FormChek(creatorId int, formId int) error {
+func FormCheck(creatorId int, formId int) error {
 	var existId int
 	err := storage.FormCheckingRequest(existId, creatorId, formId)
 	if err != nil {
@@ -63,4 +67,68 @@ func FormDelete(formId int, creatorId int) (sql.Result, error) {
 		return nil, err
 	}
 	return nil, err
+}
+
+func UpdateProfileName(userId int, profile models.UserProfile) error {
+	err := storage.UpdateProfileNameRequest(userId, profile)
+	if err != nil {
+		log.Printf("Ошибка при обновлении профиля: %v", err)
+	}
+	return err
+}
+
+func DeleteProfile(userId int) error {
+	err := storage.DeleteProfileRequest(userId)
+	if err != nil {
+		log.Printf("Ошибка при удалении профиля: %v", err)
+	}
+	return err
+}
+
+func UploadAvatar(userId int, avatarURL string) error {
+	profile, err := storage.GetUserProfileRequest(userId)
+	if err != nil {
+		log.Printf("Ошибка при получении профиля: %v", err)
+		return err
+	}
+
+	if profile.AvatarURL != "" {
+
+		if !strings.HasPrefix(profile.AvatarURL, "/avatars/") {
+			log.Printf("Некорректный путь аватара: %s", profile.AvatarURL)
+			return fmt.Errorf("недопустимый путь аватара")
+		}
+
+		oldFilePath := strings.TrimPrefix(profile.AvatarURL, "/avatars/")
+		fullPath := fmt.Sprintf("/uploads/avatars/%s", oldFilePath)
+		log.Printf("Удаление старого аватара: %s", fullPath)
+		if err := os.Remove(fullPath); err != nil {
+			log.Printf("Ошибка при удалении старого аватара: %v", err)
+		}
+	}
+	err = storage.UploadAvatarRequest(userId, avatarURL)
+	if err != nil {
+		log.Printf("Ошибка при загрузке аватара: %v", err)
+		return fmt.Errorf("ошибка при загрузке аватара: %v", err)
+	}
+	return nil
+}
+
+func UpdateProfileBio(userId int, bio string) error {
+	err := storage.UpdateProfileBioRequest(userId, bio)
+	if err != nil {
+		log.Printf("Ошибка при обновлении описании профиля: %v", err)
+		return fmt.Errorf("ошибка при обновлении профиля: %v", err)
+	}
+	return nil
+}
+
+func GetDifUserProfile(userId int) (*models.UserProfile, error) {
+	profile, err := storage.GetDifUserProfileRequest(userId)
+	if err != nil {
+		log.Printf("Ошибка при получении профиля пользователя: %v", err)
+		return nil, fmt.Errorf("пользователь не найден")
+	}
+
+	return profile, nil
 }
