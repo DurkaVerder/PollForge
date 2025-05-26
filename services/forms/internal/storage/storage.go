@@ -113,7 +113,7 @@ func QuestionChekingRequest(existId int, creatorId int, formId int, questionId i
 }
 func QuestionCreateRequest(question models.QuestionRequest, creatorId int, formId int) (int, error) {
 	query := `INSERT INTO questions (form_id, creator_id, title, number_order, multiple_choice, required) 
-			  VALUES($1, $2, $3, $4, $5) RETURNING id`
+			  VALUES($1, $2, $3, $4, $5, $6) RETURNING id`
 
 	var questionId int
 	err := Db.QueryRow(query, formId, creatorId, question.Title, question.NumberOrder, question.MultipleChoice, question.Required).Scan(&questionId)

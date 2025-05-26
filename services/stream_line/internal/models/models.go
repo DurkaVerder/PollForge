@@ -15,15 +15,17 @@ type Polls struct {
 	Likes         Like       `json:"likes"`
 	CountComments int        `json:"count_comments"`
 	Questions     []Question `json:"questions"`
+	Confidential  bool       `json:"confidential"`
 	CreatorID     int        `json:"creator_id"`
 	CreatedAt     string     `json:"created_at"`
 	ExpiresAt     string     `json:"expires_at"`
 }
 
 type Question struct {
-	ID              int      `json:"id"`
-	Title           string   `json:"title"`
-	TotalCountVotes int      `json:"total_count_votes"`
+	ID              int    `json:"id"`
+	Title           string `json:"title"`
+	TotalCountVotes int    `json:"total_count_votes"`
+	MultipleChoice  bool
 	Answers         []Answer `json:"answers"`
 }
 
@@ -52,6 +54,7 @@ type FormFromDB struct {
 	Link          string
 	Like          LikeFromDB
 	CountComments int
+	Confidential  bool
 	CreatorID     int
 	CreatedAt     time.Time
 	ExpiresAt     time.Time
@@ -62,6 +65,7 @@ type QuestionFromDB struct {
 	Title           string
 	FormID          int
 	NumberOrder     int
+	MultipleChoice  bool
 	TotalCountVotes int // TotalCountVotes. Not from DB
 }
 

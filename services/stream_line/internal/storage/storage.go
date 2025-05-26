@@ -9,10 +9,10 @@ import (
 )
 
 const (
-	GetOtherFormsQuery = `SELECT f.id, f.title, t.name, f.description, f.creator_id, f.link, f.count_likes, EXISTS(SELECT * FROM likes_forms WHERE user_id = $1 AND form_id = f.id) AS is_liked, (SELECT COUNT(id) FROM comments c WHERE c.form_id = f.id) AS count_votes, f.created_at, f.expires_at FROM forms f LEFT JOIN themes t ON t.id = f.theme_id WHERE f.expires_at > NOW() AND f.private_key = false AND f.created_at < $2 ORDER BY f.created_at DESC LIMIT $3`
-	GetQuestionQuery   = `SELECT id, title, form_id, number_order FROM questions WHERE form_id = ANY($1)`
+	GetOtherFormsQuery = `SELECT f.id, f.title, t.name, f.description, f.creator_id, f.link, f.count_likes, EXISTS(SELECT * FROM likes_forms WHERE user_id = $1 AND form_id = f.id) AS is_liked, (SELECT COUNT(id) FROM comments c WHERE c.form_id = f.id) AS count_votes, f.confidential, f.created_at, f.expires_at FROM forms f LEFT JOIN themes t ON t.id = f.theme_id WHERE f.expires_at > NOW() AND f.private_key = false AND f.created_at < $2 ORDER BY f.created_at DESC LIMIT $3`
+	GetQuestionQuery   = `SELECT id, title, form_id, number_order, multiple_choice FROM questions WHERE form_id = ANY($1)`
 	GetAnswerQuery     = `SELECT a.id, a.title, a.question_id, a.number_order, a.count, EXISTS(SELECT * FROM answers_chosen WHERE user_id = $2 AND answer_id = a.id) AS is_selected FROM answers a WHERE a.question_id = ANY($1)`
-	GetFormsQuery      = `SELECT f.id, f.title, t.name, f.description, f.creator_id, f.link, f.count_likes, EXISTS(SELECT * FROM likes_forms WHERE user_id = $1 AND form_id = f.id) AS is_liked, (SELECT COUNT(id) FROM comments c WHERE c.form_id = f.id) AS count_votes, f.created_at, f.expires_at FROM forms f LEFT JOIN themes t ON t.id = f.theme_id WHERE f.expires_at > NOW() AND f.link = $2`
+	GetFormsQuery      = `SELECT f.id, f.title, t.name, f.description, f.creator_id, f.link, f.count_likes, EXISTS(SELECT * FROM likes_forms WHERE user_id = $1 AND form_id = f.id) AS is_liked, (SELECT COUNT(id) FROM comments c WHERE c.form_id = f.id) AS count_votes, f.confidential, f.created_at, f.expires_at FROM forms f LEFT JOIN themes t ON t.id = f.theme_id WHERE f.expires_at > NOW() AND f.link = $2`
 )
 
 type Postgres struct {
@@ -35,7 +35,7 @@ func (p *Postgres) GetFormsByOtherUserIDWithCountLikesAndComments(userID string,
 	var forms []models.FormFromDB
 	for rows.Next() {
 		var form models.FormFromDB
-		if err := rows.Scan(&form.ID, &form.Title, &form.Theme, &form.Description, &form.CreatorID, &form.Link, &form.Like.Count, &form.Like.IsLiked, &form.CountComments, &form.CreatedAt, &form.ExpiresAt); err != nil {
+		if err := rows.Scan(&form.ID, &form.Title, &form.Theme, &form.Description, &form.CreatorID, &form.Link, &form.Like.Count, &form.Like.IsLiked, &form.CountComments, &form.Confidential, &form.CreatedAt, &form.ExpiresAt); err != nil {
 			return nil, err
 		}
 		forms = append(forms, form)
@@ -54,7 +54,7 @@ func (p *Postgres) GetQuestionsByFormsID(formIDs []int) ([]models.QuestionFromDB
 	var questions []models.QuestionFromDB
 	for rows.Next() {
 		var question models.QuestionFromDB
-		if err := rows.Scan(&question.ID, &question.Title, &question.FormID, &question.NumberOrder); err != nil {
+		if err := rows.Scan(&question.ID, &question.Title, &question.FormID, &question.NumberOrder, &question.MultipleChoice); err != nil {
 			return nil, err
 		}
 		questions = append(questions, question)
@@ -92,7 +92,7 @@ func (p *Postgres) GetFormsByOtherUserIDWithCountLikesAndCommentsByLink(userID, 
 	var forms []models.FormFromDB
 	for rows.Next() {
 		var form models.FormFromDB
-		if err := rows.Scan(&form.ID, &form.Title, &form.Theme, &form.Description, &form.CreatorID, &form.Link, &form.Like.Count, &form.Like.IsLiked, &form.CountComments, &form.CreatedAt, &form.ExpiresAt); err != nil {
+		if err := rows.Scan(&form.ID, &form.Title, &form.Theme, &form.Description, &form.CreatorID, &form.Link, &form.Like.Count, &form.Like.IsLiked, &form.CountComments, &form.Confidential, &form.CreatedAt, &form.ExpiresAt); err != nil {
 			return nil, err
 		}
 		forms = append(forms, form)

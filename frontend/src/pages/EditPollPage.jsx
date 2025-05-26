@@ -139,6 +139,7 @@ export default function EditPollPage() {
           title: data.title,
           description: data.description,
           private_key: data.private_key,
+          confidential: data.confidential,
           expires_at: expiresAt,
           theme_id: data.theme_id || 1
         });
@@ -211,6 +212,7 @@ export default function EditPollPage() {
         body: JSON.stringify({
           title: formData.title,
           description: formData.description,
+          confidential: formData.confidential,
           private_key: formData.private_key,
           expires_at: utcISOString,
           theme_id: formData.theme_id,
@@ -385,9 +387,24 @@ export default function EditPollPage() {
                   </label>
                 </div>
 
+                <div className="flex items-center">
+                    <input
+                      type="checkbox"
+                      id="confidential"
+                      name="confidential"
+                      checked={formData.confidential}
+                      onChange={handleFormChange}
+                      className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
+                    />
+                    <label htmlFor="confidential" className="ml-2 block text-sm text-gray-700">
+                      Скрыть результаты от других пользователей
+                    </label>
+                    <span className="ml-2 text-gray-500" title="Результаты будут видны только вам">ℹ️</span>
+                </div>
+
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Дата окончания (необязательно)
+                    Дата окончания 
                   </label>
                   <input
                     type="datetime-local"
