@@ -18,10 +18,16 @@ export default function CreatePollPage() {
     title: '',
     description: '',
     private_key: false,
+    confidential: false, // New field - whether to show results to others
     expires_at: '',
     theme_id: 1
   });
-  const [questions, setQuestions] = useState([{ id: uuidv4(), title: '', answers: [{ id: uuidv4(), value: '' }, { id: uuidv4(), value: '' }] }]);
+  const [questions, setQuestions] = useState([{ 
+    id: uuidv4(), 
+    title: '', 
+    multiple_choice: false, // New field - whether multiple answers are allowed
+    answers: [{ id: uuidv4(), value: '' }, { id: uuidv4(), value: '' }] 
+  }]);
   const [themes, setThemes] = useState([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoadingThemes, setIsLoadingThemes] = useState(false);
@@ -84,6 +90,17 @@ export default function CreatePollPage() {
     }
   };
 
+  // New handler for multiple_choice toggle
+  const handleMultipleChoiceChange = (id, checked) => {
+    const newQuestions = questions.map(question => {
+      if (question.id === id) {
+        return { ...question, multiple_choice: checked };
+      }
+      return question;
+    });
+    setQuestions(newQuestions);
+  };
+
   const handleAnswerChange = (qId, aId, value) => {
     if (value.length <= MAX_ANSWER_LENGTH) {
       const newQuestions = questions.map(question => {
@@ -104,7 +121,12 @@ export default function CreatePollPage() {
 
   const addQuestion = () => {
     if (questions.length < MAX_QUESTIONS) {
-      setQuestions([...questions, { id: uuidv4(), title: '', answers: [{ id: uuidv4(), value: '' }, { id: uuidv4(), value: '' }] }]);
+      setQuestions([...questions, { 
+        id: uuidv4(), 
+        title: '', 
+        multiple_choice: false,
+        answers: [{ id: uuidv4(), value: '' }, { id: uuidv4(), value: '' }] 
+      }]);
     } else {
       setError(`Максимальное количество вопросов: ${MAX_QUESTIONS}`);
     }
@@ -193,6 +215,7 @@ export default function CreatePollPage() {
           theme_id: formData.theme_id,
           description: formData.description,
           private_key: formData.private_key,
+          confidential: formData.confidential, // Include confidential field
           expires_at: utcISOString
         })
       });
@@ -220,7 +243,8 @@ export default function CreatePollPage() {
           },
           body: JSON.stringify({
             title: question.title,
-            number_order: qIndex + 1
+            number_order: qIndex + 1,
+            multiple_choice: question.multiple_choice // Include multiple_choice field
           })
         });
 
@@ -282,75 +306,75 @@ export default function CreatePollPage() {
   };
 
   const customStyles = {
-  control: (provided, state) => ({
-    ...provided,
-    borderColor: state.isFocused ? '#3b82f6' : '#d1d5db', // blue-500 при фокусе, gray-300 по умолчанию
-    borderWidth: '1px',
-    borderRadius: '0.5rem', // rounded-lg
-    padding: '0.5rem', // py-2 px-4
-    backgroundColor: '#fff', // bg-white
-    boxShadow: state.isFocused ? '0 0 0 2px rgba(59, 130, 246, 0.5)' : 'none', // focus:ring-2 focus:ring-blue-500
-    '&:hover': {
-      borderColor: '#3b82f6', // hover:border-blue-500
-    },
-    transition: 'all 0.3s ease', // transition-all
-    fontSize: '0.875rem', // text-sm
-    fontWeight: 500, // font-medium
-    minHeight: '2.5rem', // h-10
-  }),
-  menu: (provided) => ({
-    ...provided,
-    borderRadius: '0.5rem', // rounded-lg
-    backgroundColor: '#fff', // bg-white
-    boxShadow: '0 10px 15px rgba(0, 0, 0, 0.1)', // shadow-lg
-    marginTop: '0.25rem', // mt-1
-    zIndex: 10,
-  }),
-  option: (provided, state) => ({
-    ...provided,
-    backgroundColor: state.isFocused ? '#eff6ff' : '#fff', // bg-blue-50 при наведении, иначе bg-white
-    color: state.isSelected ? '#8b5cf6' : '#1f2937', // purple-500 для выбранной, text-gray-800 для остальных
-    padding: '0.5rem 1rem', // py-2 px-4
-    fontSize: '0.875rem', // text-sm
-    cursor: 'pointer',
-    transition: 'background-color 0.2s ease',
-    whiteSpace: 'normal', // для переноса длинных описаний
-    '&:hover': {
-      backgroundColor: '#dbeafe', // hover:bg-blue-100
-    },
-  }),
-  singleValue: (provided) => ({
-    ...provided,
-    color: '#8b5cf6', // purple-500 для выбранной темы
-    fontSize: '0.875rem', // text-sm
-    whiteSpace: 'normal', // для переноса текста
-    maxWidth: '100%', // чтобы текст не обрезался
-  }),
-  placeholder: (provided) => ({
-    ...provided,
-    color: '#9ca3af', // text-gray-400
-    fontSize: '0.875rem', // text-sm
-  }),
-  dropdownIndicator: (provided, state) => ({
-    ...provided,
-    color: state.isFocused ? '#3b82f6' : '#6b7280', // blue-500 или gray-500
-    '&:hover': {
-      color: '#3b82f6', // hover:text-blue-500
-    },
-  }),
-  clearIndicator: (provided) => ({
-    ...provided,
-    color: '#6b7280', // gray-500
-    '&:hover': {
-      color: '#ef4444', // hover:text-red-500
-    },
-  }),
-  input: (provided) => ({
-    ...provided,
-    color: '#1f2937', // text-gray-800
-    fontSize: '0.875rem', // text-sm
-  }),
-};
+    control: (provided, state) => ({
+      ...provided,
+      borderColor: state.isFocused ? '#3b82f6' : '#d1d5db',
+      borderWidth: '1px',
+      borderRadius: '0.5rem',
+      padding: '0.5rem',
+      backgroundColor: '#fff',
+      boxShadow: state.isFocused ? '0 0 0 2px rgba(59, 130, 246, 0.5)' : 'none',
+      '&:hover': {
+        borderColor: '#3b82f6',
+      },
+      transition: 'all 0.3s ease',
+      fontSize: '0.875rem',
+      fontWeight: 500,
+      minHeight: '2.5rem',
+    }),
+    menu: (provided) => ({
+      ...provided,
+      borderRadius: '0.5rem',
+      backgroundColor: '#fff',
+      boxShadow: '0 10px 15px rgba(0, 0, 0, 0.1)',
+      marginTop: '0.25rem',
+      zIndex: 10,
+    }),
+    option: (provided, state) => ({
+      ...provided,
+      backgroundColor: state.isFocused ? '#eff6ff' : '#fff',
+      color: state.isSelected ? '#8b5cf6' : '#1f2937',
+      padding: '0.5rem 1rem',
+      fontSize: '0.875rem',
+      cursor: 'pointer',
+      transition: 'background-color 0.2s ease',
+      whiteSpace: 'normal',
+      '&:hover': {
+        backgroundColor: '#dbeafe',
+      },
+    }),
+    singleValue: (provided) => ({
+      ...provided,
+      color: '#8b5cf6',
+      fontSize: '0.875rem',
+      whiteSpace: 'normal',
+      maxWidth: '100%',
+    }),
+    placeholder: (provided) => ({
+      ...provided,
+      color: '#9ca3af',
+      fontSize: '0.875rem',
+    }),
+    dropdownIndicator: (provided, state) => ({
+      ...provided,
+      color: state.isFocused ? '#3b82f6' : '#6b7280',
+      '&:hover': {
+        color: '#3b82f6',
+      },
+    }),
+    clearIndicator: (provided) => ({
+      ...provided,
+      color: '#6b7280',
+      '&:hover': {
+        color: '#ef4444',
+      },
+    }),
+    input: (provided) => ({
+      ...provided,
+      color: '#1f2937',
+      fontSize: '0.875rem',
+    }),
+  };
 
   if (isLoadingThemes) {
     return (
@@ -523,19 +547,36 @@ export default function CreatePollPage() {
                   />
                 </div>
 
-                <div className="flex items-center">
-                  <input
-                    type="checkbox"
-                    id="private_key"
-                    name="private_key"
-                    checked={formData.private_key}
-                    onChange={handleFormChange}
-                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded transition-transform"
-                  />
-                  <label htmlFor="private_key" className="ml-2 text-sm text-gray-700">
-                    Приватный опрос
-                  </label>
-                  <span className="ml-2 text-gray-500" title="Приватный опрос доступен только по ссылке">ℹ️</span>
+                <div className="space-y-4">
+                  <div className="flex items-center">
+                    <input
+                      type="checkbox"
+                      id="private_key"
+                      name="private_key"
+                      checked={formData.private_key}
+                      onChange={handleFormChange}
+                      className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded transition-transform"
+                    />
+                    <label htmlFor="private_key" className="ml-2 text-sm text-gray-700">
+                      Приватный опрос
+                    </label>
+                    <span className="ml-2 text-gray-500" title="Приватный опрос доступен только по ссылке">ℹ️</span>
+                  </div>
+
+                  <div className="flex items-center">
+                    <input
+                      type="checkbox"
+                      id="confidential"
+                      name="confidential"
+                      checked={formData.confidential}
+                      onChange={handleFormChange}
+                      className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded transition-transform"
+                    />
+                    <label htmlFor="confidential" className="ml-2 text-sm text-gray-700">
+                      Скрыть результаты от других пользователей
+                    </label>
+                    <span className="ml-2 text-gray-500" title="Результаты опроса будут видны только вам">ℹ️</span>
+                  </div>
                 </div>
 
                 <div>
@@ -635,6 +676,20 @@ export default function CreatePollPage() {
                         ></div>
                       </div>
                     </div>
+                  </div>
+
+                  <div className="mb-4 flex items-center">
+                    <input
+                      type="checkbox"
+                      id={`multiple-choice-${question.id}`}
+                      checked={question.multiple_choice}
+                      onChange={(e) => handleMultipleChoiceChange(question.id, e.target.checked)}
+                      className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded transition-transform"
+                    />
+                    <label htmlFor={`multiple-choice-${question.id}`} className="ml-2 text-sm text-gray-700">
+                      Разрешить выбор нескольких ответов
+                    </label>
+                    <span className="ml-2 text-gray-500" title="Пользователи смогут выбрать несколько вариантов ответа">ℹ️</span>
                   </div>
 
                   <div>
