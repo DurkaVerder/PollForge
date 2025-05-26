@@ -20,7 +20,7 @@ func InitProducer() {
 		Balancer: &kafka.LeastBytes{},
 	})
 
-	ch := make(chan models.MessageKafka, 1000)
+	ch := make(chan models.MessageKafka, 10000)
 	MsgChan = ch
 	go func() {
 		for msg := range ch {

@@ -28,6 +28,7 @@ CREATE TABLE forms(
     description VARCHAR(255),
     link VARCHAR(255) NOT NULL,
     count_likes INT DEFAULT 0,
+    confidential BOOLEAN DEFAULT FALSE,
     private_key BOOLEAN DEFAULT FALSE,
     expires_at TIMESTAMP NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
@@ -40,6 +41,7 @@ CREATE TABLE questions(
     creator_id INT NOT NULL,
     number_order INT,
     required BOOLEAN DEFAULT FALSE,
+    multiple_choice BOOLEAN DEFAULT FALSE,
     title VARCHAR(255) NOT NULL,
     FOREIGN KEY (form_id) REFERENCES forms (id) ON DELETE CASCADE
 );

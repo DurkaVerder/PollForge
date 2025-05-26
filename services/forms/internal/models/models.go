@@ -6,6 +6,7 @@ type FormRequest struct {
 	ThemeId	int       `json:"theme_id" binding:"required"`
 	Title       string    `json:"title" binding:"required"`
 	Description string    `json:"description" binding:"required"`
+	Confidential bool	  `json:"confidential"`
 	PrivateKey  bool      `json:"private_key"`
 	ExpiresAt   time.Time `json:"expires_at" binding:"required"`
 }
@@ -15,6 +16,7 @@ type QuestionRequest struct {
 	Title       string `json:"title" binding:"required"`
 	NumberOrder int    `json:"number_order" binding:"required"`
 	Required    bool   `json:"required"`
+	MultipleChoice bool `json:"multiple_choice"`
 }
 
 
@@ -35,6 +37,7 @@ type Form struct {
 	PrivateKey  bool              `json:"private_key"`
 	ExpiresAt   time.Time         `json:"expires_at"`
 	CreatedAt   time.Time         `json:"created_at"`
+	Confidential bool              `json:"confidential"`
 	Questions   []QuestionOutput  `json:"questions"` 
 }
 
@@ -43,6 +46,7 @@ type QuestionOutput struct {
 	NumberOrder int      `json:"number_order"`
 	Title       string   `json:"title"`
 	Required    bool     `json:"required"`
+	MultipleChoice bool `json:"multiple_choice"`
 	Answers     []Answer `json:"answers"`
 }
 

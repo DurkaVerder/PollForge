@@ -43,11 +43,11 @@ func FormCheckingRequest(existId int, creatorId int, formId int) error {
 func FormCreateRequest(form models.FormRequest, creatorId int) (int, string, error) {
 
 	link := uuid.New().String()
-	query := `INSERT INTO forms (creator_id, theme_id, title, description, link, private_key, expires_at, created_at) 
-			  VALUES($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id`
+	query := `INSERT INTO forms (creator_id, theme_id, title, description, link, private_key, expires_at, created_at, confidential) 
+			  VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING id`
 	var formId int
 	createdAt := time.Now().Local()
-	err := Db.QueryRow(query, creatorId, form.ThemeId, form.Title, form.Description, link, form.PrivateKey, form.ExpiresAt, createdAt).Scan(&formId)
+	err := Db.QueryRow(query, creatorId, form.ThemeId, form.Title, form.Description, link, form.PrivateKey, form.ExpiresAt, createdAt, form.Confidential).Scan(&formId)
 	if err != nil {
 		log.Printf("Ошибка при запросе создания формы: %v", err)
 		return formId, link, err
@@ -68,8 +68,8 @@ func FormDeleteRequest(formId int, creatorId int) error {
 
 func FormUpdateRequest(updateForm models.FormRequest, creatorId int, formId int) error {
 
-	query := "UPDATE forms SET title = $1, description = $2, private_key = $3, expires_at = $4, theme_id = $5 WHERE id = $6 AND creator_id = $7"
-	_, err := Db.Exec(query, updateForm.Title, updateForm.Description, updateForm.PrivateKey, updateForm.ExpiresAt, updateForm.ThemeId, formId, creatorId)
+	query := "UPDATE forms SET title = $1, description = $2, private_key = $3, expires_at = $4, theme_id = $5, confidential = $6 WHERE id = $7 AND creator_id = $8"
+	_, err := Db.Exec(query, updateForm.Title, updateForm.Description, updateForm.PrivateKey, updateForm.ExpiresAt, updateForm.ThemeId, updateForm.Confidential, formId, creatorId)
 	if err != nil {
 		log.Printf("Ошибка при запросе обновления формы: %v", err)
 		return err
@@ -80,7 +80,7 @@ func FormUpdateRequest(updateForm models.FormRequest, creatorId int, formId int)
 func FormGetRequest(creatorId int, formId int) (models.Form, error) {
 	var form models.Form
 	query := `
-		SELECT f.id, t.name, f.title, f.description, f.link, f.private_key, f.expires_at, f.created_at
+		SELECT f.id, t.name, f.title, f.description, f.link, f.private_key, f.expires_at, f.created_at, f.confidential
 		FROM forms AS f LEFT JOIN themes AS t ON f.theme_id = t.id
 		WHERE f.id = $1 AND f.creator_id = $2
 		`
@@ -93,6 +93,7 @@ func FormGetRequest(creatorId int, formId int) (models.Form, error) {
 		&form.PrivateKey,
 		&form.ExpiresAt,
 		&form.CreatedAt,
+		&form.Confidential,
 	)
 	if err != nil {
 		return form, err
@@ -111,12 +112,11 @@ func QuestionChekingRequest(existId int, creatorId int, formId int, questionId i
 	return err
 }
 func QuestionCreateRequest(question models.QuestionRequest, creatorId int, formId int) (int, error) {
-	query := `INSERT INTO questions (form_id, creator_id, title, number_order, required) 
+	query := `INSERT INTO questions (form_id, creator_id, title, number_order, multiple_choice, required) 
 			  VALUES($1, $2, $3, $4, $5) RETURNING id`
 
-	
 	var questionId int
-	err := Db.QueryRow(query, formId, creatorId, question.Title, question.NumberOrder, question.Required).Scan(&questionId)
+	err := Db.QueryRow(query, formId, creatorId, question.Title, question.NumberOrder, question.MultipleChoice, question.Required).Scan(&questionId)
 	if err != nil {
 		log.Printf("Ошибка при запросе создания вопроса: %v", err)
 		return questionId, err
@@ -134,41 +134,10 @@ func QuestionDeleteRequest(creator_id int, formId int, questionId int) (sql.Resu
 	return nil, err
 }
 
-func QuestionsGetRequest(creator_id int, formId int) (*sql.Rows, error) {
-	query := `
-			SELECT
-			q.id,
-			q.form_id,
-			q.title,
-			q.number_order,
-			q.required,
-			COALESCE(a.id, 0)           AS answer_id,
-			COALESCE(a.title, '')       AS answer_title,
-			COALESCE(a.number_order, 0) AS answer_order,
-			COALESCE(a.count, 0)        AS answer_count
-			FROM questions AS q
-			LEFT JOIN answers AS a
-			ON q.id = a.question_id
-			WHERE q.creator_id = $1
-			AND q.form_id    = $2
-			ORDER BY
-			q.number_order,
-			a.number_order
-`
-
-	rows, err := Db.Query(query, creator_id, formId)
-
-	if err != nil {
-		log.Printf("Ошибка при запросе получения вопросов: %v", err)
-		return nil, err
-	}
-	return rows, err
-}
-
 func QuestionUpdateRequest(updateQuestion models.QuestionRequest, creator_id int, formId int, questionId int) error {
 
-	query := "UPDATE questions SET title = $1, number_order = $2, required = $3 WHERE id = $4 AND form_id = $5 and creator_id = $6"
-	_, err := Db.Exec(query, updateQuestion.Title, updateQuestion.NumberOrder, updateQuestion.Required, questionId, formId, creator_id)
+	query := "UPDATE questions SET title = $1, number_order = $2, required = $3, multiple_choice = $4 WHERE id = $5 AND form_id = $6 and creator_id = $7"
+	_, err := Db.Exec(query, updateQuestion.Title, updateQuestion.NumberOrder, updateQuestion.Required, updateQuestion.MultipleChoice, questionId, formId, creator_id)
 	if err != nil {
 		log.Printf("Ошибка при запросе обновления вопроса: %v", err)
 		return err
@@ -226,6 +195,7 @@ func QuestionsWithAnswersGet(formId, creatorId int) ([]models.QuestionOutput, er
 			q.number_order,
 			q.title,
 			q.required,
+			q.multiple_choice,
 			a.id,
 			a.title,
 			a.number_order,
@@ -246,15 +216,16 @@ func QuestionsWithAnswersGet(formId, creatorId int) ([]models.QuestionOutput, er
 
 	for rows.Next() {
 		var (
-			qID, qOrder    int
-			qTitle         string
-			qRequired      bool
-			aID            sql.NullInt64
-			aTitle         sql.NullString
-			aOrder, aCount sql.NullInt64
+			qID, qOrder     int
+			qTitle          string
+			qRequired       bool
+			qMultipleChoice bool
+			aID             sql.NullInt64
+			aTitle          sql.NullString
+			aOrder, aCount  sql.NullInt64
 		)
 
-		err := rows.Scan(&qID, &qOrder, &qTitle, &qRequired, &aID, &aTitle, &aOrder, &aCount)
+		err := rows.Scan(&qID, &qOrder, &qTitle, &qRequired, &qMultipleChoice, &aID, &aTitle, &aOrder, &aCount)
 		if err != nil {
 			return nil, err
 		}
@@ -266,6 +237,7 @@ func QuestionsWithAnswersGet(formId, creatorId int) ([]models.QuestionOutput, er
 				NumberOrder: qOrder,
 				Title:       qTitle,
 				Required:    qRequired,
+				MultipleChoice: qMultipleChoice,
 				Answers:     []models.Answer{},
 			}
 			questionMap[qID] = q
@@ -312,7 +284,6 @@ func GetFormByLinkRequest(link string) (models.Form, error) {
 	}
 	return form, nil
 }
-
 
 func GetThemesRequest() ([]models.Theme, error) {
 	var themes []models.Theme
