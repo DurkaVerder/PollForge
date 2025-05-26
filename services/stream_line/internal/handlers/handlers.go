@@ -44,11 +44,6 @@ func (h *StreamLineHandler) GetStreamLine(ctx *gin.Context) {
 	limitStr := ctx.DefaultQuery("limit", "10")
 	cursorStr := ctx.DefaultQuery("cursor", "")
 
-	if limitStr == "" {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": "limit query parameter is required"})
-		return
-	}
-
 	limit, err := strconv.Atoi(limitStr)
 	if err != nil || limit <= 0 {
 		limit = defaultLimit
