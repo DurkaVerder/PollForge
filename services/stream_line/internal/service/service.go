@@ -5,10 +5,11 @@ import (
 	"math"
 	"sort"
 	"stream_line/internal/models"
+	"time"
 )
 
 type DB interface {
-	GetFormsByOtherUserIDWithCountLikesAndComments(userID string) ([]models.FormFromDB, error)
+	GetFormsByOtherUserIDWithCountLikesAndComments(userID string, cursor time.Time, limit int) ([]models.FormFromDB, error)
 	GetQuestionsByFormsID(formIDs []int) ([]models.QuestionFromDB, error)
 	GetAnswersByQuestionsID(questionIDs []int, userID string) ([]models.AnswerFromDB, error)
 	GetFormsByOtherUserIDWithCountLikesAndCommentsByLink(userID, pollLink string) ([]models.FormFromDB, error)
@@ -42,8 +43,8 @@ func NewService(db DB, logger *log.Logger) *Service {
 	}
 }
 
-func (s *Service) GetStreamLines(userID string) (*models.StreamLineResponse, error) {
-	forms, err := s.db.GetFormsByOtherUserIDWithCountLikesAndComments(userID)
+func (s *Service) GetStreamLines(userID string, cursor time.Time, limit int) (*models.StreamLineResponse, error) {
+	forms, err := s.db.GetFormsByOtherUserIDWithCountLikesAndComments(userID, cursor, limit)
 	if err != nil {
 		s.logger.Println("Error getting forms:", err)
 		return nil, err

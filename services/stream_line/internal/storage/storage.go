@@ -3,12 +3,13 @@ package storage
 import (
 	"database/sql"
 	"stream_line/internal/models"
+	"time"
 
 	"github.com/lib/pq"
 )
 
 const (
-	GetOtherFormsQuery = `SELECT f.id, f.title, t.name, f.description, f.creator_id, f.link, f.count_likes, EXISTS(SELECT * FROM likes_forms WHERE user_id = $1 AND form_id = f.id) AS is_liked, (SELECT COUNT(id) FROM comments c WHERE c.form_id = f.id) AS count_votes, f.created_at, f.expires_at FROM forms f LEFT JOIN themes t ON t.id = f.theme_id WHERE f.expires_at > NOW() AND f.private_key = false`
+	GetOtherFormsQuery = `SELECT f.id, f.title, t.name, f.description, f.creator_id, f.link, f.count_likes, EXISTS(SELECT * FROM likes_forms WHERE user_id = $1 AND form_id = f.id) AS is_liked, (SELECT COUNT(id) FROM comments c WHERE c.form_id = f.id) AS count_votes, f.created_at, f.expires_at FROM forms f LEFT JOIN themes t ON t.id = f.theme_id WHERE f.expires_at > NOW() AND f.private_key = false AND f.created_at < $2 ORDER BY f.created_at DESC LIMIT $3`
 	GetQuestionQuery   = `SELECT id, title, form_id, number_order FROM questions WHERE form_id = ANY($1)`
 	GetAnswerQuery     = `SELECT a.id, a.title, a.question_id, a.number_order, a.count, EXISTS(SELECT * FROM answers_chosen WHERE user_id = $2 AND answer_id = a.id) AS is_selected FROM answers a WHERE a.question_id = ANY($1)`
 	GetFormsQuery      = `SELECT f.id, f.title, t.name, f.description, f.creator_id, f.link, f.count_likes, EXISTS(SELECT * FROM likes_forms WHERE user_id = $1 AND form_id = f.id) AS is_liked, (SELECT COUNT(id) FROM comments c WHERE c.form_id = f.id) AS count_votes, f.created_at, f.expires_at FROM forms f LEFT JOIN themes t ON t.id = f.theme_id WHERE f.expires_at > NOW() AND f.link = $2`
@@ -24,8 +25,8 @@ func NewPostgres(db *sql.DB) *Postgres {
 	}
 }
 
-func (p *Postgres) GetFormsByOtherUserIDWithCountLikesAndComments(userID string) ([]models.FormFromDB, error) {
-	rows, err := p.db.Query(GetOtherFormsQuery, userID)
+func (p *Postgres) GetFormsByOtherUserIDWithCountLikesAndComments(userID string, cursor time.Time, limit int) ([]models.FormFromDB, error) {
+	rows, err := p.db.Query(GetOtherFormsQuery, userID, cursor, limit)
 	if err != nil {
 		return nil, err
 	}
