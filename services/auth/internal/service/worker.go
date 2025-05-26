@@ -32,13 +32,13 @@ func StartWorkerPool(numWorkers int) {
 	jobQueue = make(chan Job, 10000)
 
 	for i := 0; i < numWorkers; i++ {
-		go worker(i, jobQueue)
+		go worker(jobQueue)
 	}
 
 }
 
 // Обработка заданий
-func worker(id int, jobs <-chan Job) {
+func worker(jobs <-chan Job) {
 	for job := range jobs {
 
 		var token string
