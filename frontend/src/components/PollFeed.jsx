@@ -24,7 +24,7 @@ export default function PollFeed({ polls, hasMore, onLoadMore, isLoadingMore }) 
         <h2 style={{ fontSize: '1.5rem', fontWeight: 'bold', marginBottom: '1rem' }}>
           Лента опросов
         </h2>
-        {polls.length === 0 ? (
+        {!polls ||polls.length === 0 ? (
           <p className="text-gray-500">
             Опросов нет. Создайте свой первый опрос или подождите, пока другие пользователи опубликуют опросы.
           </p>

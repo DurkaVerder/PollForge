@@ -66,6 +66,15 @@ func (h *StreamLineHandler) GetStreamLine(ctx *gin.Context) {
 		return
 	}
 
+	if polls == nil {
+		ctx.JSON(http.StatusOK, gin.H{
+			"polls":       []models.Polls{},
+			"next_cursor": "",
+			"hasMore":     false,
+		})
+		return
+	}
+
 	var nextCursor string
 	if len(polls.Polls) > 0 {
 		nextCursor = polls.Polls[len(polls.Polls)-1].CreatedAt
