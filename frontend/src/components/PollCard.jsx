@@ -95,7 +95,6 @@ export default function PollCard({ poll }) {
       if (!response.ok) throw new Error('Failed to add comment');
       await fetchComments();
       setNewComment('');
-      // Обновляем счетчик комментариев
       setLocalPoll(prev => ({
         ...prev,
         count_comments: prev.count_comments + 1
@@ -138,7 +137,6 @@ export default function PollCard({ poll }) {
       });
       if (!response.ok) throw new Error('Failed to delete comment');
       await fetchComments();
-      // Обновляем счетчик комментариев
       setLocalPoll(prev => ({
         ...prev,
         count_comments: prev.count_comments - 1
@@ -189,20 +187,24 @@ export default function PollCard({ poll }) {
     setIsSubmitting(true);
     try {
       const question = localPoll.questions.find((q) => q.id === questionId);
-      const prevSelectedAnswer = question?.answers.find((a) => a.is_selected && a.id !== answerId);
+      
+      // For multiple choice, we don't deselect other answers
+      if (!question.MultipleChoice) {
+        const prevSelectedAnswer = question?.answers.find((a) => a.is_selected && a.id !== answerId);
 
-      if (prevSelectedAnswer) {
-        await fetch(`${API_BASE_URL}/vote/input`, {
-          method: 'POST',
-          headers: {
-            Authorization: 'Bearer ' + localStorage.getItem('authToken'),
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            id: prevSelectedAnswer.id,
-            is_up_vote: false,
-          }),
-        });
+        if (prevSelectedAnswer) {
+          await fetch(`${API_BASE_URL}/vote/input`, {
+            method: 'POST',
+            headers: {
+              Authorization: 'Bearer ' + localStorage.getItem('authToken'),
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              id: prevSelectedAnswer.id,
+              is_up_vote: false,
+            }),
+          });
+        }
       }
 
       const response = await fetch(`${API_BASE_URL}/vote/input`, {
@@ -223,19 +225,24 @@ export default function PollCard({ poll }) {
         const updatedQuestions = prevPoll.questions.map((question) => {
           if (question.id === questionId) {
             const updatedAnswers = question.answers.map((answer) => {
-              const newAnswer = {
-                ...answer,
-                is_selected: false,
-                count_votes: answer.is_selected ? answer.count_votes - 1 : answer.count_votes,
-              };
               if (answer.id === answerId) {
+                // Toggle selection state for the clicked answer
+                const newIsSelected = !isSelected;
                 return {
-                  ...newAnswer,
-                  is_selected: !isSelected,
-                  count_votes: isSelected ? newAnswer.count_votes : newAnswer.count_votes + 1,
+                  ...answer,
+                  is_selected: newIsSelected,
+                  count_votes: newIsSelected ? answer.count_votes + 1 : answer.count_votes - 1,
                 };
               }
-              return newAnswer;
+              // For single choice, deselect all other answers
+              if (!question.MultipleChoice) {
+                return {
+                  ...answer,
+                  is_selected: false,
+                  count_votes: answer.is_selected ? answer.count_votes - 1 : answer.count_votes,
+                };
+              }
+              return answer;
             });
 
             const newTotalVotes = updatedAnswers.reduce((sum, a) => sum + a.count_votes, 0);
@@ -265,12 +272,20 @@ export default function PollCard({ poll }) {
     }
   };
 
+  // Check if poll is confidential
+  const isConfidential = localPoll.confidential;
+
   return (
     <div className="bg-white rounded-xl shadow-lg p-6 transform hover:shadow-xl transition-all duration-300 w-full mx-auto">
       <div className="flex items-center mb-4 space-x-2">
         <span className="bg-blue-100 text-blue-800 text-xs font-medium px-3 py-1 rounded-full">
           {localPoll.theme}
         </span>
+        {isConfidential && (
+          <span className="bg-red-100 text-red-800 text-xs font-medium px-3 py-1 rounded-full">
+            Конфиденциальный
+          </span>
+        )}
       </div>
 
       <div className="flex justify-between items-start mb-6">
@@ -299,7 +314,6 @@ export default function PollCard({ poll }) {
             </p>
           </div>
         </div>
-
       </div>
 
       <h3 className="text-2xl font-bold text-gray-900 mb-3">{localPoll.title}</h3>
@@ -312,10 +326,10 @@ export default function PollCard({ poll }) {
             {question.answers.map((answer, aIndex) => (
               <div key={aIndex} className="flex items-center">
                 <input
-                  type="radio"
+                  type={question.MultipleChoice ? "checkbox" : "radio"}
                   id={`poll${localPoll.id}_q${qIndex}_answer${aIndex}`}
                   name={`poll${localPoll.id}_q${qIndex}`}
-                  className="h-5 w-5 text-blue-600 focus:ring-blue-500"
+                  className={`h-5 w-5 text-blue-600 focus:ring-blue-500 ${question.MultipleChoice ? 'rounded' : ''}`}
                   checked={answer.is_selected}
                   onChange={() => handleVote(question.id, answer.id, answer.is_selected)}
                   disabled={isSubmitting}
@@ -326,16 +340,20 @@ export default function PollCard({ poll }) {
                 >
                   <div className="flex justify-between items-center">
                     <span className="text-gray-700">{answer.title}</span>
-                    <span className="text-sm text-gray-500">
-                      {answer.count_votes} ({answer.percent}%)
-                    </span>
+                    {!isConfidential && (
+                      <span className="text-sm text-gray-500">
+                        {answer.count_votes} ({answer.percent}%)
+                      </span>
+                    )}
                   </div>
-                  <div className="mt-2 h-2 w-full bg-gray-200 rounded-full overflow-hidden">
-                    <div
-                      className="h-full bg-primary-500 rounded-full transition-all duration-300"
-                      style={{ width: `${answer.percent}%` }}
-                    />
-                  </div>
+                  {!isConfidential && (
+                    <div className="mt-2 h-2 w-full bg-gray-200 rounded-full overflow-hidden">
+                      <div
+                        className="h-full bg-primary-500 rounded-full transition-all duration-300"
+                        style={{ width: `${answer.percent}%` }}
+                      />
+                    </div>
+                  )}
                 </label>
               </div>
             ))}
@@ -344,7 +362,13 @@ export default function PollCard({ poll }) {
       ))}
 
       <div className="flex justify-between text-sm text-gray-500 mb-6">
-        <span>{localPoll.questions.reduce((sum, q) => sum + q.total_count_votes, 0)} голосов</span>
+        <span>
+          {isConfidential ? (
+            <span className="blur-sm">Скрыто</span>
+          ) : (
+            localPoll.questions.reduce((sum, q) => sum + q.total_count_votes, 0)
+          )} голосов
+        </span>
         <span>Заканчивается {new Date(localPoll.expires_at).toLocaleDateString('ru-RU')}</span>
       </div>
 
@@ -357,6 +381,13 @@ export default function PollCard({ poll }) {
           {localPoll.count_comments} комментариев
         </button>
         <div className="flex items-center space-x-4">
+          <button
+            className={`flex items-center ${localPoll.likes.is_liked ? 'text-red-500' : 'text-gray-500'} hover:text-red-600 transition-colors duration-200`}
+            onClick={handleLike}
+          >
+            <span className="material-symbols-outlined mr-1">favorite</span>
+            {localPoll.likes.count}
+          </button>
         </div>
       </div>
 
