@@ -19,4 +19,4 @@ PollForge предоставляет пользователям возможно
   <img src="https://github.com/DurkaVerder/PollForge/blob/c8ffec1c0e476b7a6a6cd0f293e4c6586c9e2ce2/gifs/Main_Page.gif" alt="Главная страница" style="max-width: 100%; height: auto;">
 </div>
 
-** Для ознакомления с функционалом - перейдите по данной ссылке http://176.108.253.105:8080/**
+**Для ознакомления с функционалом - перейдите по данной ссылке http://176.108.253.105:8080/**
