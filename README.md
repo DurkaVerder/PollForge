@@ -15,7 +15,7 @@ PollForge предоставляет пользователям возможно
 - Получать email-уведомления при регистрации, входе или сбросе пароля (Kafka + Email-микросервис).
 
 ## На главной странице нашего сервиса описывается для кого понадобится наше приложение.
-<div style="align: center;">
+<div style="display: flex; justify-content: center;">
   <img src="https://github.com/DurkaVerder/PollForge/blob/c8ffec1c0e476b7a6a6cd0f293e4c6586c9e2ce2/gifs/Main_Page.gif" alt="Главная страница" style="max-width: 100%; height: auto;">
 </div>
 
